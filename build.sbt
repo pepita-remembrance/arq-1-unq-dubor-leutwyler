@@ -15,6 +15,7 @@ libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.0"
 libraryDependencies ++= Seq(
   evolutions,
   "mysql" % "mysql-connector-java" % "5.1.34",
+  "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
   "com.typesafe.play" %% "play-slick" % "3.0.1",
   "com.typesafe.play" %% "play-slick-evolutions" % "3.0.1",
   "com.h2database" % "h2" % "1.4.194"
