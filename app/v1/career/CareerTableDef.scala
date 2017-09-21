@@ -7,7 +7,7 @@ trait CareerTableDef {
   import driver.api._
 
   class CareerTable(tag: Tag) extends Table[CareerData](tag, "career"){
-    def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+    def id = column[Long]("id", O.PrimaryKey)
     def name = column[String]("name")
     def description = column[String]("description")
 

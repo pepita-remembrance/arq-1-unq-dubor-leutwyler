@@ -2,7 +2,7 @@
 
 # --- !Ups
 create table career (
-  id SERIAL,
+  id BIGINT PRIMARY KEY ,
   name TEXT NOT NULL,
   description TEXT NOT NULL
 );
