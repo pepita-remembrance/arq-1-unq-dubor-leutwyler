@@ -1,44 +1,11 @@
-import sbt.Keys._
+name := """arq-1-unq-scala-api-dubor-leutwyler"""
+organization := "ar.edu.unq.arq1"
 
-lazy val GatlingTest = config("gatling") extend Test
+version := "1.0-SNAPSHOT"
 
-// This must be set to 2.11.11 because Gatling does not run on 2.12.2
-scalaVersion in ThisBuild := "2.11.11"
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
+
+scalaVersion := "2.12.3"
 
 libraryDependencies += guice
-libraryDependencies += "org.joda" % "joda-convert" % "1.8"
-libraryDependencies += "net.logstash.logback" % "logstash-logback-encoder" % "4.9"
-
-libraryDependencies += "com.netaporter" %% "scala-uri" % "0.4.16"
-libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.0"
-
-libraryDependencies ++= Seq(
-  evolutions,
-  "mysql" % "mysql-connector-java" % "5.1.34",
-  "com.typesafe.play" %% "play-slick" % "3.0.1",
-  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.1",
-  "com.h2database" % "h2" % "1.4.194",
-  "org.postgresql" % "postgresql" % "9.4-1201-jdbc41"
-)
-
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0-M3" % Test
-libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.2.2" % Test
-libraryDependencies += "io.gatling" % "gatling-test-framework" % "2.2.2" % Test
-
-// The Play project itself
-lazy val root = (project in file("."))
-  .enablePlugins(Common, PlayScala, GatlingPlugin)
-  .configs(GatlingTest)
-  .settings(inConfig(GatlingTest)(Defaults.testSettings): _*)
-  .settings(
-    name := """inscription-poll""",
-    scalaSource in GatlingTest := baseDirectory.value / "/gatling/simulation"
-  )
-
-// Documentation for this project:
-//    sbt "project docs" "~ paradox"
-//    open docs/target/paradox/site/index.html
-lazy val docs = (project in file("docs")).enablePlugins(ParadoxPlugin).
-  settings(
-    paradoxProperties += ("download_url" -> "https://example.lightbend.com/v1/download/play-rest-api")
-  )
+libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0" % Test
