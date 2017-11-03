@@ -6,4 +6,8 @@ case class Career(shortName: String, longName: String) extends TableRow
 
 case class Subject(careerId: KeyType, shortName: String, longName: String) extends TableRow
 
-case class Course(shortName: String) extends TableRow
+case class Course(shortName: String) extends TableRow with OfferOption {
+  val isCourse: Boolean = true
+
+  val textValue: String = shortName
+}

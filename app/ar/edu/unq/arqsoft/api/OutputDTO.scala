@@ -15,7 +15,7 @@ object Alias {
 abstract class OfferOptionDTO(textValue: String, isCourse: Boolean) extends OutputDTO
 
 
-case class StudentDTO(fileNumber: Int, name: String, surname: String, careers: List[CareerDTO], pollResults: List[PollResultDTO]) extends OutputDTO
+case class StudentDTO(fileNumber: Int, email: String, name: String, surname: String, careers: List[CareerDTO], pollResults: List[PollResultDTO]) extends OutputDTO
 
 case class PartialStudentDTO(fileNumber: Int, name: String, surname: String) extends OutputDTO
 

@@ -2,9 +2,10 @@ package ar.edu.unq.arqsoft.database
 
 import java.sql.Timestamp
 
+import ar.edu.unq.arqsoft.model._
 import org.joda.time.DateTime
 import org.squeryl.dsl._
-import org.squeryl.{PrimitiveTypeMode, Schema}
+import org.squeryl.{PrimitiveTypeMode, Schema, Table}
 
 trait PrimitiveJodaTimeSupport {
   this: PrimitiveTypeMode =>
@@ -33,6 +34,82 @@ object DSLFlavor extends DSLFlavor
 
 abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper) with DSLFlavor {
 
+  val students = table[Student]
+  val careers = table[Career]
+  val subjects = table[Subject]
+  val offers = table[OfferOptionBase]
+  val courses = table[Course]
+  val nonCourses = table[NonCourseOption]
+  val schedules = table[Schedule]
+  val polls = table[Poll]
+  val pollOfferOptions = table[PollOfferOption]
+  val results = table[PollResult]
+  val pollSelectedOptions = table[PollSelectedOption]
 
+  val studentResults = oneToManyRelation(students, results)
+    .via((s, r) => s.id === r.studentId)
+  val careerSubjects = oneToManyRelation(careers, subjects)
+    .via((c, s) => c.id === s.careerId)
+  val careerPolls = oneToManyRelation(careers, polls)
+    .via((c, p) => c.id === p.careerId)
+  val courseSchedules = oneToManyRelation(courses, schedules)
+    .via((c, s) => c.id === s.courseId)
+  val pollResults = oneToManyRelation(polls, results)
+    .via((p, pr) => p.id === pr.pollId)
+  val pollPollOfferOptions = oneToManyRelation(polls, pollOfferOptions)
+    .via((p, poo) => p.id === poo.pollId)
+  val subjectPollOfferOptions = oneToManyRelation(subjects, pollOfferOptions)
+    .via((s, poo) => s.id === poo.subjectId)
+  val offerPollOfferOptions = oneToManyRelation(offers, pollOfferOptions)
+    .via((o, poo) => o.id === poo.offerId)
+  val pollPollSelectedOptions = oneToManyRelation(results, pollSelectedOptions)
+    .via((r, pso) => r.id === pso.pollResultId)
+  val subjectPollSelectedOptions = oneToManyRelation(subjects, pollSelectedOptions)
+    .via((s, pso) => s.id === pso.subjectId)
+  val offerPollSelectedOptions = oneToManyRelation(offers, pollSelectedOptions)
+    .via((o, pso) => o.id === pso.offerId)
+  /*   Squeryl does not support discriminator columns, left here as documentation/expectations
+  val courseOffer = oneToManyRelation(courses, offers)
+    .via((c, o) => c.id === o.offerId).when(o.isCourse)
+  val nonCourseOffer = oneToManyRelation(nonCourseOption, offers)
+    .via((nc, o) => nc.id === o.offerId).when(!o.isCourse)
+  */
+
+  val coursePollOfferOptions = oneToManyRelation(courses, pollOfferOptions)
+    .via((c, poo) => c.id === poo.offerId)
+
+  findAllTablesFor(TableRow.getClass)
+    .foreach(table =>
+      on(table.asInstanceOf[Table[TableRow]])(t =>
+        declare(
+          t.id is(primaryKey, autoIncremented)
+        )
+      )
+    )
+
+  on(students)(s =>
+    declare(
+      s.fileNumber is(unique, indexed("idxFileNumber")),
+      s.email is(unique, indexed("idxEmail"))
+    )
+  )
+
+  on(careers)(c =>
+    declare(
+      c.shortName is(unique, indexed("idxShortName"))
+    )
+  )
+
+  on(polls)(p =>
+    declare(
+      columns(p.careerId, p.key) are indexed("idxCareerKey")
+    )
+  )
+
+  on(results)(r =>
+    declare(
+      columns(r.pollId, r.studentId) are indexed("idxStudentPoll")
+    )
+  )
 
 }
