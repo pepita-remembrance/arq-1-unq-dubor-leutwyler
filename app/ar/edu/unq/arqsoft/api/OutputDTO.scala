@@ -2,7 +2,7 @@ package ar.edu.unq.arqsoft.api
 
 import ar.edu.unq.arqsoft.api.Alias.{CareerOfferDTO, ResultsDTO}
 import org.joda.time.DateTime
-import play.api.libs.json.Json
+import play.api.libs.json.{JodaWrites, Json}
 
 trait OutputDTO
 
@@ -41,6 +41,7 @@ case class PartialPollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO
 
 
 trait OutputDTOFormats {
+  implicit val dateWrites = JodaWrites.jodaDateWrites("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   implicit val studentDTOFormat = Json.writes[StudentDTO]
   implicit val partialStudentDTOFormat = Json.writes[PartialStudentDTO]
   implicit val careerDTOFormat = Json.writes[CareerDTO]
