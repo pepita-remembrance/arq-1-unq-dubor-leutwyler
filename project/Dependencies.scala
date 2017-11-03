@@ -5,7 +5,9 @@ object Dependencies {
 
   val appDependencies = Seq(
     PlayImport.guice,
+    "com.github.nscala-time" %% "nscala-time" % "2.16.0",
     "com.typesafe.play" %% "play-json" % "2.6.0",
+    "com.typesafe.play" %% "play-json-joda" % "2.6.0",
     "org.squeryl" %% "squeryl" % "0.9.7"
   )
 
