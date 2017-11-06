@@ -8,18 +8,18 @@ object InputAlias {
   type SubjectShortName = String
 }
 
-case class CreateStudent(fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
+case class CreateStudentDTO(fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
 
-case class CreateCareer(shortName: String, longName: String, subjects: Option[List[CreateSubject]]) extends InputDTO
+case class CreateCareerDTO(shortName: String, longName: String, subjects: Option[List[CreateSubjectDTO]]) extends InputDTO
 
-case class CreateSubject(shortName: String, longName: String) extends InputDTO
+case class CreateSubjectDTO(shortName: String, longName: String) extends InputDTO
 
-case class CreatePoll(key: String, offer: Option[Map[SubjectShortName, CreateOfferOption]])
+case class CreatePollDTO(key: String, offer: Option[Map[SubjectShortName, CreateOfferOptionDTO]])
 
-trait CreateOfferOption extends InputDTO
+trait CreateOfferOptionDTO extends InputDTO
 
-case class CreateNonCourse(textValue: String) extends CreateOfferOption
+case class CreateNonCourseDTO(textValue: String) extends CreateOfferOptionDTO
 
-case class CreateCourse(shortName: String, schedule: List[CreateScheduleDTO]) extends CreateOfferOption
+case class CreateCourseDTO(shortName: String, schedule: List[CreateScheduleDTO]) extends CreateOfferOptionDTO
 
 case class CreateScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends InputDTO

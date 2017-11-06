@@ -114,4 +114,10 @@ abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper)
     )
   )
 
+  on(subjects)(s =>
+    declare(
+      s.shortName is indexed("idxShortName")
+    )
+  )
+
 }
