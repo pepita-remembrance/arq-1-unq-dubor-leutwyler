@@ -10,7 +10,7 @@ import play.api.test._
  *
  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
  */
-class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
+class StudentControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
 
 //  "HomeController GET" should {
 //

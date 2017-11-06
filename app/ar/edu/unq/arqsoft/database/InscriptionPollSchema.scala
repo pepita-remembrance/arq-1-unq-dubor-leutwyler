@@ -98,7 +98,7 @@ abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper)
 
   on(careers)(c =>
     declare(
-      c.shortName is(unique, indexed("idxShortName"))
+      c.shortName is(unique, indexed("idxCareerShortName"))
     )
   )
 
@@ -116,7 +116,7 @@ abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper)
 
   on(subjects)(s =>
     declare(
-      s.shortName is indexed("idxShortName")
+      s.shortName is indexed("idxSubjectShortName")
     )
   )
 

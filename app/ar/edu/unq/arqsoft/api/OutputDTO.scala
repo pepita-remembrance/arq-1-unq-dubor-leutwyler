@@ -6,12 +6,13 @@ import org.joda.time.DateTime
 trait OutputDTO
 
 object OutputAlias {
-  type CareerOfferDTO = Map[SubjectDTO, SubjectOfferDTO]
   type SubjectOfferDTO = List[OfferOptionDTO]
-  type ResultsDTO = Map[SubjectDTO, OfferOptionDTO]
+  type SubjectShortName = String
+  type CareerOfferDTO = Map[SubjectShortName, SubjectOfferDTO]
+  type ResultsDTO = Map[SubjectShortName, OfferOptionDTO]
 }
 
-abstract class OfferOptionDTO(textValue: String, isCourse: Boolean) extends OutputDTO
+abstract class OfferOptionDTO(textValue: String, val isCourse: Boolean) extends OutputDTO
 
 
 case class StudentDTO(fileNumber: Int, email: String, name: String, surname: String, careers: List[CareerDTO], pollResults: List[PollResultDTO]) extends OutputDTO

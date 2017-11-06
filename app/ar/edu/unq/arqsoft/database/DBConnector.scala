@@ -7,8 +7,6 @@ import org.squeryl.adapters.H2Adapter
 
 trait DBConnector {
   def sessionCreator: Option[() => AbstractSession]
-
-  SessionFactory.concreteFactory = sessionCreator
 }
 
 trait H2Connector extends DBConnector {
