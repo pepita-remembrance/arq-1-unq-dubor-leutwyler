@@ -1,11 +1,11 @@
 package ar.edu.unq.arqsoft.api
 
-import ar.edu.unq.arqsoft.api.Alias.{CareerOfferDTO, ResultsDTO}
+import ar.edu.unq.arqsoft.api.OutputAlias._
 import org.joda.time.DateTime
 
 trait OutputDTO
 
-object Alias {
+object OutputAlias {
   type CareerOfferDTO = Map[SubjectDTO, SubjectOfferDTO]
   type SubjectOfferDTO = List[OfferOptionDTO]
   type ResultsDTO = Map[SubjectDTO, OfferOptionDTO]
