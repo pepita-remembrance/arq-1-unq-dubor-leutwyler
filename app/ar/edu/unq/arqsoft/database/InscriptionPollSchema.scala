@@ -62,7 +62,7 @@ abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper)
     .via((s, poo) => s.id === poo.subjectId)
   val offerPollOfferOptions = oneToManyRelation(offers, pollOfferOptions)
     .via((o, poo) => o.id === poo.offerId)
-  val pollPollSelectedOptions = oneToManyRelation(results, pollSelectedOptions)
+  val resultPollSelectedOptions = oneToManyRelation(results, pollSelectedOptions)
     .via((r, pso) => r.id === pso.pollResultId)
   val subjectPollSelectedOptions = oneToManyRelation(subjects, pollSelectedOptions)
     .via((s, pso) => s.id === pso.subjectId)
@@ -70,13 +70,15 @@ abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper)
     .via((o, pso) => o.id === pso.offerId)
   /*   Squeryl does not support discriminator columns, left here as documentation/expectations
   val courseOffer = oneToManyRelation(courses, offers)
-    .via((c, o) => c.id === o.offerId).when(o.isCourse)
+    .when(o.isCourse)
+    .via((c, o) => c.id === o.offerId)
   val nonCourseOffer = oneToManyRelation(nonCourseOption, offers)
-    .via((nc, o) => nc.id === o.offerId).when(!o.isCourse)
+    .when(!o.isCourse)
+    .via((nc, o) => nc.id === o.offerId)
   */
 
-  val coursePollOfferOptions = oneToManyRelation(courses, pollOfferOptions)
-    .via((c, poo) => c.id === poo.offerId)
+  val studentsCareers = manyToManyRelation(students, careers)
+    .via[StudentCareer]((s, c, sc) => (s.id === sc.studentId, c.id === sc.careerId))
 
   findAllTablesFor(TableRow.getClass)
     .foreach(table =>
