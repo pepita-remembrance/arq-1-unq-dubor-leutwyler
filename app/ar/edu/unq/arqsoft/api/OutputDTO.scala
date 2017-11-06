@@ -2,7 +2,6 @@ package ar.edu.unq.arqsoft.api
 
 import ar.edu.unq.arqsoft.api.Alias.{CareerOfferDTO, ResultsDTO}
 import org.joda.time.DateTime
-import play.api.libs.json.{JodaWrites, Json}
 
 trait OutputDTO
 
@@ -38,20 +37,3 @@ case class NonCourseOptionDTO(textValue: String) extends OfferOptionDTO(textValu
 case class PollResultDTO(poll: PollDTO, student: PartialStudentDTO, fillDate: DateTime, results: ResultsDTO) extends OutputDTO
 
 case class PartialPollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO, fillDate: DateTime) extends OutputDTO
-
-
-trait OutputDTOFormats {
-  implicit val dateWrites = JodaWrites.jodaDateWrites("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-  implicit val studentDTOFormat = Json.writes[StudentDTO]
-  implicit val partialStudentDTOFormat = Json.writes[PartialStudentDTO]
-  implicit val careerDTOFormat = Json.writes[CareerDTO]
-  implicit val partialCareerDTOFormat = Json.writes[PartialCareerDTO]
-  implicit val subjectDTOFormat = Json.writes[SubjectDTO]
-  implicit val courseDTOFormat = Json.writes[CourseDTO]
-  implicit val scheduleDTOFormat = Json.writes[ScheduleDTO]
-  implicit val pollDTOFormat = Json.writes[PollDTO]
-  implicit val partialPollDTOFormat = Json.writes[PartialPollDTO]
-  implicit val nonCourseOptionDTOFormat = Json.writes[NonCourseOptionDTO]
-  implicit val pollResultDTOFormat = Json.writes[PollResultDTO]
-  implicit val partialPollResultDTOFormat = Json.writes[PartialPollResultDTO]
-}
