@@ -1,16 +1,12 @@
 package ar.edu.unq.arqsoft.DAOs
 
-import ar.edu.unq.arqsoft.api.CreateStudentDTO
-import ar.edu.unq.arqsoft.model.Student
+import javax.inject.Singleton
+
 import ar.edu.unq.arqsoft.database.Database._
+import ar.edu.unq.arqsoft.model.Student
+import ar.edu.unq.arqsoft.model.TableRow.KeyType
 
-trait StudentDAO {
-
-  def create(dto: CreateStudentDTO): Student = {
-    val newStudent = Student(dto.fileNumber, dto.email, dto.name, dto.surname)
-    students.insert(newStudent)
-  }
+@Singleton
+class StudentDAO extends SquerylDAO[Student, KeyType](students, None) {
 
 }
-
-object StudentDAO extends StudentDAO

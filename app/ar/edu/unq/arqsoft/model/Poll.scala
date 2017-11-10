@@ -8,7 +8,10 @@ import org.squeryl.annotations.Transient
 import org.squeryl.dsl.CompositeKey3
 import Database._
 
-case class Poll(key: String, careerId: KeyType, isOpen: Boolean) extends TableRow
+case class Poll(key: String, careerId: KeyType, isOpen: Boolean) extends TableRow {
+  lazy val career = careerPolls.right(this)
+  lazy val offers = pollPollOfferOptions.left(this)
+}
 
 case class OfferOptionBase(offerId: KeyType, isCourse: Boolean) extends TableRow {
   def discriminated: Query[OfferOption] = {
@@ -22,10 +25,18 @@ case class OfferOptionBase(offerId: KeyType, isCourse: Boolean) extends TableRow
 
 case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType)
   extends KeyedEntity[CompositeKey3[KeyType, KeyType, KeyType]] {
-  override def id: CompositeKey3[KeyType, KeyType, KeyType] = Database.compositeKey(pollId, subjectId, offerId)
+  lazy val poll = pollPollOfferOptions.right(this)
+  lazy val subject = subjectPollOfferOptions.right(this)
+  lazy val offer = offerPollOfferOptions.right(this)
+
+  override def id: CompositeKey3[KeyType, KeyType, KeyType] = compositeKey(pollId, subjectId, offerId)
 }
 
-case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) extends TableRow
+case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) extends TableRow {
+  lazy val poll = pollResults.right(this)
+  lazy val student = studentResults.right(this)
+  lazy val selectedOptions = resultPollSelectedOptions.left(this)
+}
 
 case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, offerId: KeyType)
   extends KeyedEntity[CompositeKey3[KeyType, KeyType, KeyType]] {
@@ -33,6 +44,7 @@ case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, offerId
 }
 
 trait OfferOption {
+  this: TableRow =>
   @transient
   @Transient
   val isCourse: Boolean
@@ -40,6 +52,8 @@ trait OfferOption {
   @transient
   @Transient
   val textValue: String
+
+  def base: Query[OfferOptionBase] = from(offers)(baseOffer => where(baseOffer.isCourse === isCourse and baseOffer.offerId === id) select baseOffer)
 }
 
 case class NonCourseOption(textValue: String) extends TableRow with OfferOption {

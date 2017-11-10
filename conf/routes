@@ -4,3 +4,5 @@
 # ~~~~
 
 GET     /seed                       ar.edu.unq.arqsoft.controllers.InitController.seedDatabase
+GET     /students                   ar.edu.unq.arqsoft.controllers.StudentController.all
+POST    /students                   ar.edu.unq.arqsoft.controllers.StudentController.create

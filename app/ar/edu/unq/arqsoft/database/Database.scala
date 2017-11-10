@@ -1,5 +1,6 @@
 package ar.edu.unq.arqsoft.database
 
+import ar.edu.unq.arqsoft.model.Student
 import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory
 
@@ -27,5 +28,10 @@ trait InscriptionPollHelpers extends Database {
 
   def seed() = inTransaction {
     init()
+    students.insert(List(
+      Student(123,"123@asd.com","asd","dsa"),
+      Student(456,"456@asd.com","asd","dsa"),
+      Student(789,"789@asd.com","asd","dsa")
+    ))
   }
 }

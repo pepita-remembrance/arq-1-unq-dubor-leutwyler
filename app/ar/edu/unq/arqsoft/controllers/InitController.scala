@@ -8,7 +8,7 @@ import play.api.mvc.{AbstractController, ControllerComponents}
 @Singleton
 class InitController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
-  def seedDatabase() = Action {
+  def seedDatabase = Action {
     Database.seed()
     Ok("Database seeded")
   }

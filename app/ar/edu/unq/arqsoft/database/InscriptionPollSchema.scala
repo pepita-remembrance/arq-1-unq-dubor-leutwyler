@@ -91,8 +91,8 @@ abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper)
 
   on(students)(s =>
     declare(
-      s.fileNumber is(unique, indexed("idxFileNumber")),
-      s.email is(unique, indexed("idxEmail"))
+      s.fileNumber is(unique, indexed("idxStudentFileNumber")),
+      s.email is(unique, indexed("idxStudentEmail"))
     )
   )
 
