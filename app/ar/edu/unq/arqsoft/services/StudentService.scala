@@ -4,15 +4,13 @@ import javax.inject.{Inject, Singleton}
 
 import ar.edu.unq.arqsoft.DAOs.StudentDAO
 import ar.edu.unq.arqsoft.api.{CreateStudentDTO, PartialStudentDTO, StudentDTO}
-import ar.edu.unq.arqsoft.database.DSLFlavor.inTransaction
-import ar.edu.unq.arqsoft.mappings.dto.OutputDTOMappings
 import ar.edu.unq.arqsoft.model.Student
 
 @Singleton
-class StudentService @Inject()(studentDAO: StudentDAO) extends OutputDTOMappings {
+class StudentService @Inject()(studentDAO: StudentDAO) extends Service[Student] {
 
   def create(dto: CreateStudentDTO): StudentDTO = inTransaction {
-    val newStudent = asModel(dto)
+    val newStudent = dto.asModel
     studentDAO.save(newStudent)
     newStudent
   }
@@ -20,8 +18,5 @@ class StudentService @Inject()(studentDAO: StudentDAO) extends OutputDTOMappings
   def all: Iterable[PartialStudentDTO] = inTransaction {
     studentDAO.all.mapAs[PartialStudentDTO]
   }
-
-  def asModel(dto: CreateStudentDTO): Student =
-    Student(dto.fileNumber, dto.email, dto.name, dto.surname)
 
 }

@@ -4,15 +4,13 @@ import javax.inject.{Inject, Singleton}
 
 import ar.edu.unq.arqsoft.DAOs.CareerDAO
 import ar.edu.unq.arqsoft.api.{CareerDTO, CreateCareerDTO, PartialCareerDTO}
-import ar.edu.unq.arqsoft.database.DSLFlavor.inTransaction
-import ar.edu.unq.arqsoft.mappings.dto.OutputDTOMappings
 import ar.edu.unq.arqsoft.model.Career
 
 @Singleton
-class CareerService @Inject()(careerDAO: CareerDAO, subjectService: SubjectService) extends OutputDTOMappings {
+class CareerService @Inject()(careerDAO: CareerDAO, subjectService: SubjectService) extends Service[Career] {
 
   def create(dto: CreateCareerDTO): CareerDTO = inTransaction {
-    val newCareer = asModel(dto)
+    val newCareer = dto.asModel
     careerDAO.save(newCareer)
     dto.subjects.map(subjectService.create(newCareer, _))
     newCareer
@@ -21,8 +19,4 @@ class CareerService @Inject()(careerDAO: CareerDAO, subjectService: SubjectServi
   def all: Iterable[PartialCareerDTO] = inTransaction {
     careerDAO.all.mapAs[PartialCareerDTO]
   }
-
-  def asModel(dto: CreateCareerDTO): Career =
-    Career(dto.shortName, dto.longName)
-
 }

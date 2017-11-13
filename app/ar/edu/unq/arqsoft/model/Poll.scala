@@ -43,7 +43,7 @@ case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, offerId
   override def id: CompositeKey3[KeyType, KeyType, KeyType] = compositeKey(pollResultId, subjectId, offerId)
 }
 
-trait OfferOption {
+trait OfferOption extends KeyedEntity[KeyType] {
   this: TableRow =>
   @transient
   @Transient

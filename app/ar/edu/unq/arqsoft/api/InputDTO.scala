@@ -16,7 +16,7 @@ case class CreateSubjectDTO(shortName: String, longName: String) extends InputDT
 
 case class CreatePollDTO(key: String, offer: Option[Map[SubjectShortName, CreateOfferOptionDTO]]) extends InputDTO
 
-trait CreateOfferOptionDTO extends InputDTO
+sealed abstract class CreateOfferOptionDTO extends InputDTO
 
 case class CreateNonCourseDTO(textValue: String) extends CreateOfferOptionDTO
 

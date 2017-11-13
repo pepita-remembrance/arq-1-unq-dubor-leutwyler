@@ -4,7 +4,63 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.model._
-import org.squeryl.Query
+import org.squeryl.{KeyedEntity, Query}
+
+trait DTOMappings
+  extends OutputDTOMappings
+    with InputDTOMappings
+
+trait InputDTOMappings {
+
+  implicit class StudentConverter(dto: CreateStudentDTO) extends ModelConverter0[CreateStudentDTO, Student](dto) {
+    override def asModel: Student =
+      Student(dto.fileNumber, dto.email, dto.name, dto.surname)
+  }
+
+  implicit class CareerConverter(dto: CreateCareerDTO) extends ModelConverter0[CreateCareerDTO, Career](dto) {
+    override def asModel: Career =
+      Career(dto.shortName, dto.longName)
+  }
+
+  implicit class SubjectConverter(dto: CreateSubjectDTO) extends ModelConverter1[CreateSubjectDTO, Subject](dto) {
+    override type Extra1 = Career
+
+    override def asModel(extra1: Career): Subject =
+      Subject(extra1.id, dto.shortName, dto.longName)
+  }
+
+  implicit class PollConverter(dto: CreatePollDTO) extends ModelConverter1[CreatePollDTO, Poll](dto) {
+    override type Extra1 = Career
+
+    override def asModel(extra1: Career): Poll =
+      Poll(dto.key, extra1.id, isOpen = true)
+  }
+
+  implicit class OfferOptionConverter(dto: CreateOfferOptionDTO) extends ModelConverter0[CreateOfferOptionDTO, OfferOption](dto) {
+    override def asModel: OfferOption = dto match {
+      case dto: CreateCourseDTO => dto.asModel
+      case dto: CreateNonCourseDTO => dto.asModel
+    }
+  }
+
+  implicit class NonCourseConverter(dto: CreateNonCourseDTO) extends ModelConverter0[CreateNonCourseDTO, NonCourseOption](dto) {
+    override def asModel: NonCourseOption =
+      NonCourseOption(dto.textValue)
+  }
+
+  implicit class CourseConverter(dto: CreateCourseDTO) extends ModelConverter0[CreateCourseDTO, Course](dto) {
+    override def asModel: Course =
+      Course(dto.shortName)
+  }
+
+  implicit class ScheduleConverter(dto: CreateScheduleDTO) extends ModelConverter1[CreateScheduleDTO, Schedule](dto) {
+    override type Extra1 = Course
+
+    override def asModel(extra1: Course): Schedule =
+      Schedule(extra1.id, Day(dto.day), dto.fromHour, dto.fromMinutes, dto.toHour, dto.toMinutes)
+  }
+
+}
 
 trait OutputDTOMappings {
 
@@ -91,3 +147,30 @@ trait OutputDTOMappings {
     StudentDTO(student.fileNumber, student.email, student.name, student.surname, student.careers.mapAs[PartialCareerDTO], student.results.mapAs[PartialPollResultDTO])
 
 }
+
+
+abstract class ModelConverter0[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
+  def asModel: Model
+}
+
+abstract class ModelConverter1[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
+  type Extra1 <: TableRow
+
+  def asModel(extra1: Extra1): Model
+}
+
+abstract class ModelConverter2[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
+  type Extra1 <: TableRow
+  type Extra2 <: TableRow
+
+  def asModel(extra1: Extra1, extra2: Extra2): Model
+}
+
+abstract class ModelConverter3[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
+  type Extra1 <: TableRow
+  type Extra2 <: TableRow
+  type Extra3 <: TableRow
+
+  def asModel(extra1: Extra1, extra2: Extra2, extra3: Extra3): Model
+}
+
