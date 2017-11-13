@@ -1,38 +1,38 @@
 package ar.edu.unq.arqsoft.database
 
-import ar.edu.unq.arqsoft.model.{Career, Student}
+import javax.inject.{Inject, Singleton}
+
+import ar.edu.unq.arqsoft.api.CreateStudentDTO
+import ar.edu.unq.arqsoft.services.StudentService
 import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory
 
-object Database extends ToyDatabase with H2Connector
-
-trait Database extends InscriptionPollSchema {
-  this: DBConnector =>
+@Singleton
+class Database @Inject()(connector: H2Connector) extends DemoDatabase with SeedData {
 
   DateTimeZone.setDefault(DateTimeZone.forOffsetHours(-3)) // Buenos Aires
-  SessionFactory.concreteFactory = sessionCreator
+  SessionFactory.concreteFactory = connector.sessionCreator
+  init()
 }
 
-trait ToyDatabase extends Database with SeedData {
-  this: DBConnector =>
-  def init = inTransaction {
-    drop
-    create
+trait DemoDatabase {
+  def init(): Unit = DSLFlavor.inTransaction {
+    InscriptionPollSchema.drop
+    InscriptionPollSchema.create
   }
-
-  init
-  seed
 }
 
 trait SeedData {
+  @Inject
+  var studentService: StudentService = _
 
-  def seed = {
+  def seed(): Unit = {
     List(
-      Student(123, "marcogomez@gmail.com", "Marco", "Gomez"),
-      Student(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
-    )
-    List(
-      Career("TPI", "Tecnicatura Universitaria en Programacion Informatica")
-    )
+      CreateStudentDTO(123, "marcogomez@gmail.com", "Marco", "Gomez"),
+      CreateStudentDTO(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
+    ).map(studentService.create(_))
+    //    List(
+    //      Career("TPI", "Tecnicatura Universitaria en Programacion Informatica")
+    //    )
   }
 }

@@ -2,14 +2,15 @@ package ar.edu.unq.arqsoft.DAOs
 
 import javax.inject.Singleton
 
-import ar.edu.unq.arqsoft.database.Database._
+import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
+import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
-import org.squeryl.dsl.QueryDsl
+import org.squeryl.dsl.CompositeKey3
 import org.squeryl.{CanLookup, KeyedEntityDef, Table}
 
 class ModelDAO[T](table: Table[T])
-                 (implicit dsl: QueryDsl, ked: KeyedEntityDef[T, KeyType], toCanLookup: KeyType => CanLookup)
+                 (implicit ked: KeyedEntityDef[T, KeyType], toCanLookup: KeyType => CanLookup)
   extends SquerylDAO[T, KeyType](table, None)
 
 @Singleton
@@ -37,10 +38,10 @@ class ScheduleDAO extends ModelDAO[Schedule](schedules)
 class PollDAO extends ModelDAO[Poll](polls)
 
 @Singleton
-class PollOfferOptionDAO extends ModelDAO[PollOfferOption](pollOfferOptions)
-
-@Singleton
 class PollResultDAO extends ModelDAO[PollResult](results)
 
 @Singleton
-class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOptions)
+class PollOfferOptionDAO extends SquerylDAO[PollOfferOption, CompositeKey3[KeyType, KeyType, KeyType]](pollOfferOptions, None)
+
+@Singleton
+class PollSelectedOptionDAO extends SquerylDAO[PollSelectedOption, CompositeKey3[KeyType, KeyType, KeyType]](pollSelectedOptions, None)

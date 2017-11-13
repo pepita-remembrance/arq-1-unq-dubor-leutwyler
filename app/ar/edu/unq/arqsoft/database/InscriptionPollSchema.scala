@@ -32,7 +32,10 @@ trait DSLFlavor extends PrimitiveTypeMode with PrimitiveJodaTimeSupport
 
 object DSLFlavor extends DSLFlavor
 
-abstract class InscriptionPollSchema extends Schema()(DSLFlavor.thisFieldMapper) with DSLFlavor {
+import DSLFlavor._ //This import provides the implicit FieldMapper for Schema.
+
+object InscriptionPollSchema extends Schema {
+
 
   val students = table[Student]
   val careers = table[Career]

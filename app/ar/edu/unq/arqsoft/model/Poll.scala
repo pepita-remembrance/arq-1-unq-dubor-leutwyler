@@ -1,41 +1,41 @@
 package ar.edu.unq.arqsoft.model
 
-import ar.edu.unq.arqsoft.database.Database
+import ar.edu.unq.arqsoft.database.InscriptionPollSchema
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
 import org.squeryl.annotations.Transient
 import org.squeryl.dsl.CompositeKey3
-import Database._
+import ar.edu.unq.arqsoft.database.DSLFlavor._
 
 case class Poll(key: String, careerId: KeyType, isOpen: Boolean) extends TableRow {
-  lazy val career = careerPolls.right(this)
-  lazy val offers = pollPollOfferOptions.left(this)
+  lazy val career = InscriptionPollSchema.careerPolls.right(this)
+  lazy val offers = InscriptionPollSchema.pollPollOfferOptions.left(this)
 }
 
 case class OfferOptionBase(offerId: KeyType, isCourse: Boolean) extends TableRow {
   def discriminated: Query[OfferOption] = {
     if (isCourse) {
-      from(courses)(c => where(c.id === offerId) select c)
+      from(InscriptionPollSchema.courses)(c => where(c.id === offerId) select c)
     } else {
-      from(nonCourses)(c => where(c.id === offerId) select c)
+      from(InscriptionPollSchema.nonCourses)(c => where(c.id === offerId) select c)
     }
   }
 }
 
 case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType)
   extends KeyedEntity[CompositeKey3[KeyType, KeyType, KeyType]] {
-  lazy val poll = pollPollOfferOptions.right(this)
-  lazy val subject = subjectPollOfferOptions.right(this)
-  lazy val offer = offerPollOfferOptions.right(this)
+  lazy val poll = InscriptionPollSchema.pollPollOfferOptions.right(this)
+  lazy val subject = InscriptionPollSchema.subjectPollOfferOptions.right(this)
+  lazy val offer = InscriptionPollSchema.offerPollOfferOptions.right(this)
 
   override def id: CompositeKey3[KeyType, KeyType, KeyType] = compositeKey(pollId, subjectId, offerId)
 }
 
 case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) extends TableRow {
-  lazy val poll = pollResults.right(this)
-  lazy val student = studentResults.right(this)
-  lazy val selectedOptions = resultPollSelectedOptions.left(this)
+  lazy val poll = InscriptionPollSchema.pollResults.right(this)
+  lazy val student = InscriptionPollSchema.studentResults.right(this)
+  lazy val selectedOptions = InscriptionPollSchema.resultPollSelectedOptions.left(this)
 }
 
 case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, offerId: KeyType)
@@ -53,7 +53,7 @@ trait OfferOption {
   @Transient
   val textValue: String
 
-  def base: Query[OfferOptionBase] = from(offers)(baseOffer => where(baseOffer.isCourse === isCourse and baseOffer.offerId === id) select baseOffer)
+  def base: Query[OfferOptionBase] = from(InscriptionPollSchema.offers)(baseOffer => where(baseOffer.isCourse === isCourse and baseOffer.offerId === id) select baseOffer)
 }
 
 case class NonCourseOption(textValue: String) extends TableRow with OfferOption {

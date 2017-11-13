@@ -1,7 +1,8 @@
 package ar.edu.unq.arqsoft.mappings.dto
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.database.Database._
+import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
+import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.model._
 import org.squeryl.Query
 

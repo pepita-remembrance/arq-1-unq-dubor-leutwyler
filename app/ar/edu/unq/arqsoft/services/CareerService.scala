@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import ar.edu.unq.arqsoft.DAOs.CareerDAO
 import ar.edu.unq.arqsoft.api.{CareerDTO, CreateCareerDTO, PartialCareerDTO}
-import ar.edu.unq.arqsoft.database.Database.inTransaction
+import ar.edu.unq.arqsoft.database.DSLFlavor.inTransaction
 import ar.edu.unq.arqsoft.mappings.dto.OutputDTOMappings
 import ar.edu.unq.arqsoft.model.Career
 

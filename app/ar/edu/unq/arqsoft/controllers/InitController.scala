@@ -6,10 +6,10 @@ import ar.edu.unq.arqsoft.database.Database
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 @Singleton
-class InitController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class InitController @Inject()(cc: ControllerComponents, database: Database) extends AbstractController(cc) {
 
   def seedDatabase = Action {
-    Database.seed()
+    database.seed()
     Ok("Database seeded")
   }
 
