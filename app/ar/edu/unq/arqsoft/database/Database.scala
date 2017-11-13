@@ -8,7 +8,7 @@ import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory
 
 @Singleton
-class Database @Inject()(connector: H2Connector) extends DemoDatabase with SeedData {
+class Database @Inject()(connector: DBConnector) extends DemoDatabase with SeedData {
 
   DateTimeZone.setDefault(DateTimeZone.forOffsetHours(-3)) // Buenos Aires
   SessionFactory.concreteFactory = connector.sessionCreator
