@@ -1,14 +1,18 @@
 package ar.edu.unq.arqsoft.mappings.dto
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.database.Database._
+import ar.edu.unq.arqsoft.model._
 import org.squeryl.Query
 
-trait DTOMappings {
+trait OutputDTOMappings {
 
   implicit class QueryConverter[A](query: Query[A]) {
     def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
+  }
+
+  implicit class IterableConverter[A](iterable: Iterable[A]) {
+    def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
   }
 
   implicit def queryOfferOptionBaseToDTO(query: Query[PollOfferOption]): OutputAlias.CareerOfferDTO = {
@@ -18,7 +22,7 @@ trait DTOMappings {
         on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === c.id)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     val subjectWithNonCourse = join(query, subjects, offers, nonCourses)((poo, s, o, nc) =>
-      where(o.isCourse === true)
+      where(o.isCourse === false)
         select(s.shortName, nc)
         on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === nc.id)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
@@ -34,7 +38,7 @@ trait DTOMappings {
         on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === c.id)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     val subjectWithNonCourse = join(query, subjects, offers, nonCourses)((poo, s, o, nc) =>
-      where(o.isCourse === true)
+      where(o.isCourse === false)
         select(s.shortName, nc)
         on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === nc.id)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
@@ -81,5 +85,8 @@ trait DTOMappings {
 
   implicit def pollResultToDTO(pollResult: PollResult): PollResultDTO =
     PollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate, pollResult.selectedOptions)
+
+  implicit def studentToDTO(student: Student): StudentDTO =
+    StudentDTO(student.fileNumber, student.email, student.name, student.surname, student.careers.mapAs[PartialCareerDTO], student.results.mapAs[PartialPollResultDTO])
 
 }

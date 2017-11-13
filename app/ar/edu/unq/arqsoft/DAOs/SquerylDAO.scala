@@ -22,8 +22,11 @@ abstract class SquerylDAO[T, K](table: Table[T], _entityName: Option[String])(im
       }
     )
 
-  def save(entity: T): T =
+  def save(entity: T): Unit =
     table.insert(entity)
+
+  def save(entities: Iterable[T]): Unit =
+    table.insert(entities)
 
   def update(entity: T): Unit =
     table.update(entity)

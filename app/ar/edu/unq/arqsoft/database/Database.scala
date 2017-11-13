@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.database
 
-import ar.edu.unq.arqsoft.model.Student
+import ar.edu.unq.arqsoft.model.{Career, Student}
 import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory
 
@@ -13,25 +13,26 @@ trait Database extends InscriptionPollSchema {
   SessionFactory.concreteFactory = sessionCreator
 }
 
-trait ToyDatabase extends Database with InscriptionPollHelpers {
+trait ToyDatabase extends Database with SeedData {
   this: DBConnector =>
-  seed()
-}
-
-trait InscriptionPollHelpers extends Database {
-  this: DBConnector =>
-
-  def init() = inTransaction {
+  def init = inTransaction {
     drop
     create
   }
 
-  def seed() = inTransaction {
-    init()
-    students.insert(List(
-      Student(123,"123@asd.com","asd","dsa"),
-      Student(456,"456@asd.com","asd","dsa"),
-      Student(789,"789@asd.com","asd","dsa")
-    ))
+  init
+  seed
+}
+
+trait SeedData {
+
+  def seed = {
+    List(
+      Student(123, "marcogomez@gmail.com", "Marco", "Gomez"),
+      Student(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
+    )
+    List(
+      Career("TPI", "Tecnicatura Universitaria en Programacion Informatica")
+    )
   }
 }

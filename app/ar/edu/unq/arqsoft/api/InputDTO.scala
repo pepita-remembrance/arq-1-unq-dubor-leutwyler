@@ -14,7 +14,7 @@ case class CreateCareerDTO(shortName: String, longName: String, subjects: Option
 
 case class CreateSubjectDTO(shortName: String, longName: String) extends InputDTO
 
-case class CreatePollDTO(key: String, offer: Option[Map[SubjectShortName, CreateOfferOptionDTO]])
+case class CreatePollDTO(key: String, offer: Option[Map[SubjectShortName, CreateOfferOptionDTO]]) extends InputDTO
 
 trait CreateOfferOptionDTO extends InputDTO
 
