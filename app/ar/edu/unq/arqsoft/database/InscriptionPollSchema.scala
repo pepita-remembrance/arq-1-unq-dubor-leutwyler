@@ -119,7 +119,7 @@ object InscriptionPollSchema extends Schema {
 
   on(subjects)(s =>
     declare(
-      s.shortName is indexed("idxSubjectShortName")
+      columns(s.careerId, s.shortName) are(unique, indexed("idxCarrerSubjectShortName"))
     )
   )
 
