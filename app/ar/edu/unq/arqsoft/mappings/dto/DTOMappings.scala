@@ -118,7 +118,7 @@ trait OutputDTOMappings {
     SubjectDTO(subject.shortName, subject.longName)
 
   implicit def scheduleToDTO(schedule: Schedule): ScheduleDTO =
-    ScheduleDTO(schedule.day.id, schedule.fromHour, schedule.fromMinutes, schedule.toHour, schedule.toMinutes)
+    ScheduleDTO(schedule.day, schedule.fromHour, schedule.fromMinutes, schedule.toHour, schedule.toMinutes)
 
   implicit def courseToDTO(course: Course): CourseDTO =
     CourseDTO(course.shortName, course.schedules.mapAs[ScheduleDTO])

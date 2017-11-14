@@ -16,10 +16,10 @@ case class CreateSubjectDTO(shortName: String, longName: String) extends InputDT
 
 case class CreatePollDTO(key: String, offer: Option[Map[SubjectShortName, List[CreateOfferOptionDTO]]]) extends InputDTO
 
-sealed abstract class CreateOfferOptionDTO extends InputDTO
+sealed abstract class CreateOfferOptionDTO(val isCourse: Boolean) extends InputDTO
 
-case class CreateNonCourseDTO(textValue: String) extends CreateOfferOptionDTO
+case class CreateNonCourseDTO(textValue: String) extends CreateOfferOptionDTO(false)
 
-case class CreateCourseDTO(shortName: String, schedule: List[CreateScheduleDTO]) extends CreateOfferOptionDTO
+case class CreateCourseDTO(shortName: String, schedule: List[CreateScheduleDTO]) extends CreateOfferOptionDTO(true)
 
 case class CreateScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends InputDTO

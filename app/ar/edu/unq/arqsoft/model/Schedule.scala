@@ -3,7 +3,12 @@ package ar.edu.unq.arqsoft.model
 import ar.edu.unq.arqsoft.model.Day.Day
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 
-case class Schedule(courseId: KeyType, day: Day, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends TableRow
+case class Schedule(courseId: KeyType, day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends TableRow
+
+object Schedule {
+  def apply(courseId: KeyType, day: Day, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int): Schedule =
+    Schedule(courseId, day.id, fromHour, fromMinutes, toHour, toMinutes)
+}
 
 object Day extends Enumeration {
   type Day = Value

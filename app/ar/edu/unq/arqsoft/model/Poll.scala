@@ -23,6 +23,12 @@ case class OfferOptionBase(offerId: KeyType, isCourse: Boolean) extends TableRow
   }
 }
 
+object OfferOptionBase {
+  def apply(course: Course): OfferOptionBase = new OfferOptionBase(course.id, true)
+
+  def apply(nonCourse: NonCourseOption): OfferOptionBase = new OfferOptionBase(nonCourse.id, false)
+}
+
 case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType)
   extends KeyedEntity[CompositeKey3[KeyType, KeyType, KeyType]] {
   lazy val poll = InscriptionPollSchema.pollPollOfferOptions.right(this)
@@ -60,8 +66,13 @@ case class NonCourseOption(textValue: String) extends TableRow with OfferOption 
   val isCourse: Boolean = false
 }
 
-object NotYet extends NonCourseOption("Aun no voy a cursar")
-
-object AlreadyPassed extends NonCourseOption("Ya aprobe")
-
-object NoSuitableCourse extends NonCourseOption("Ningun horario me sirve")
+object DefaultOption {
+  val notYet = NonCourseOption("Aun no voy a cursar")
+  val alreadyPassed = NonCourseOption("Ya aprobe")
+  val noSuitableCourse = NonCourseOption("Ningun horario me sirve")
+  val defaults = List(
+    notYet,
+    alreadyPassed,
+    noSuitableCourse
+  )
+}
