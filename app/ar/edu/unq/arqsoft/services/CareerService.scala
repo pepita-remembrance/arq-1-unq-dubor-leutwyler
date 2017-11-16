@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.services
 
-import javax.inject.{Inject, Singleton}
+import com.google.inject.{Inject, Singleton}
 
 import ar.edu.unq.arqsoft.DAOs.{CareerDAO, StudentDAO, SubjectDAO}
 import ar.edu.unq.arqsoft.api.{CareerDTO, CreateCareerDTO, PartialCareerDTO}

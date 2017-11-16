@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.database
 
-import javax.inject.{Inject, Singleton}
+import com.google.inject.{Inject, Singleton}
 
 import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory

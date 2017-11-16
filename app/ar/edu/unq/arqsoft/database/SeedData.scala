@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.database
 
-import javax.inject.Inject
+import com.google.inject.Inject
 
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.logging.Logging

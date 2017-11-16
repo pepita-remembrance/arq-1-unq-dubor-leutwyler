@@ -1,11 +1,9 @@
 package ar.edu.unq.arqsoft.services
 
-import javax.inject.{Inject, Singleton}
-
 import ar.edu.unq.arqsoft.DAOs._
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.model._
+import com.google.inject.{Inject, Singleton}
 
 @Singleton
 class PollService @Inject()(pollDAO: PollDAO,
@@ -16,15 +14,14 @@ class PollService @Inject()(pollDAO: PollDAO,
                             offerDAO: OfferDAO,
                             pollOfferOptionDAO: PollOfferOptionDAO,
                             scheduleDAO: ScheduleDAO
-                           )
-  extends Service {
+                           ) extends Service {
 
   def create(careerShortName: String, dto: CreatePollDTO): PollDTO = inTransaction {
     val career = careerDAO.whereShortName(careerShortName).single
     val newPoll = dto.asModel(career)
     pollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
-      val subjects = career.subjects.where(_.shortName in offerMap.keys).toList
+      val subjects = subjectDAO.whereCareerAndShortNameIn(career, offerMap.keys).toList
       val nonCourses = createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
       val offer = offerMap.flatMap {
         case (subjectShortName, options) =>
@@ -56,11 +53,7 @@ class PollService @Inject()(pollDAO: PollDAO,
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Iterable[(NonCourseOption, OfferOptionBase)] = inTransaction {
-    val existingOffer = join(
-      nonCourseDAO.whereTextValueIn(nonCoursesDTO.map(_.textValue)),
-      offerDAO.nonCourses)((nc, o) =>
-      select(nc, o)
-        on (nc.id === o.offerId)).toList
+    val existingOffer = offerDAO.nonCourses.toList
     val existingTextValues = existingOffer.map(_._1.textValue)
     val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.textValue)).map(_.asModel)
     nonCourseDAO.save(toCreate, useBulk = false)

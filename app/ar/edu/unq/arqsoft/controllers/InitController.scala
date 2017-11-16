@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.controllers
 
-import javax.inject.{Inject, Singleton}
+import com.google.inject.{Inject, Singleton}
 
 import ar.edu.unq.arqsoft.database.Database
 import play.api.mvc.{AbstractController, ControllerComponents}

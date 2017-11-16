@@ -1,9 +1,9 @@
 package ar.edu.unq.arqsoft.DAOs
 
-import javax.inject.Singleton
-
+import com.google.inject.Singleton
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.database.DSLFlavor._
+import ar.edu.unq.arqsoft.database.InscriptionPollSchema
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import org.squeryl.dsl.CompositeKey3
@@ -24,13 +24,25 @@ class CareerDAO extends ModelDAO[Career](careers) {
 }
 
 @Singleton
-class SubjectDAO extends ModelDAO[Subject](subjects)
+class SubjectDAO extends ModelDAO[Subject](subjects) {
+  def whereCareerAndShortNameIn(career: Career, shortNames: Iterable[String]): Query[Subject] =
+    career.subjects.where(_.shortName in shortNames)(dsl)
+}
 
 @Singleton
 class OfferDAO extends ModelDAO[OfferOptionBase](offers) {
-  def courses: Query[OfferOptionBase] = where(_.isCourse === true)
+  def courses: Query[(Course, OfferOptionBase)] =
+    join(where(_.isCourse === true), InscriptionPollSchema.courses)((o, c) =>
+      select((c, o))
+        on (o.offerId === c.id)
+    )
 
-  def nonCourses: Query[OfferOptionBase] = where(_.isCourse === false)
+  def nonCourses: Query[(NonCourseOption, OfferOptionBase)] =
+    join(where(_.isCourse === false), InscriptionPollSchema.nonCourses)((o, nc) =>
+      select((nc, o))
+        on (o.offerId === nc.id)
+    )
+
 }
 
 @Singleton
@@ -50,7 +62,12 @@ class ScheduleDAO extends ModelDAO[Schedule](schedules)
 class PollDAO extends ModelDAO[Poll](polls)
 
 @Singleton
-class PollResultDAO extends ModelDAO[PollResult](results)
+class PollResultDAO extends ModelDAO[PollResult](results) {
+  def whereStudent(fileNumber: Int): Query[PollResult] = join(students, results)((s, r) =>
+    select(r)
+      on (s.id === r.studentId)
+  )
+}
 
 @Singleton
 class PollOfferOptionDAO extends SquerylDAO[PollOfferOption, CompositeKey3[KeyType, KeyType, KeyType]](pollOfferOptions, None)

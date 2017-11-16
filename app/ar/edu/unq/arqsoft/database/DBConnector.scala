@@ -1,7 +1,7 @@
 package ar.edu.unq.arqsoft.database
 
 import java.sql.DriverManager
-import javax.inject.{Inject, Singleton}
+import com.google.inject.{Inject, Singleton}
 
 import org.squeryl.adapters.H2Adapter
 import org.squeryl.{AbstractSession, Session}
