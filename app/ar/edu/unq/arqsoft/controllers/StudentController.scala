@@ -4,10 +4,7 @@ import com.google.inject.{Inject, Singleton}
 import ar.edu.unq.arqsoft.api.CreateStudentDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.services.{PollResultService, StudentService}
-import play.api.libs.json.Json
 import play.api.mvc._
-
-import scala.util.Try
 
 @Singleton
 class StudentController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
@@ -16,16 +13,17 @@ class StudentController @Inject()(cc: ControllerComponents, parse: PlayBodyParse
                                  )
   extends BasicController(cc, parse) with PlayJsonDTOFormats {
 
-  def create: Action[CreateStudentDTO] = Action(validateJson[CreateStudentDTO]) { implicit request: Request[CreateStudentDTO] =>
-    Ok(Json.toJson(Try(studentService.create(request.body)).get))
+  def create = JsonActionWithBody[CreateStudentDTO] {
+    implicit request: Request[CreateStudentDTO] =>
+      studentService.create(request.body)
   }
 
-  def all = Action {
-    Ok(Json.toJson(Try(studentService.all).get))
+  def all = JsonAction {
+    studentService.all
   }
 
-  def get(fileNumber: Int) = Action {
-    Ok(Json.toJson(Try(studentService.byFileNumber(fileNumber)).get))
+  def get(fileNumber: Int) = JsonAction {
+    studentService.byFileNumber(fileNumber)
   }
 
 }
