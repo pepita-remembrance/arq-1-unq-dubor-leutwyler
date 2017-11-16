@@ -15,7 +15,7 @@ abstract class SquerylDAO[T, K](table: Table[T], _entityName: Option[String])(im
   def find(key: K): Query[T] =
     all.where(entity => createEqualityExpression(ked.getId(entity), key, toCanLookup(key)))
 
-  def search(fields: (T => LogicalBoolean)*): Query[T] =
+  def where(fields: (T => LogicalBoolean)*): Query[T] =
     all.where(
       fields.fold((entity => TrueLogicalBoolean): T => LogicalBoolean) {
         case (expr1, expr2) => entity: T => expr1(entity).and(expr2(entity))
@@ -25,9 +25,8 @@ abstract class SquerylDAO[T, K](table: Table[T], _entityName: Option[String])(im
   def save(entity: T): Unit =
     table.insert(entity)
 
-  def save(entities: Iterable[T]): Unit =
-  //    table.insert(entities)
-    entities.foreach(save)
+  def save(entities: Iterable[T], useBulk: Boolean = true): Unit =
+    if (useBulk) table.insert(entities) else entities.foreach(save)
 
   def update(entity: T): Unit =
     table.update(entity)

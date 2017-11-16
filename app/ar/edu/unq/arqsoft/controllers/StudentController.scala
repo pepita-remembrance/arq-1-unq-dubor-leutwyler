@@ -22,4 +22,8 @@ class StudentController @Inject()(cc: ControllerComponents, parse: PlayBodyParse
     Ok(Json.toJson(Try(studentService.all).get))
   }
 
+  def get(fileNumber: Int) = Action {
+    Ok(Json.toJson(Try(studentService.byFileNumber(fileNumber)).get))
+  }
+
 }

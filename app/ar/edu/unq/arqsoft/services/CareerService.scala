@@ -2,12 +2,12 @@ package ar.edu.unq.arqsoft.services
 
 import javax.inject.{Inject, Singleton}
 
-import ar.edu.unq.arqsoft.DAOs.{CareerDAO, SubjectDAO}
+import ar.edu.unq.arqsoft.DAOs.{CareerDAO, StudentDAO, SubjectDAO}
 import ar.edu.unq.arqsoft.api.{CareerDTO, CreateCareerDTO, PartialCareerDTO}
-import ar.edu.unq.arqsoft.model.Career
 
 @Singleton
-class CareerService @Inject()(careerDAO: CareerDAO, subjectDAO: SubjectDAO) extends Service[Career] {
+class CareerService @Inject()(careerDAO: CareerDAO, subjectDAO: SubjectDAO, studentDAO: StudentDAO)
+  extends Service with StudentCareerService{
 
   def create(dto: CreateCareerDTO): CareerDTO = inTransaction {
     val newCareer = dto.asModel
@@ -18,5 +18,12 @@ class CareerService @Inject()(careerDAO: CareerDAO, subjectDAO: SubjectDAO) exte
 
   def all: Iterable[PartialCareerDTO] = inTransaction {
     careerDAO.all.mapAs[PartialCareerDTO]
+  }
+
+  def joinStudent(studentFileNumber: Int, careerShortName: String): CareerDTO = inTransaction {
+    val student = studentDAO.whereFileNumber(studentFileNumber).single
+    val career = careerDAO.whereShortName(careerShortName).single
+    joinCareer(student, career)
+    career
   }
 }

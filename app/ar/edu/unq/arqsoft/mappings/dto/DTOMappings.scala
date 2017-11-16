@@ -106,7 +106,7 @@ trait OutputDTOMappings {
     PartialStudentDTO(student.fileNumber, student.email, student.name, student.surname)
 
   implicit def careerToPartialDTO(career: Career): PartialCareerDTO =
-    PartialCareerDTO(career.shortName, career.shortName)
+    PartialCareerDTO(career.shortName, career.longName)
 
   implicit def pollToPartialDTO(poll: Poll): PartialPollDTO =
     PartialPollDTO(poll.key, poll.isOpen, poll.career.single)

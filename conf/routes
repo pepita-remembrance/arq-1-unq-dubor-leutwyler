@@ -3,6 +3,7 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
-GET     /seed                       ar.edu.unq.arqsoft.controllers.InitController.seedDatabase
-GET     /students                   ar.edu.unq.arqsoft.controllers.StudentController.all
-POST    /students                   ar.edu.unq.arqsoft.controllers.StudentController.create
+GET         /seed                        ar.edu.unq.arqsoft.controllers.InitController.seedDatabase
+GET         /students                    ar.edu.unq.arqsoft.controllers.StudentController.all
+GET         /students/:fileNumber        ar.edu.unq.arqsoft.controllers.StudentController.get(fileNumber :Int)
+POST        /students                    ar.edu.unq.arqsoft.controllers.StudentController.create
