@@ -3,8 +3,18 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
+# Init
 GET         /seed                                                                       ar.edu.unq.arqsoft.controllers.InitController.seedDatabase
+
+# Students
 GET         /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.all
 GET         /students/:studentFileNumber                                                ar.edu.unq.arqsoft.controllers.StudentController.get(studentFileNumber :Int)
 GET         /students/:studentFileNumber/carrers/:careerShortName/polls/:pollKey        ar.edu.unq.arqsoft.controllers.PollResultController.get(studentFileNumber :Int, careerShortName :String, pollKey :String)
 POST        /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.create
+POST        /students/join                                                              ar.edu.unq.arqsoft.controllers.StudentController.createStudentCareer
+
+# Careers
+GET         /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.all
+GET         /careers/:careerShortName                                                   ar.edu.unq.arqsoft.controllers.CareerController.get(careerShortName :String)
+POST        /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.create
+POST        /careers/join                                                               ar.edu.unq.arqsoft.controllers.CareerController.createStudentCareer
