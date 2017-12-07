@@ -1,0 +1,1 @@
+* Realtime logs: `heroku logs --source app --tail`
