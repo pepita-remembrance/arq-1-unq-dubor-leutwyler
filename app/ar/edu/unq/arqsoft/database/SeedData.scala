@@ -70,8 +70,8 @@ trait SeedData extends Logging {
       )))
     ).foreach(careerService.create)
     info("Students join their careers")
-    studentService.joinCareer(123, "TPI")
-    studentService.joinCareer(456, "TPI")
+    studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"))
+    studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"))
     info("Creating poll TPI 2017s2")
     pollService.create("TPI", CreatePollDTO("2017s2", Some(Map(
       // Basicas

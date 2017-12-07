@@ -1,12 +1,11 @@
 package ar.edu.unq.arqsoft.services
 
 import com.google.inject.{Inject, Singleton}
-
 import ar.edu.unq.arqsoft.DAOs.{CareerDAO, StudentDAO}
-import ar.edu.unq.arqsoft.api.{CreateStudentDTO, PartialStudentDTO, StudentDTO}
+import ar.edu.unq.arqsoft.api._
 
 @Singleton
-class StudentService @Inject()(studentDAO: StudentDAO, careerDAO: CareerDAO)
+class StudentService @Inject()(val studentDAO: StudentDAO, val careerDAO: CareerDAO)
   extends Service with StudentCareerService {
 
   def create(dto: CreateStudentDTO): StudentDTO = inTransaction {
@@ -23,11 +22,8 @@ class StudentService @Inject()(studentDAO: StudentDAO, careerDAO: CareerDAO)
     studentDAO.whereFileNumber(fileNumber).single
   }
 
-  def joinCareer(studentFileNumber: Int, careerShortName: String): StudentDTO = inTransaction {
-    val student = studentDAO.whereFileNumber(studentFileNumber).single
-    val career = careerDAO.whereShortName(careerShortName).single
-    joinCareer(student, career)
-    student
+  def joinCareer(dto: CreateStudentCareerDTO): StudentDTO = inTransaction {
+    createStudentCareer(dto)._1
   }
 
 }

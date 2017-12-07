@@ -23,3 +23,5 @@ case class CreateNonCourseDTO(textValue: String) extends CreateOfferOptionDTO(fa
 case class CreateCourseDTO(shortName: String, schedule: List[CreateScheduleDTO]) extends CreateOfferOptionDTO(true)
 
 case class CreateScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends InputDTO
+
+case class CreateStudentCareerDTO(studentFileNumber: Int, careerShortName: String) extends InputDTO
