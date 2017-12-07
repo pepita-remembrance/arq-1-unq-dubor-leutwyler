@@ -1,0 +1,14 @@
+{
+  "name": "ins-poll-review-app",
+  "scripts": {},
+  "env": {},
+  "formation": {},
+  "addons": [
+    "heroku-postgresql"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/scala"
+    }
+  ]
+}
