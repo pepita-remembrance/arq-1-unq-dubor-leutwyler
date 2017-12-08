@@ -1,11 +1,10 @@
 package ar.edu.unq.arqsoft.DAOs
 
-import com.google.inject.Singleton
-import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.database.DSLFlavor._
-import ar.edu.unq.arqsoft.database.InscriptionPollSchema
-import ar.edu.unq.arqsoft.model._
+import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
+import ar.edu.unq.arqsoft.model._
+import com.google.inject.Singleton
 import org.squeryl.dsl.CompositeKey3
 import org.squeryl.{CanLookup, KeyedEntityDef, Query, Table}
 
@@ -17,6 +16,7 @@ class ModelDAO[T](table: Table[T])
 class StudentDAO extends ModelDAO[Student](students) {
   def whereFileNumber(fileNumber: Int): Query[Student] =
     where(_.fileNumber === fileNumber)
+
 }
 
 @Singleton
@@ -27,20 +27,20 @@ class CareerDAO extends ModelDAO[Career](careers) {
 
 @Singleton
 class SubjectDAO extends ModelDAO[Subject](subjects) {
-  def careerSubjects: Career ==> Subject = careerQuery =>
+  def subjectsOf(careerQuery: Query[Career]): Query[Subject] =
     join(careerQuery, subjects)((c, s) =>
       select(s)
         on (c.id === s.careerId)
     )
 
-  def whereShortName(shortNames: Iterable[String]): Career ==> Subject = careerQuery =>
-    careerSubjects(careerQuery).where(_.shortName in shortNames)(dsl)
+  def subjectsOf(careerQuery: Query[Career], shortNames: Iterable[String]): Query[Subject] =
+    subjectsOf(careerQuery).where(_.shortName in shortNames)
 }
 
 @Singleton
 class OfferDAO extends ModelDAO[OfferOptionBase](offers) {
-  def baseOffer: NonCourseOption ==> (NonCourseOption, OfferOptionBase) = ncs =>
-    join(where(_.isCourse === false), ncs)((o, nc) =>
+  def baseOfferOf(nonCourseQuery: Query[NonCourseOption]): Query[(NonCourseOption, OfferOptionBase)] =
+    join(where(_.isCourse === false), nonCourseQuery)((o, nc) =>
       select((nc, o))
         on (o.offerId === nc.id)
     )
@@ -60,22 +60,25 @@ class ScheduleDAO extends ModelDAO[Schedule](schedules)
 
 @Singleton
 class PollDAO extends ModelDAO[Poll](polls) {
-  def careerPolls: Career ==> Poll = careerQuery =>
-    join(careerQuery, polls)((c, p) =>
+  def pollsOf(careerQuery: Query[Career], pollKey: String): Query[Poll] =
+    join(careerQuery, where(_.key === pollKey))((c, p) =>
       select(p)
         on (c.id === p.careerId)
     )
 
-  def whereKey(pollKey: String): Career ==> Poll = careerQuery =>
-    careerPolls(careerQuery).where(_.key === pollKey)(dsl)
+  def pollsOf(careerQuery: Query[Career]): Query[Poll] =
+    join(careerQuery, polls)((c, p) =>
+      select(p)
+        on (c.id === p.careerId)
+    )
 }
 
 @Singleton
 class PollResultDAO extends ModelDAO[PollResult](results) {
-  def studentResults: Student ==> PollResult = studentQuery =>
-    join(studentQuery, results)((s, r) =>
+  def resultsOf(studentQuery: Query[Student], pollQuery: Query[Poll]): Query[PollResult] =
+    join(results, studentQuery, pollQuery)((r, s, p) =>
       select(r)
-        on (s.id === r.studentId)
+        on(r.studentId === s.id, r.pollId === p.id)
     )
 }
 

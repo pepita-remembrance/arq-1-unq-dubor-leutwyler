@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import ar.edu.unq.arqsoft.model._
 import org.joda.time.DateTime
 import org.squeryl.dsl._
-import org.squeryl.{PrimitiveTypeMode, Query, Schema, Table}
+import org.squeryl.{PrimitiveTypeMode, Schema, Table}
 
 trait PrimitiveJodaTimeSupport {
   this: PrimitiveTypeMode =>
@@ -28,24 +28,11 @@ trait PrimitiveJodaTimeSupport {
   implicit def optionJodaTimeToTE(s: Option[DateTime]): TypedExpression[Option[DateTime], TOptionTimestamp] = optionJodaTimeTEF.create(s)
 }
 
-trait QueryExtensions {
-
-  implicit class QueryComposer[T](query: Query[T]) {
-    def join[U](extensionFun: T ==> U): Query[U] =
-      extensionFun(query)
-
-    def add[U](extensionFun: T ==> (T, U)): Query[(T, U)] =
-      extensionFun(query)
-  }
-
-  type ==>[In, Out] = Query[In] => Query[Out]
-}
-
-trait DSLFlavor extends PrimitiveTypeMode with PrimitiveJodaTimeSupport with QueryExtensions
+trait DSLFlavor extends PrimitiveTypeMode with PrimitiveJodaTimeSupport
 
 object DSLFlavor extends DSLFlavor
 
-import DSLFlavor._ //This import provides the implicit FieldMapper for Schema.
+import ar.edu.unq.arqsoft.database.DSLFlavor._ //This import provides the implicit FieldMapper for Schema.
 
 object InscriptionPollSchema extends Schema {
 
@@ -120,13 +107,13 @@ object InscriptionPollSchema extends Schema {
 
   on(polls)(p =>
     declare(
-      columns(p.careerId, p.key) are indexed("idxCareerKey")
+      columns(p.careerId, p.key) are(unique, indexed("idxCareerKey"))
     )
   )
 
   on(results)(r =>
     declare(
-      columns(r.pollId, r.studentId) are indexed("idxStudentPoll")
+      columns(r.pollId, r.studentId) are(unique, indexed("idxStudentPoll"))
     )
   )
 
