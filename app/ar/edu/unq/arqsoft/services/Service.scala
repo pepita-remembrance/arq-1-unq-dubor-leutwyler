@@ -1,11 +1,12 @@
 package ar.edu.unq.arqsoft.services
 
-import ar.edu.unq.arqsoft.database.DSLFlavor
+import ar.edu.unq.arqsoft.DAOs._
+import ar.edu.unq.arqsoft.database.{DSLFlavor, QueryExtensions}
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.mappings.dto.DTOMappings
 import org.squeryl.Query
 
-trait Service extends DTOMappings with Logging {
+trait Service extends DTOMappings with DAOBindings with QueryExtensions with Logging {
 
   def inTransaction[A](a: => A): A = DSLFlavor.inTransaction(a)
 

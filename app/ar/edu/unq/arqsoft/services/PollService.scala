@@ -1,27 +1,18 @@
 package ar.edu.unq.arqsoft.services
 
-import ar.edu.unq.arqsoft.DAOs._
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.model._
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Singleton
 
 @Singleton
-class PollService @Inject()(pollDAO: PollDAO,
-                            careerDAO: CareerDAO,
-                            subjectDAO: SubjectDAO,
-                            courseDAO: CourseDAO,
-                            nonCourseDAO: NonCourseDAO,
-                            offerDAO: OfferDAO,
-                            pollOfferOptionDAO: PollOfferOptionDAO,
-                            scheduleDAO: ScheduleDAO
-                           ) extends Service {
+class PollService extends Service {
 
   def create(careerShortName: String, dto: CreatePollDTO): PollDTO = inTransaction {
-    val career = careerDAO.whereShortName(careerShortName).single
+    val career = CareerDAO.whereShortName(careerShortName).single
     val newPoll = dto.asModel(career)
-    pollDAO.save(newPoll)
+    PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
-      val subjects = subjectDAO.whereCareerAndShortNameIn(career, offerMap.keys).toList
+      val subjects = SubjectDAO.whereCareerAndShortNameIn(career, offerMap.keys).toList
       val nonCourses = createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
       val offer = offerMap.flatMap {
         case (subjectShortName, options) =>
@@ -29,7 +20,7 @@ class PollService @Inject()(pollDAO: PollDAO,
           createOffer(options, nonCourses)
             .map(option => PollOfferOption(newPoll.id, subject.id, option.id))
       }
-      pollOfferOptionDAO.save(offer)
+      PollOfferOptionDAO.save(offer)
     }
     newPoll
   }
@@ -42,23 +33,23 @@ class PollService @Inject()(pollDAO: PollDAO,
 
   protected def createCourses(coursesDTO: Iterable[CreateCourseDTO]): Iterable[(Course, OfferOptionBase)] = inTransaction {
     val courses = coursesDTO.map(dto => (dto.asModel, dto))
-    courseDAO.save(courses.map(_._1), useBulk = false)
+    CourseDAO.save(courses.map(_._1), useBulk = false)
     val schedules = courses.flatMap { case (course, dto) =>
       dto.schedule.map(_.asModel(course))
     }
-    scheduleDAO.save(schedules)
+    ScheduleDAO.save(schedules)
     val coursesOffer = courses.map(_._1).map(course => (course, OfferOptionBase(course)))
-    offerDAO.save(coursesOffer.map(_._2), useBulk = false)
+    OfferDAO.save(coursesOffer.map(_._2), useBulk = false)
     coursesOffer
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Iterable[(NonCourseOption, OfferOptionBase)] = inTransaction {
-    val existingOffer = offerDAO.nonCourses.toList
+    val existingOffer = NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.textValue)).add(OfferDAO.baseOffer).toList
     val existingTextValues = existingOffer.map(_._1.textValue)
     val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.textValue)).map(_.asModel)
-    nonCourseDAO.save(toCreate, useBulk = false)
+    NonCourseDAO.save(toCreate, useBulk = false)
     val toCreateOffer = toCreate.map(nonCourse => (nonCourse, OfferOptionBase(nonCourse)))
-    offerDAO.save(toCreateOffer.map(_._2), useBulk = false)
+    OfferDAO.save(toCreateOffer.map(_._2), useBulk = false)
     existingOffer ++ toCreateOffer
   }
 }
