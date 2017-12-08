@@ -31,7 +31,7 @@ trait PrimitiveJodaTimeSupport {
 trait QueryExtensions {
 
   implicit class QueryComposer[T](query: Query[T]) {
-    def into[U](extensionFun: T ==> U): Query[U] =
+    def join[U](extensionFun: T ==> U): Query[U] =
       extensionFun(query)
 
     def add[U](extensionFun: T ==> (T, U)): Query[(T, U)] =

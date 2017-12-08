@@ -27,8 +27,14 @@ class CareerDAO extends ModelDAO[Career](careers) {
 
 @Singleton
 class SubjectDAO extends ModelDAO[Subject](subjects) {
-  def whereCareerAndShortNameIn(career: Career, shortNames: Iterable[String]): Query[Subject] =
-    career.subjects.where(_.shortName in shortNames)(dsl)
+  def careerSubjects: Career ==> Subject = careerQuery =>
+    join(careerQuery, subjects)((c, s) =>
+      select(s)
+        on (c.id === s.careerId)
+    )
+
+  def whereShortName(shortNames: Iterable[String]): Career ==> Subject = careerQuery =>
+    careerSubjects(careerQuery).where(_.shortName in shortNames)(dsl)
 }
 
 @Singleton
@@ -60,7 +66,7 @@ class PollDAO extends ModelDAO[Poll](polls) {
         on (c.id === p.careerId)
     )
 
-  def withKey(pollKey: String): Career ==> Poll = careerQuery =>
+  def whereKey(pollKey: String): Career ==> Poll = careerQuery =>
     careerPolls(careerQuery).where(_.key === pollKey)(dsl)
 }
 
