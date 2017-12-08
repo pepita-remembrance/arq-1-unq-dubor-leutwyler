@@ -48,7 +48,7 @@ trait PlayInputDTOFormats {
   implicit val createNonCourseDTOReads = Json.reads[CreateNonCourseDTO]
   implicit val createOfferOptionDTOReads = new Reads[CreateOfferOptionDTO] {
     override def reads(json: JsValue): JsResult[CreateOfferOptionDTO] =
-      if ((json \ "schedule").isDefined) {
+      if ((json \ "schedules").isDefined) {
         createCourseDTOReads.reads(json)
       } else {
         createNonCourseDTOReads.reads(json)

@@ -15,6 +15,12 @@ trait SeedData extends Logging {
   @Inject
   var pollService: PollService = _
 
+  val defaultOptions: List[CreateNonCourseDTO] = List(
+    CreateNonCourseDTO("Ya aprobe"),
+    CreateNonCourseDTO("No voy a cursar"),
+    CreateNonCourseDTO("Ningun horario me sirve")
+  )
+
   def seed(): Unit = {
     info("Seeding database...")
     import ar.edu.unq.arqsoft.model.Day.{Friday => Viernes, Monday => Lunes, Saturday => Sabado, Thursday => Jueves, Tuesday => Martes, Wednesday => Miercoles}
@@ -73,7 +79,7 @@ trait SeedData extends Logging {
     studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"))
     studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"))
     info("Creating poll TPI 2017s2")
-    pollService.create("TPI", CreatePollDTO("2017s2", Some(Map(
+    val tpi2017s2Offer = Map(
       // Basicas
       "InPr" -> List(
         CreateCourseDTO("C1", List(
@@ -286,7 +292,8 @@ trait SeedData extends Logging {
       ),
       // TTI/TTU
       "TTI-TTU" -> List(
-        CreateNonCourseDTO("Voy a cursar segun oferta del Departamento de Ciencia y Tecnologia")
+        CreateNonCourseDTO("Voy a cursar TTI segun oferta del Departamento de Ciencia y Tecnologia"),
+        CreateNonCourseDTO("Voy a cursar TTU segun oferta del Departamento de Ciencia y Tecnologia")
       ),
       // Trabajo Final
       "TIP" -> List(
@@ -294,7 +301,8 @@ trait SeedData extends Logging {
           Sabado.from(18).to(13)
         ))
       )
-    ))))
+    ).mapValues(_ ++ defaultOptions)
+    pollService.create("TPI", CreatePollDTO("2017s2", Some(tpi2017s2Offer)))
     info("Done seeding!")
   }
 

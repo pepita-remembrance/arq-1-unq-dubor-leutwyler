@@ -20,7 +20,7 @@ sealed abstract class CreateOfferOptionDTO(val isCourse: Boolean) extends InputD
 
 case class CreateNonCourseDTO(textValue: String) extends CreateOfferOptionDTO(false)
 
-case class CreateCourseDTO(shortName: String, schedule: List[CreateScheduleDTO]) extends CreateOfferOptionDTO(true)
+case class CreateCourseDTO(shortName: String, schedules: List[CreateScheduleDTO]) extends CreateOfferOptionDTO(true)
 
 case class CreateScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends InputDTO
 
