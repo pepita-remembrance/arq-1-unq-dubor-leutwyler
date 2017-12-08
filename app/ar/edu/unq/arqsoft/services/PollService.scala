@@ -7,6 +7,14 @@ import com.google.inject.Singleton
 @Singleton
 class PollService extends Service {
 
+  def allOf(careerShortName: String): Iterable[PartialPollDTO] = inTransaction {
+    CareerDAO.whereShortName(careerShortName).into(PollDAO.careerPolls).mapAs[PartialPollDTO]
+  }
+
+  def byCareerShortNameAndPollKey(careerShortName: String, pollKey: String): PollDTO = inTransaction {
+    CareerDAO.whereShortName(careerShortName).into(PollDAO.withKey(pollKey)).single
+  }
+
   def create(careerShortName: String, dto: CreatePollDTO): PollDTO = inTransaction {
     val career = CareerDAO.whereShortName(careerShortName).single
     val newPoll = dto.asModel(career)
@@ -35,7 +43,7 @@ class PollService extends Service {
     val courses = coursesDTO.map(dto => (dto.asModel, dto))
     CourseDAO.save(courses.map(_._1), useBulk = false)
     val schedules = courses.flatMap { case (course, dto) =>
-      dto.schedule.map(_.asModel(course))
+      dto.schedules.map(_.asModel(course))
     }
     ScheduleDAO.save(schedules)
     val coursesOffer = courses.map(_._1).map(course => (course, OfferOptionBase(course)))

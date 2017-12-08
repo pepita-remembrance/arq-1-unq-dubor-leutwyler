@@ -53,7 +53,16 @@ class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
 class ScheduleDAO extends ModelDAO[Schedule](schedules)
 
 @Singleton
-class PollDAO extends ModelDAO[Poll](polls)
+class PollDAO extends ModelDAO[Poll](polls) {
+  def careerPolls: Career ==> Poll = careerQuery =>
+    join(careerQuery, polls)((c, p) =>
+      select(p)
+        on (c.id === p.careerId)
+    )
+
+  def withKey(pollKey: String): Career ==> Poll = careerQuery =>
+    careerPolls(careerQuery).where(_.key === pollKey)(dsl)
+}
 
 @Singleton
 class PollResultDAO extends ModelDAO[PollResult](results) {
