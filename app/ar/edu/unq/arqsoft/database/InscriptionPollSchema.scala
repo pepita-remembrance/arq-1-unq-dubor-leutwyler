@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import ar.edu.unq.arqsoft.model._
 import org.joda.time.DateTime
 import org.squeryl.dsl._
-import org.squeryl.{PrimitiveTypeMode, Schema, Table}
+import org.squeryl.{PrimitiveTypeMode, Query, Schema, Table}
 
 trait PrimitiveJodaTimeSupport {
   this: PrimitiveTypeMode =>
@@ -28,7 +28,20 @@ trait PrimitiveJodaTimeSupport {
   implicit def optionJodaTimeToTE(s: Option[DateTime]): TypedExpression[Option[DateTime], TOptionTimestamp] = optionJodaTimeTEF.create(s)
 }
 
-trait DSLFlavor extends PrimitiveTypeMode with PrimitiveJodaTimeSupport
+trait QueryExtensions {
+
+  implicit class QueryComposer[T](query: Query[T]) {
+    def into[U](extensionFun: T ==> U): Query[U] =
+      extensionFun(query)
+
+    def add[U](extensionFun: T ==> (T, U)): Query[(T, U)] =
+      extensionFun(query)
+  }
+
+  type ==>[In, Out] = Query[In] => Query[Out]
+}
+
+trait DSLFlavor extends PrimitiveTypeMode with PrimitiveJodaTimeSupport with QueryExtensions
 
 object DSLFlavor extends DSLFlavor
 
