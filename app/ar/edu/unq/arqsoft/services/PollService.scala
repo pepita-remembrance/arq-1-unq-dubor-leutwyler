@@ -6,6 +6,13 @@ import com.google.inject.Singleton
 
 @Singleton
 class PollService extends Service {
+  def createDefaultOptions(): Unit = inTransaction {
+    val defaultOptions = NonCourseDAO.defaultOptionStrings.map(NonCourseOption)
+    NonCourseDAO.save(defaultOptions, useBulk = false)
+    val defaultOptionsBase = defaultOptions.map(nonCourse => OfferOptionBase(nonCourse))
+    OfferDAO.save(defaultOptionsBase)
+  }
+
 
   def allOf(careerShortName: String): Iterable[PartialPollDTO] = inTransaction {
     PollDAO.pollsOf(CareerDAO.whereShortName(careerShortName)).mapAs[PartialPollDTO]
@@ -20,13 +27,16 @@ class PollService extends Service {
     val newPoll = dto.asModel(careerQuery.single)
     PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
+      val defaultOptions = OfferDAO.baseOfferOf(NonCourseDAO.defaultOptions).map(_._2)
       val subjects = SubjectDAO.subjectsOf(careerQuery, offerMap.keys).toList
       val nonCourses = createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
       val offer = offerMap.flatMap {
         case (subjectShortName, options) =>
           val subject = subjects.find(_.shortName == subjectShortName).get
-          createOffer(options, nonCourses)
+          val pollOfferOptions = createOffer(options, nonCourses)
             .map(option => PollOfferOption(newPoll.id, subject.id, option.id))
+          val defaultPollOfferOptions = defaultOptions.map(option => PollOfferOption(newPoll.id, subject.id, option.id))
+          pollOfferOptions ++ defaultPollOfferOptions
       }
       PollOfferOptionDAO.save(offer)
     }

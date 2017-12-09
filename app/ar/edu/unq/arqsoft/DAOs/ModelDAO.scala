@@ -34,7 +34,7 @@ class SubjectDAO extends ModelDAO[Subject](subjects) {
     )
 
   def subjectsOf(careerQuery: Query[Career], shortNames: Iterable[String]): Query[Subject] =
-    subjectsOf(careerQuery).where(_.shortName in shortNames)
+    subjectsOf(careerQuery).where(_.shortName in shortNames)(dsl)
 }
 
 @Singleton
@@ -51,8 +51,25 @@ class CourseDAO extends ModelDAO[Course](courses)
 
 @Singleton
 class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
+  val defaultOptionStrings = List("No voy a cursar", "Ya aprobe", "Ningun horario me sirve")
+
+  def whereTextValue(textValue: String): Query[NonCourseOption] =
+    where(_.textValue === textValue)
+
   def whereTextValue(textValues: Iterable[String]): Query[NonCourseOption] =
     where(_.textValue in textValues)
+
+  def defaultOptions: Query[NonCourseOption] =
+    whereTextValue(defaultOptionStrings)
+
+  def notYetOption: Query[NonCourseOption] =
+    whereTextValue(defaultOptionStrings(0))
+
+  def alreadyPassedOption: Query[NonCourseOption] =
+    whereTextValue(defaultOptionStrings(1))
+
+  def noSuitableScheduleOption: Query[NonCourseOption] =
+    whereTextValue(defaultOptionStrings(2))
 }
 
 @Singleton

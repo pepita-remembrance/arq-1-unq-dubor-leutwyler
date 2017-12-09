@@ -1,11 +1,10 @@
 package ar.edu.unq.arqsoft.database
 
-import com.google.inject.Inject
-
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.model.Day.Day
 import ar.edu.unq.arqsoft.services._
+import com.google.inject.Inject
 
 trait SeedData extends Logging {
   @Inject
@@ -15,14 +14,10 @@ trait SeedData extends Logging {
   @Inject
   var pollService: PollService = _
 
-  val defaultOptions: List[CreateNonCourseDTO] = List(
-    CreateNonCourseDTO("Ya aprobe"),
-    CreateNonCourseDTO("No voy a cursar"),
-    CreateNonCourseDTO("Ningun horario me sirve")
-  )
-
   def seed(): Unit = {
     info("Seeding database...")
+    info("Creating default poll offer options...")
+    pollService.createDefaultOptions()
     import ar.edu.unq.arqsoft.model.Day.{Friday => Viernes, Monday => Lunes, Saturday => Sabado, Thursday => Jueves, Tuesday => Martes, Wednesday => Miercoles}
     info("Creating students...")
     List(
@@ -79,7 +74,7 @@ trait SeedData extends Logging {
     studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"))
     studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"))
     info("Creating poll TPI 2017s2")
-    val tpi2017s2Offer = Map(
+    pollService.create("TPI", CreatePollDTO("2017s2", Some(Map(
       // Basicas
       "InPr" -> List(
         CreateCourseDTO("C1", List(
@@ -301,8 +296,7 @@ trait SeedData extends Logging {
           Sabado.from(18).to(13)
         ))
       )
-    ).mapValues(_ ++ defaultOptions)
-    pollService.create("TPI", CreatePollDTO("2017s2", Some(tpi2017s2Offer)))
+    ))))
     info("Done seeding!")
   }
 
