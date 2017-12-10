@@ -6,6 +6,7 @@ trait InputDTO
 
 object InputAlias {
   type SubjectShortName = String
+  type PollDeltaDTO = Map[SubjectShortName, PollSelectedOptionDTO]
 }
 
 case class CreateStudentDTO(fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
@@ -26,4 +27,4 @@ case class CreateScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: 
 
 case class CreateStudentCareerDTO(studentFileNumber: Int, careerShortName: String) extends InputDTO
 
-//case class PollSelectedOption(isCourse:Boolean, key:String)
+case class PollSelectedOptionDTO(key: String, isCourse: Boolean) extends InputDTO with OfferOptionDTO

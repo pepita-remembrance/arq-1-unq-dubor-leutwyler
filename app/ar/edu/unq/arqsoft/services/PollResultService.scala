@@ -1,5 +1,6 @@
 package ar.edu.unq.arqsoft.services
 
+import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.api.PollResultDTO
 import ar.edu.unq.arqsoft.model.{PollResult, PollSelectedOption}
 import com.google.inject.Singleton
@@ -45,7 +46,12 @@ class PollResultService extends Service {
     baseResult
   }
 
-//  def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: Map[String, ]): PollResultDTO
+  def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: PollDeltaDTO): PollResultDTO = inTransaction {
+    val base = pollResultFor(studentFileNumber, careerShortName, pollKey)
+    //TODO: apply delta
+    info(delta.toString())
+    base
+  }
 
 
 }

@@ -59,4 +59,5 @@ trait PlayInputDTOFormats {
   implicit val createCareerDTOReads = Json.reads[CreateCareerDTO]
   implicit val createStudentDTOReads = Json.reads[CreateStudentDTO]
   implicit val createStudentCareerDTO = Json.reads[CreateStudentCareerDTO]
+  implicit val pollSelectedOptionDTO = Json.reads[PollSelectedOptionDTO]
 }
