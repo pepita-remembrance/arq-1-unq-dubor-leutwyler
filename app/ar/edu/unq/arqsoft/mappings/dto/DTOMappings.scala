@@ -1,8 +1,8 @@
 package ar.edu.unq.arqsoft.mappings.dto
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.database.DSLFlavor._
+import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
 import org.squeryl.{KeyedEntity, Query}
 
@@ -45,12 +45,12 @@ trait InputDTOMappings {
 
   implicit class NonCourseConverter(dto: CreateNonCourseDTO) extends ModelConverter0[CreateNonCourseDTO, NonCourseOption](dto) {
     override def asModel: NonCourseOption =
-      NonCourseOption(dto.textValue)
+      NonCourseOption(dto.key)
   }
 
   implicit class CourseConverter(dto: CreateCourseDTO) extends ModelConverter0[CreateCourseDTO, Course](dto) {
     override def asModel: Course =
-      Course(dto.shortName)
+      Course(dto.key)
   }
 
   implicit class ScheduleConverter(dto: CreateScheduleDTO) extends ModelConverter1[CreateScheduleDTO, Schedule](dto) {
@@ -121,10 +121,10 @@ trait OutputDTOMappings {
     ScheduleDTO(schedule.day, schedule.fromHour, schedule.fromMinutes, schedule.toHour, schedule.toMinutes)
 
   implicit def courseToDTO(course: Course): CourseDTO =
-    CourseDTO(course.shortName, course.schedules.mapAs[ScheduleDTO])
+    CourseDTO(course.key, course.schedules.mapAs[ScheduleDTO])
 
   implicit def nonCourseToDTO(nonCourse: NonCourseOption): NonCourseOptionDTO =
-    NonCourseOptionDTO(nonCourse.textValue)
+    NonCourseOptionDTO(nonCourse.key)
 
   implicit def offerOptionToDTO(offerOption: OfferOption): OfferOptionDTO = offerOption match {
     case offer: Course => offer

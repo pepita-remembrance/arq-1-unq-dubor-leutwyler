@@ -45,7 +45,7 @@ class PollService extends Service {
 
   protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCoursesDTO: Iterable[(NonCourseOption, OfferOptionBase)]): Iterable[OfferOptionBase] = inTransaction {
     val courses = createCourses(optionsDTO.collect { case o: CreateCourseDTO => o }).map(_._2)
-    val usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.textValue }).map(value => nonCoursesDTO.find(_._1.textValue == value).get._2)
+    val usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCoursesDTO.find(_._1.key == value).get._2)
     courses ++ usedNonCourses
   }
 
@@ -62,9 +62,9 @@ class PollService extends Service {
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Iterable[(NonCourseOption, OfferOptionBase)] = inTransaction {
-    val existingOffer = OfferDAO.addBaseOfferOf(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.textValue))).toList
-    val existingTextValues = existingOffer.map(_._1.textValue)
-    val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.textValue)).map(_.asModel)
+    val existingOffer = OfferDAO.addBaseOfferOf(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.key))).toList
+    val existingTextValues = existingOffer.map(_._1.key)
+    val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.key)).map(_.asModel)
     NonCourseDAO.save(toCreate, useBulk = false)
     val toCreateOffer = toCreate.map(nonCourse => (nonCourse, OfferOptionBase(nonCourse)))
     OfferDAO.save(toCreateOffer.map(_._2), useBulk = false)

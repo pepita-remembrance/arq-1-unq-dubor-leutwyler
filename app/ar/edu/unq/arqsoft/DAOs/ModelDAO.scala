@@ -74,10 +74,10 @@ class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
   val defaultOptionStrings = List("No voy a cursar", "Ya aprobe", "Ningun horario me sirve")
 
   def whereTextValue(textValue: String): Query[NonCourseOption] =
-    where(_.textValue === textValue)
+    where(_.key === textValue)
 
   def whereTextValue(textValues: Iterable[String]): Query[NonCourseOption] =
-    where(_.textValue in textValues)
+    where(_.key in textValues)
 
   def defaultOptions: Query[NonCourseOption] =
     whereTextValue(defaultOptionStrings)

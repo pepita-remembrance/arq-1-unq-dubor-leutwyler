@@ -54,11 +54,11 @@ trait OfferOption extends KeyedEntity[KeyType] {
 
   @transient
   @Transient
-  val textValue: String
+  val key: String
 
   def base: Query[OfferOptionBase] = from(InscriptionPollSchema.offers)(baseOffer => where(baseOffer.isCourse === isCourse and baseOffer.offerId === id) select baseOffer)
 }
 
-case class NonCourseOption(textValue: String) extends TableRow with OfferOption {
+case class NonCourseOption(key: String) extends TableRow with OfferOption {
   val isCourse: Boolean = false
 }
