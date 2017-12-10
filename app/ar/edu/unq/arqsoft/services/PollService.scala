@@ -27,7 +27,7 @@ class PollService extends Service {
     val newPoll = dto.asModel(careerQuery.single)
     PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
-      val defaultOptions = OfferDAO.baseOfferOf(NonCourseDAO.defaultOptions).map(_._2)
+      val defaultOptions = OfferDAO.baseOfferOf(NonCourseDAO.defaultOptions).toList
       val subjects = SubjectDAO.subjectsOf(careerQuery, offerMap.keys).toList
       val nonCourses = createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
       val offer = offerMap.flatMap {
@@ -62,7 +62,7 @@ class PollService extends Service {
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Iterable[(NonCourseOption, OfferOptionBase)] = inTransaction {
-    val existingOffer = OfferDAO.baseOfferOf(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.textValue))).toList
+    val existingOffer = OfferDAO.addBaseOfferOf(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.textValue))).toList
     val existingTextValues = existingOffer.map(_._1.textValue)
     val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.textValue)).map(_.asModel)
     NonCourseDAO.save(toCreate, useBulk = false)

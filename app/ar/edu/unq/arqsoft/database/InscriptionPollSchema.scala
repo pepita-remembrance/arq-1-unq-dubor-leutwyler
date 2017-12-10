@@ -123,4 +123,10 @@ object InscriptionPollSchema extends Schema {
     )
   )
 
+  on(pollSelectedOptions)(pso =>
+    declare(
+      columns(pso.pollResultId, pso.subjectId, pso.offerId) are(unique, indexed("idxSelectedOptionCompositeKey"))
+    )
+  )
+
 }

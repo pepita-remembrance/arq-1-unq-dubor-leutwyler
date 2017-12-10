@@ -11,8 +11,8 @@ class PollResultController @Inject()(cc: ControllerComponents, parse: PlayBodyPa
                                     )
   extends BasicController(cc, parse) with PlayJsonDTOFormats {
 
-  def get(studentFileNumber: Int, careerShortName: String, pollKey: String, default: Option[String]) = JsonAction {
-    pollResultService.pollResultFor(studentFileNumber, careerShortName, pollKey, default)
+  def get(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonAction {
+    pollResultService.pollResultFor(studentFileNumber, careerShortName, pollKey)
   }
 
 }
