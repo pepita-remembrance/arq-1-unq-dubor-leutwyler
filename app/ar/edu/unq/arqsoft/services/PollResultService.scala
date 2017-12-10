@@ -9,18 +9,19 @@ import org.squeryl.Query
 @Singleton
 class PollResultService extends Service {
 
-  def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResultDTO = inTransaction {
-    val result =
+  def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String, defaultOptionText: Option[String]): PollResultDTO = inTransaction {
+    val resultOption =
       PollResultDAO.resultsOf(
         StudentDAO.whereFileNumber(studentFileNumber),
         PollDAO.pollsOf(CareerDAO.whereShortName(careerShortName), pollKey)
       )
         .singleOption
-        .getOrElse(newPollResult(studentFileNumber, careerShortName, pollKey))
+    val defaultOptionQuery = defaultOptionText.map(NonCourseDAO.whereTextValue(_)).getOrElse(NonCourseDAO.notYetOption)
+    val result = resultOption.getOrElse(updatedPollResult(studentFileNumber, careerShortName, pollKey, defaultOptionQuery))
     result
   }
 
-  def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String, defaultOptionQuery: Query[NonCourseOption] = NonCourseDAO.notYetOption): PollResult = inTransaction {
+  def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String, defaultOptionQuery: Query[NonCourseOption]): PollResult = inTransaction {
     val pollQuery = PollDAO.pollsOf(CareerDAO.whereShortName(careerShortName), pollKey)
     val student = StudentDAO.whereFileNumber(studentFileNumber).single
     val poll = pollQuery.single
@@ -31,6 +32,12 @@ class PollResultService extends Service {
     val selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption.id))
     PollSelectedOptionDAO.save(selectedOptions)
     newResult
+  }
+
+  def updatedPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String, defaultOptionQuery: Query[NonCourseOption]): PollResult = inTransaction {
+    val baseResult = newPollResult(studentFileNumber, careerShortName, pollKey, defaultOptionQuery)
+
+    baseResult
   }
 
 }
