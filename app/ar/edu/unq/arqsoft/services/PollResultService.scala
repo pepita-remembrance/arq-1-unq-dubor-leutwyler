@@ -1,9 +1,10 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api.PollResultDTO
-import ar.edu.unq.arqsoft.model.PollResult
+import ar.edu.unq.arqsoft.model.{NonCourseOption, PollResult, PollSelectedOption}
 import com.google.inject.Singleton
 import org.joda.time.DateTime
+import org.squeryl.Query
 
 @Singleton
 class PollResultService extends Service {
@@ -19,13 +20,16 @@ class PollResultService extends Service {
     result
   }
 
-  protected def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResult = {
+  def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String, defaultOptionQuery: Query[NonCourseOption] = NonCourseDAO.notYetOption): PollResult = inTransaction {
+    val pollQuery = PollDAO.pollsOf(CareerDAO.whereShortName(careerShortName), pollKey)
     val student = StudentDAO.whereFileNumber(studentFileNumber).single
-    val poll = PollDAO.pollsOf(CareerDAO.whereShortName(careerShortName), pollKey).single
-    val notYetOption = NonCourseDAO.notYetOption.single
+    val poll = pollQuery.single
+    val pollSubjects = SubjectDAO.subjectsOf(pollQuery).toList
+    val defaultOption = OfferDAO.baseOfferOf(defaultOptionQuery).single._2
     val newResult = PollResult(student.id, poll.id, DateTime.now)
     PollResultDAO.save(newResult)
-
+    val selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption.id))
+    PollSelectedOptionDAO.save(selectedOptions)
     newResult
   }
 

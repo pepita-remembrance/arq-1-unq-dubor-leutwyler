@@ -35,6 +35,13 @@ class SubjectDAO extends ModelDAO[Subject](subjects) {
 
   def subjectsOf(careerQuery: Query[Career], shortNames: Iterable[String]): Query[Subject] =
     subjectsOf(careerQuery).where(_.shortName in shortNames)(dsl)
+
+  def subjectsOf(pollQuery: Query[Poll])(implicit i1:DummyImplicit): Query[Subject] =
+    join(pollQuery, pollOfferOptions, subjects)((p, poo, s) =>
+      select(s)
+        on(s.id === poo.subjectId, p.id === poo.pollId)
+    ).distinct
+
 }
 
 @Singleton

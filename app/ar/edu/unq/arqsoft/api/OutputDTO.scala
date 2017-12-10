@@ -35,6 +35,6 @@ case class PartialPollDTO(key: String, isOpen: Boolean, career: PartialCareerDTO
 
 case class NonCourseOptionDTO(textValue: String) extends OfferOptionDTO(textValue, false)
 
-case class PollResultDTO(poll: PollDTO, student: PartialStudentDTO, fillDate: DateTime, results: ResultsDTO) extends OutputDTO
+case class PollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO, fillDate: DateTime, results: ResultsDTO) extends OutputDTO
 
 case class PartialPollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO, fillDate: DateTime) extends OutputDTO
