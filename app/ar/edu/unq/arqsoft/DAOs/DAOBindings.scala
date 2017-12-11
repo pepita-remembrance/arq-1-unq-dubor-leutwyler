@@ -37,4 +37,7 @@ trait DAOBindings {
   @Inject
   var PollSelectedOptionDAO: PollSelectedOptionDAO = _
 
+  @Inject
+  var StudentCareerDAO: StudentCareerDAO = _
+
 }

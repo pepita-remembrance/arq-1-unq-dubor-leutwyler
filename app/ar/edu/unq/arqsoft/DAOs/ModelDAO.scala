@@ -188,3 +188,6 @@ class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOpt
         set (o.offerId := newValue)
     )
 }
+
+@Singleton
+class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers)
