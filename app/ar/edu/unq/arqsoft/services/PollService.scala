@@ -15,11 +15,11 @@ class PollService extends Service {
 
 
   def allOf(careerShortName: String): Iterable[PartialPollDTO] = inTransaction {
-    PollDAO.pollsOf(CareerDAO.whereShortName(careerShortName)).mapAs[PartialPollDTO]
+    PollDAO.pollsOfCareer(CareerDAO.whereShortName(careerShortName)).mapAs[PartialPollDTO]
   }
 
   def byCareerShortNameAndPollKey(careerShortName: String, pollKey: String): PollDTO = inTransaction {
-    PollDAO.pollsOf(CareerDAO.whereShortName(careerShortName), pollKey).single
+    PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
   }
 
   def create(careerShortName: String, dto: CreatePollDTO): PollDTO = inTransaction {
@@ -27,8 +27,8 @@ class PollService extends Service {
     val newPoll = dto.asModel(careerQuery.single)
     PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
-      val defaultOptions = OfferDAO.baseOfferOf(NonCourseDAO.defaultOptions).toList
-      val subjects = SubjectDAO.subjectsOf(careerQuery, offerMap.keys).toList
+      val defaultOptions = OfferDAO.baseOfferOfNonCourse(NonCourseDAO.defaultOptions).toList
+      val subjects = SubjectDAO.subjectsOfCareerWithName(careerQuery, offerMap.keys).toList
       val nonCourses = createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
       val offer = offerMap.flatMap {
         case (subjectShortName, options) =>
@@ -62,7 +62,7 @@ class PollService extends Service {
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Iterable[(NonCourseOption, OfferOptionBase)] = inTransaction {
-    val existingOffer = OfferDAO.addBaseOfferOf(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.key))).toList
+    val existingOffer = OfferDAO.addBaseOfferOfNonCourse(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.key))).toList
     val existingTextValues = existingOffer.map(_._1.key)
     val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.key)).map(_.asModel)
     NonCourseDAO.save(toCreate, useBulk = false)

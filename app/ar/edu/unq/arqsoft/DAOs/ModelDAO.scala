@@ -5,7 +5,6 @@ import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
-import org.squeryl.dsl.CompositeKey3
 import org.squeryl.{CanLookup, KeyedEntityDef, Query, Table}
 
 class ModelDAO[T](table: Table[T])
@@ -27,16 +26,16 @@ class CareerDAO extends ModelDAO[Career](careers) {
 
 @Singleton
 class SubjectDAO extends ModelDAO[Subject](subjects) {
-  def subjectsOf(careerQuery: Query[Career]): Query[Subject] =
+  def subjectsOfCareer(careerQuery: Query[Career]): Query[Subject] =
     join(careerQuery, subjects)((c, s) =>
       select(s)
         on (c.id === s.careerId)
     )
 
-  def subjectsOf(careerQuery: Query[Career], shortNames: Iterable[String]): Query[Subject] =
-    subjectsOf(careerQuery).where(_.shortName in shortNames)(dsl)
+  def subjectsOfCareerWithName(careerQuery: Query[Career], shortNames: Iterable[String]): Query[Subject] =
+    subjectsOfCareer(careerQuery).where(_.shortName in shortNames)(dsl)
 
-  def subjectsOf(pollQuery: Query[Poll])(implicit i1: DummyImplicit): Query[Subject] =
+  def subjectsOfPoll(pollQuery: Query[Poll])(implicit i1: DummyImplicit): Query[Subject] =
     join(pollQuery, pollOfferOptions, subjects)((p, poo, s) =>
       select(s)
         on(s.id === poo.subjectId, p.id === poo.pollId)
@@ -53,21 +52,48 @@ class SubjectDAO extends ModelDAO[Subject](subjects) {
 
 @Singleton
 class OfferDAO extends ModelDAO[OfferOptionBase](offers) {
-  def addBaseOfferOf(nonCourseQuery: Query[NonCourseOption]): Query[(NonCourseOption, OfferOptionBase)] =
+  def addBaseOfferOfCourse(courseQuery: Query[Course]): Query[(Course, OfferOptionBase)] =
+    join(where(_.isCourse === true), courseQuery)((o, c) =>
+      select((c, o))
+        on (o.offerId === c.id)
+    )
+
+  def baseOfferOfCourse(courseQuery: Query[Course]): Query[OfferOptionBase] =
+    join(where(_.isCourse === true), courseQuery)((o, c) =>
+      select(o)
+        on (o.offerId === c.id)
+    )
+
+  def addBaseOfferOfNonCourse(nonCourseQuery: Query[NonCourseOption])(implicit i1: DummyImplicit): Query[(NonCourseOption, OfferOptionBase)] =
     join(where(_.isCourse === false), nonCourseQuery)((o, nc) =>
       select((nc, o))
         on (o.offerId === nc.id)
     )
 
-  def baseOfferOf(nonCourseQuery: Query[NonCourseOption]): Query[OfferOptionBase] =
+  def baseOfferOfNonCourse(nonCourseQuery: Query[NonCourseOption])(implicit i1: DummyImplicit): Query[OfferOptionBase] =
     join(where(_.isCourse === false), nonCourseQuery)((o, nc) =>
       select(o)
         on (o.offerId === nc.id)
     )
+
+  def baseOfferOfPollOfferWithSubject(pollOfferOptionQuery: Query[PollOfferOption], subjectQuery: Query[Subject]): Query[(Subject, OfferOptionBase)] =
+    join(pollOfferOptionQuery, subjectQuery, offers)((poo, s, o) =>
+      select(s, o)
+        on(poo.offerId === o.id, poo.subjectId === s.id)
+    )
 }
 
 @Singleton
-class CourseDAO extends ModelDAO[Course](courses)
+class CourseDAO extends ModelDAO[Course](courses) {
+  def addCoursesOfSubjectOffer(query: Query[(Subject, OfferOptionBase)]): Query[(Subject, Course, OfferOptionBase)] =
+  // Workarround to select from tuples
+    join(query, subjects, offers, courses)((tuple, s, o, c) =>
+      dsl.where(tuple._2.isCourse === true)
+        select(s, c, o)
+        on(tuple._2.offerId === c.id, tuple._1.id === s.id, tuple._2.id === o.id)
+    )
+
+}
 
 @Singleton
 class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
@@ -90,6 +116,14 @@ class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
 
   def noSuitableScheduleOption: Query[NonCourseOption] =
     whereTextValue(defaultOptionStrings(2))
+
+  def addNonCoursesOfSubjectOffer(query: Query[(Subject, OfferOptionBase)]): Query[(Subject, NonCourseOption, OfferOptionBase)] =
+  // Workarround to select from tuples
+    join(query, subjects, offers, nonCourses)((tuple, s, o, nc) =>
+      dsl.where(tuple._2.isCourse === false)
+        select(s, nc, o)
+        on(tuple._2.offerId === nc.id, tuple._1.id === s.id, tuple._2.id === o.id)
+    )
 }
 
 @Singleton
@@ -97,13 +131,13 @@ class ScheduleDAO extends ModelDAO[Schedule](schedules)
 
 @Singleton
 class PollDAO extends ModelDAO[Poll](polls) {
-  def pollsOf(careerQuery: Query[Career], pollKey: String): Query[Poll] =
+  def pollsOfCareerWithKey(careerQuery: Query[Career], pollKey: String): Query[Poll] =
     join(careerQuery, where(_.key === pollKey))((c, p) =>
       select(p)
         on (c.id === p.careerId)
     )
 
-  def pollsOf(careerQuery: Query[Career]): Query[Poll] =
+  def pollsOfCareer(careerQuery: Query[Career]): Query[Poll] =
     join(careerQuery, polls)((c, p) =>
       select(p)
         on (c.id === p.careerId)
@@ -112,7 +146,7 @@ class PollDAO extends ModelDAO[Poll](polls) {
 
 @Singleton
 class PollResultDAO extends ModelDAO[PollResult](results) {
-  def resultsOf(studentQuery: Query[Student], pollQuery: Query[Poll]): Query[PollResult] =
+  def resultsOfStudentForPoll(studentQuery: Query[Student], pollQuery: Query[Poll]): Query[PollResult] =
     join(studentQuery, pollQuery, results)((s, p, r) =>
       select(r)
         on(r.studentId === s.id, r.pollId === p.id)
@@ -120,19 +154,31 @@ class PollResultDAO extends ModelDAO[PollResult](results) {
 }
 
 @Singleton
-class PollOfferOptionDAO extends SquerylDAO[PollOfferOption, CompositeKey3[KeyType, KeyType, KeyType]](pollOfferOptions, None)
+class PollOfferOptionDAO extends ModelDAO[PollOfferOption](pollOfferOptions) {
+  def optionsOfPoll(pollQuery: Query[Poll]): Query[PollOfferOption] =
+    join(pollQuery, pollOfferOptions)((p, poo) =>
+      select(poo)
+        on (poo.pollId === p.id)
+    )
+}
 
 @Singleton
 class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOptions) {
-  def optionsOf(pollResultQuery: Query[PollResult]): Query[PollSelectedOption] =
+  def optionsOfPoll(pollResultQuery: Query[PollResult]): Query[PollSelectedOption] =
     join(pollResultQuery, pollSelectedOptions)((pr, pso) =>
       select(pso)
         on (pso.pollResultId === pr.id)
     )
 
-  def optionsOfWithSubject(pollResultQuery: Query[PollResult], subjectQuery: Query[Subject]): Query[PollSelectedOption] =
+  def optionsOfPollWithSubject(pollResultQuery: Query[PollResult], subjectQuery: Query[Subject]): Query[PollSelectedOption] =
     join(pollResultQuery, subjectQuery, pollSelectedOptions)((pr, s, pso) =>
       select(pso)
+        on(pso.pollResultId === pr.id, pso.subjectId === s.id)
+    )
+
+  def addOptionsOfPollWithSubject(pollResultQuery: Query[PollResult], subjectQuery: Query[Subject]): Query[(Subject, PollSelectedOption)]=
+    join(pollResultQuery, subjectQuery, pollSelectedOptions)((pr, s, pso) =>
+      select(s, pso)
         on(pso.pollResultId === pr.id, pso.subjectId === s.id)
     )
 
@@ -141,6 +187,4 @@ class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOpt
       dsl.where(o.id in from(options)(_o => select(_o.id)))
         set (o.offerId := newValue)
     )
-
-
 }

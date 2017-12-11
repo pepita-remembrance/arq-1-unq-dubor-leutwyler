@@ -5,7 +5,6 @@ import ar.edu.unq.arqsoft.database.InscriptionPollSchema
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import org.joda.time.DateTime
 import org.squeryl.annotations.Transient
-import org.squeryl.dsl.CompositeKey3
 import org.squeryl.{KeyedEntity, Query}
 
 case class Poll(key: String, careerId: KeyType, isOpen: Boolean) extends TableRow {
@@ -29,13 +28,10 @@ object OfferOptionBase {
   def apply(nonCourse: NonCourseOption): OfferOptionBase = new OfferOptionBase(nonCourse.id, false)
 }
 
-case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType)
-  extends KeyedEntity[CompositeKey3[KeyType, KeyType, KeyType]] {
+case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType) extends TableRow {
   lazy val poll = InscriptionPollSchema.pollPollOfferOptions.right(this)
   lazy val subject = InscriptionPollSchema.subjectPollOfferOptions.right(this)
   lazy val offer = InscriptionPollSchema.offerPollOfferOptions.right(this)
-
-  override def id: CompositeKey3[KeyType, KeyType, KeyType] = compositeKey(pollId, subjectId, offerId)
 }
 
 case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) extends TableRow {
@@ -44,7 +40,7 @@ case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) e
   lazy val selectedOptions = InscriptionPollSchema.resultPollSelectedOptions.left(this)
 }
 
-case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, offerId: KeyType) extends TableRow
+case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, var offerId: KeyType) extends TableRow
 
 trait OfferOption extends KeyedEntity[KeyType] {
   this: TableRow =>
