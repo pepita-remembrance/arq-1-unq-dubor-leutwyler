@@ -10,14 +10,16 @@ import org.joda.time.DateTime
 class PollResultService extends Service {
 
   def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResultDTO = inTransaction {
-    val resultOption =
-      PollResultDAO.resultsOfStudentForPoll(
-        StudentDAO.whereFileNumber(studentFileNumber),
-        PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey)
-      )
-        .singleOption
-    val result = resultOption.getOrElse(updatedPollResult(studentFileNumber, careerShortName, pollKey))
-    result
+    getPollResult(studentFileNumber, careerShortName, pollKey)
+  }
+
+  protected def getPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResult = inTransaction {
+    PollResultDAO.resultsOfStudentForPoll(
+      StudentDAO.whereFileNumber(studentFileNumber),
+      PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey)
+    )
+      .singleOption
+      .getOrElse(updatedPollResult(studentFileNumber, careerShortName, pollKey))
   }
 
   protected def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResult = inTransaction {
@@ -26,7 +28,7 @@ class PollResultService extends Service {
     val poll = pollQuery.single
     val pollSubjects = SubjectDAO.subjectsOfPoll(pollQuery).toList
     val defaultOption = OfferDAO.baseOfferOfNonCourse(NonCourseDAO.notYetOption).single
-    val newResult = PollResult(student.id, poll.id, DateTime.now)
+    val newResult = PollResult(poll.id, student.id, DateTime.now)
     PollResultDAO.save(newResult)
     val selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption.id))
     PollSelectedOptionDAO.save(selectedOptions)
@@ -49,7 +51,7 @@ class PollResultService extends Service {
   def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: PollDeltaDTO): PollResultDTO = inTransaction {
     if (delta.nonEmpty) {
       // Ensure it exists
-      pollResultFor(studentFileNumber, careerShortName, pollKey)
+      getPollResult(studentFileNumber, careerShortName, pollKey)
 
       val possibleOptions = this.possibleOptions(careerShortName, pollKey, delta.keys)
 
@@ -62,7 +64,7 @@ class PollResultService extends Service {
 
       applyDelta(delta, affectedOptions, possibleOptions)
     }
-    pollResultFor(studentFileNumber, careerShortName, pollKey)
+    getPollResult(studentFileNumber, careerShortName, pollKey)
   }
 
   protected def possibleOptions(careerShortName: String, pollKey: String, subjectShortNames: Iterable[String]): Iterable[(Subject, OfferOption, OfferOptionBase)] = inTransaction {
@@ -78,9 +80,9 @@ class PollResultService extends Service {
   }
 
   protected def applyDelta(delta: PollDeltaDTO,
-                 afectedOptions: Iterable[(Subject, PollSelectedOption)],
-                 possibleOptions: Iterable[(Subject, OfferOption, OfferOptionBase)]
-                ): Unit = inTransaction {
+                           afectedOptions: Iterable[(Subject, PollSelectedOption)],
+                           possibleOptions: Iterable[(Subject, OfferOption, OfferOptionBase)]
+                          ): Unit = inTransaction {
     val changed = afectedOptions.map { case (subject, pso) =>
       val selectedOption = delta(subject.shortName)
       val selectedOffer = possibleOptions.find { case (sub, offer, base) =>
