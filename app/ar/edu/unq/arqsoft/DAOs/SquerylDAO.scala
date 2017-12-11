@@ -1,9 +1,9 @@
 package ar.edu.unq.arqsoft.DAOs
 
+import org.squeryl._
 import org.squeryl.dsl.QueryDsl
 import org.squeryl.dsl.ast.{LogicalBoolean, TrueLogicalBoolean}
 import org.squeryl.internals.FieldReferenceLinker.{createEqualityExpressionWithLastAccessedFieldReferenceAndConstant => createEqualityExpression}
-import org.squeryl._
 
 abstract class SquerylDAO[T, K](table: Table[T], _entityName: Option[String])(implicit val dsl: QueryDsl, val ked: KeyedEntityDef[T, K], toCanLookup: K => CanLookup) {
 
@@ -30,6 +30,9 @@ abstract class SquerylDAO[T, K](table: Table[T], _entityName: Option[String])(im
 
   def update(entity: T): Unit =
     table.update(entity)
+
+  def update(entities: Iterable[T]): Unit =
+    table.update(entities)
 
   def delete(key: K): Boolean =
     table.delete(key)

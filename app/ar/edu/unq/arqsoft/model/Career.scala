@@ -10,10 +10,8 @@ case class Career(shortName: String, longName: String) extends TableRow {
 
 case class Subject(careerId: KeyType, shortName: String, longName: String) extends TableRow
 
-case class Course(shortName: String) extends TableRow with OfferOption {
+case class Course(key: String) extends TableRow with OfferOption {
   lazy val schedules = InscriptionPollSchema.courseSchedules.left(this)
 
   val isCourse: Boolean = true
-
-  val textValue: String = shortName
 }

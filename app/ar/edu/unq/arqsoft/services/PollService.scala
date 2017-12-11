@@ -6,27 +6,37 @@ import com.google.inject.Singleton
 
 @Singleton
 class PollService extends Service {
+  def createDefaultOptions(): Unit = inTransaction {
+    val defaultOptions = NonCourseDAO.defaultOptionStrings.map(NonCourseOption)
+    NonCourseDAO.save(defaultOptions, useBulk = false)
+    val defaultOptionsBase = defaultOptions.map(nonCourse => OfferOptionBase(nonCourse))
+    OfferDAO.save(defaultOptionsBase)
+  }
+
 
   def allOf(careerShortName: String): Iterable[PartialPollDTO] = inTransaction {
-    CareerDAO.whereShortName(careerShortName).into(PollDAO.careerPolls).mapAs[PartialPollDTO]
+    PollDAO.pollsOfCareer(CareerDAO.whereShortName(careerShortName)).mapAs[PartialPollDTO]
   }
 
   def byCareerShortNameAndPollKey(careerShortName: String, pollKey: String): PollDTO = inTransaction {
-    CareerDAO.whereShortName(careerShortName).into(PollDAO.withKey(pollKey)).single
+    PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
   }
 
   def create(careerShortName: String, dto: CreatePollDTO): PollDTO = inTransaction {
-    val career = CareerDAO.whereShortName(careerShortName).single
-    val newPoll = dto.asModel(career)
+    val careerQuery = CareerDAO.whereShortName(careerShortName)
+    val newPoll = dto.asModel(careerQuery.single)
     PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
-      val subjects = SubjectDAO.whereCareerAndShortNameIn(career, offerMap.keys).toList
+      val defaultOptions = OfferDAO.baseOfferOfNonCourse(NonCourseDAO.defaultOptions).toList
+      val subjects = SubjectDAO.subjectsOfCareerWithName(careerQuery, offerMap.keys).toList
       val nonCourses = createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
       val offer = offerMap.flatMap {
         case (subjectShortName, options) =>
           val subject = subjects.find(_.shortName == subjectShortName).get
-          createOffer(options, nonCourses)
+          val pollOfferOptions = createOffer(options, nonCourses)
             .map(option => PollOfferOption(newPoll.id, subject.id, option.id))
+          val defaultPollOfferOptions = defaultOptions.map(option => PollOfferOption(newPoll.id, subject.id, option.id))
+          pollOfferOptions ++ defaultPollOfferOptions
       }
       PollOfferOptionDAO.save(offer)
     }
@@ -35,7 +45,7 @@ class PollService extends Service {
 
   protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCoursesDTO: Iterable[(NonCourseOption, OfferOptionBase)]): Iterable[OfferOptionBase] = inTransaction {
     val courses = createCourses(optionsDTO.collect { case o: CreateCourseDTO => o }).map(_._2)
-    val usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.textValue }).map(value => nonCoursesDTO.find(_._1.textValue == value).get._2)
+    val usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCoursesDTO.find(_._1.key == value).get._2)
     courses ++ usedNonCourses
   }
 
@@ -52,9 +62,9 @@ class PollService extends Service {
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Iterable[(NonCourseOption, OfferOptionBase)] = inTransaction {
-    val existingOffer = NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.textValue)).add(OfferDAO.baseOffer).toList
-    val existingTextValues = existingOffer.map(_._1.textValue)
-    val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.textValue)).map(_.asModel)
+    val existingOffer = OfferDAO.addBaseOfferOfNonCourse(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.key))).toList
+    val existingTextValues = existingOffer.map(_._1.key)
+    val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.key)).map(_.asModel)
     NonCourseDAO.save(toCreate, useBulk = false)
     val toCreateOffer = toCreate.map(nonCourse => (nonCourse, OfferOptionBase(nonCourse)))
     OfferDAO.save(toCreateOffer.map(_._2), useBulk = false)

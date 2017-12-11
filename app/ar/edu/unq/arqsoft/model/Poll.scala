@@ -1,12 +1,11 @@
 package ar.edu.unq.arqsoft.model
 
+import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import org.joda.time.DateTime
-import org.squeryl.{KeyedEntity, Query}
 import org.squeryl.annotations.Transient
-import org.squeryl.dsl.CompositeKey3
-import ar.edu.unq.arqsoft.database.DSLFlavor._
+import org.squeryl.{KeyedEntity, Query}
 
 case class Poll(key: String, careerId: KeyType, isOpen: Boolean) extends TableRow {
   lazy val career = InscriptionPollSchema.careerPolls.right(this)
@@ -29,13 +28,10 @@ object OfferOptionBase {
   def apply(nonCourse: NonCourseOption): OfferOptionBase = new OfferOptionBase(nonCourse.id, false)
 }
 
-case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType)
-  extends KeyedEntity[CompositeKey3[KeyType, KeyType, KeyType]] {
+case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType) extends TableRow {
   lazy val poll = InscriptionPollSchema.pollPollOfferOptions.right(this)
   lazy val subject = InscriptionPollSchema.subjectPollOfferOptions.right(this)
   lazy val offer = InscriptionPollSchema.offerPollOfferOptions.right(this)
-
-  override def id: CompositeKey3[KeyType, KeyType, KeyType] = compositeKey(pollId, subjectId, offerId)
 }
 
 case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) extends TableRow {
@@ -44,10 +40,7 @@ case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) e
   lazy val selectedOptions = InscriptionPollSchema.resultPollSelectedOptions.left(this)
 }
 
-case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, offerId: KeyType)
-  extends KeyedEntity[CompositeKey3[KeyType, KeyType, KeyType]] {
-  override def id: CompositeKey3[KeyType, KeyType, KeyType] = compositeKey(pollResultId, subjectId, offerId)
-}
+case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, var offerId: KeyType) extends TableRow
 
 trait OfferOption extends KeyedEntity[KeyType] {
   this: TableRow =>
@@ -57,22 +50,11 @@ trait OfferOption extends KeyedEntity[KeyType] {
 
   @transient
   @Transient
-  val textValue: String
+  val key: String
 
   def base: Query[OfferOptionBase] = from(InscriptionPollSchema.offers)(baseOffer => where(baseOffer.isCourse === isCourse and baseOffer.offerId === id) select baseOffer)
 }
 
-case class NonCourseOption(textValue: String) extends TableRow with OfferOption {
+case class NonCourseOption(key: String) extends TableRow with OfferOption {
   val isCourse: Boolean = false
-}
-
-object DefaultOption {
-  val notYet = NonCourseOption("Aun no voy a cursar")
-  val alreadyPassed = NonCourseOption("Ya aprobe")
-  val noSuitableCourse = NonCourseOption("Ningun horario me sirve")
-  val defaults = List(
-    notYet,
-    alreadyPassed,
-    noSuitableCourse
-  )
 }

@@ -1,9 +1,10 @@
 package ar.edu.unq.arqsoft.controllers
 
+import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.services.PollResultService
 import com.google.inject.{Inject, Singleton}
-import play.api.mvc.{ControllerComponents, PlayBodyParsers}
+import play.api.mvc.{ControllerComponents, PlayBodyParsers, Request}
 
 @Singleton
 class PollResultController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
@@ -12,7 +13,12 @@ class PollResultController @Inject()(cc: ControllerComponents, parse: PlayBodyPa
   extends BasicController(cc, parse) with PlayJsonDTOFormats {
 
   def get(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonAction {
-    pollResultService.getOrNew(studentFileNumber, careerShortName, pollKey)
+    pollResultService.pollResultFor(studentFileNumber, careerShortName, pollKey)
+  }
+
+  def patch(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonActionWithBody[PollDeltaDTO] {
+    implicit request: Request[PollDeltaDTO] =>
+      pollResultService.update(studentFileNumber, careerShortName, pollKey, request.body)
   }
 
 }

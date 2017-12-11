@@ -1,11 +1,10 @@
 package ar.edu.unq.arqsoft.database
 
-import com.google.inject.Inject
-
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.model.Day.Day
 import ar.edu.unq.arqsoft.services._
+import com.google.inject.Inject
 
 trait SeedData extends Logging {
   @Inject
@@ -14,72 +13,12 @@ trait SeedData extends Logging {
   var careerService: CareerService = _
   @Inject
   var pollService: PollService = _
+  @Inject
+  var pollResultService: PollResultService = _
 
-  val defaultOptions: List[CreateNonCourseDTO] = List(
-    CreateNonCourseDTO("Ya aprobe"),
-    CreateNonCourseDTO("No voy a cursar"),
-    CreateNonCourseDTO("Ningun horario me sirve")
-  )
-
-  def seed(): Unit = {
-    info("Seeding database...")
+  def defaultOffer: Map[String, List[CreateOfferOptionDTO]] = {
     import ar.edu.unq.arqsoft.model.Day.{Friday => Viernes, Monday => Lunes, Saturday => Sabado, Thursday => Jueves, Tuesday => Martes, Wednesday => Miercoles}
-    info("Creating students...")
-    List(
-      CreateStudentDTO(123, "marcogomez@gmail.com", "Marco", "Gomez"),
-      CreateStudentDTO(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
-    ).map(studentService.create)
-    info("Creating careers...")
-    List(
-      CreateCareerDTO("TPI", "Tecnicatura Universitaria en Programacion Informatica", Some(List(
-        // Basicas
-        CreateSubjectDTO("InPr", "Introduccion a la Programacion"),
-        CreateSubjectDTO("Orga", "Organizacion de Computadoras"),
-        CreateSubjectDTO("Mate1", "Matematica I"),
-        CreateSubjectDTO("Obj1", "Programacion con Objetos I"),
-        CreateSubjectDTO("BD", "Bases de Datos"),
-        CreateSubjectDTO("EstrD", "Estructuras de Datos"),
-        CreateSubjectDTO("Obj2", "Programacion con Objetos II"),
-        // Avanzadas
-        CreateSubjectDTO("Redes", "Redes de Computadoras"),
-        CreateSubjectDTO("SO", "Sistemas Operativos"),
-        CreateSubjectDTO("PConc", "Programacion Concurrente"),
-        CreateSubjectDTO("Mate2", "Matematica II"),
-        CreateSubjectDTO("IngSoft", "Elementos de Ingenieria de Software"),
-        CreateSubjectDTO("UIs", "Construccion de interfaces de Usuario"),
-        CreateSubjectDTO("EPers", "Estrategias de Persistencia"),
-        CreateSubjectDTO("PF", "Programacion Funcional"),
-        CreateSubjectDTO("DesApp", "Desarrollo de Aplicaciones"),
-        CreateSubjectDTO("LabSOR", "Laboratorio de Redes y Sistemas Operativos"),
-        // Idioma
-        CreateSubjectDTO("Ing1", "Ingles I"),
-        CreateSubjectDTO("Ing2", "Ingles II"),
-        // Opcionales
-        CreateSubjectDTO("Seg", "Seguridad Informatica"),
-        CreateSubjectDTO("BD2", "Bases de Datos II"),
-        CreateSubjectDTO("ProyLib", "Participacion y Gestion en Proyectos de Software Libre"),
-        CreateSubjectDTO("InArq", "Introduccion a las Arquitecturas de Software"),
-        CreateSubjectDTO("Obj3", "Programacion con Objetos III"),
-        CreateSubjectDTO("InBio", "Introduccion a la Bioinformatica"),
-        CreateSubjectDTO("Politicas", "Politicas Publicas en la Sociedad de la Informacion y la Era Digital"),
-        CreateSubjectDTO("Geo", "Sistemas de Informacion Geografica"),
-        CreateSubjectDTO("Decl", "Herramientas Declarativas en Programacion"),
-        CreateSubjectDTO("videojuegos", "Introduccion al Desarrollo de Videojuegos"),
-        CreateSubjectDTO("DADC", "Derechos de Autor y Derecho de Copia en la Era Digital"),
-        // Seminarios
-        CreateSubjectDTO("CLP", "Seminario: Caracteristicas de Lenguajes de Programacion"),
-        CreateSubjectDTO("SemMod", "Seminario: Taller de Desarrollo de Servicios Web/Cloud Modernos"),
-        // TTI/TTU
-        CreateSubjectDTO("TTI-TTU", "Seminario sobre Herramientas o Tecnicas Puntuales"),
-        // Trabajo Final
-        CreateSubjectDTO("TIP", "Taller de Trabajo de Insercion Profesional")
-      )))
-    ).foreach(careerService.create)
-    info("Students join their careers")
-    studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"))
-    studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"))
-    info("Creating poll TPI 2017s2")
-    val tpi2017s2Offer = Map(
+    Map(
       // Basicas
       "InPr" -> List(
         CreateCourseDTO("C1", List(
@@ -247,7 +186,8 @@ trait SeedData extends Logging {
       // Idioma
       "Ing1" -> List(
         CreateNonCourseDTO("Voy a cursar anual segun oferta del Departamento de Idiomas"),
-        CreateNonCourseDTO("Ya estoy cursando")
+        CreateNonCourseDTO("Ya estoy cursando"),
+        CreateNonCourseDTO("Voy a rendir libre")
       ),
       "Ing2" -> List(
         CreateCourseDTO("C1", List(
@@ -301,10 +241,145 @@ trait SeedData extends Logging {
           Sabado.from(18).to(13)
         ))
       )
-    ).mapValues(_ ++ defaultOptions)
-    pollService.create("TPI", CreatePollDTO("2017s2", Some(tpi2017s2Offer)))
+    )
+  }
+
+  def seed(): Unit = {
+    info("Seeding database...")
+    info("Creating default poll offer options...")
+    pollService.createDefaultOptions()
+    info("Creating students...")
+    List(
+      CreateStudentDTO(123, "marcogomez@gmail.com", "Marco", "Gomez"),
+      CreateStudentDTO(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
+    ).map(studentService.create)
+    info("Creating careers...")
+    List(
+      CreateCareerDTO("TPI", "Tecnicatura Universitaria en Programacion Informatica", Some(List(
+        // Basicas
+        CreateSubjectDTO("InPr", "Introduccion a la Programacion"),
+        CreateSubjectDTO("Orga", "Organizacion de Computadoras"),
+        CreateSubjectDTO("Mate1", "Matematica I"),
+        CreateSubjectDTO("Obj1", "Programacion con Objetos I"),
+        CreateSubjectDTO("BD", "Bases de Datos"),
+        CreateSubjectDTO("EstrD", "Estructuras de Datos"),
+        CreateSubjectDTO("Obj2", "Programacion con Objetos II"),
+        // Avanzadas
+        CreateSubjectDTO("Redes", "Redes de Computadoras"),
+        CreateSubjectDTO("SO", "Sistemas Operativos"),
+        CreateSubjectDTO("PConc", "Programacion Concurrente"),
+        CreateSubjectDTO("Mate2", "Matematica II"),
+        CreateSubjectDTO("IngSoft", "Elementos de Ingenieria de Software"),
+        CreateSubjectDTO("UIs", "Construccion de interfaces de Usuario"),
+        CreateSubjectDTO("EPers", "Estrategias de Persistencia"),
+        CreateSubjectDTO("PF", "Programacion Funcional"),
+        CreateSubjectDTO("DesApp", "Desarrollo de Aplicaciones"),
+        CreateSubjectDTO("LabSOR", "Laboratorio de Redes y Sistemas Operativos"),
+        // Idioma
+        CreateSubjectDTO("Ing1", "Ingles I"),
+        CreateSubjectDTO("Ing2", "Ingles II"),
+        // Opcionales
+        CreateSubjectDTO("Seg", "Seguridad Informatica"),
+        CreateSubjectDTO("BD2", "Bases de Datos II"),
+        CreateSubjectDTO("ProyLib", "Participacion y Gestion en Proyectos de Software Libre"),
+        CreateSubjectDTO("InArq", "Introduccion a las Arquitecturas de Software"),
+        CreateSubjectDTO("Obj3", "Programacion con Objetos III"),
+        CreateSubjectDTO("InBio", "Introduccion a la Bioinformatica"),
+        CreateSubjectDTO("Politicas", "Politicas Publicas en la Sociedad de la Informacion y la Era Digital"),
+        CreateSubjectDTO("Geo", "Sistemas de Informacion Geografica"),
+        CreateSubjectDTO("Decl", "Herramientas Declarativas en Programacion"),
+        CreateSubjectDTO("videojuegos", "Introduccion al Desarrollo de Videojuegos"),
+        CreateSubjectDTO("DADC", "Derechos de Autor y Derecho de Copia en la Era Digital"),
+        // Seminarios
+        CreateSubjectDTO("CLP", "Seminario: Caracteristicas de Lenguajes de Programacion"),
+        CreateSubjectDTO("SemMod", "Seminario: Taller de Desarrollo de Servicios Web/Cloud Modernos"),
+        // TTI/TTU
+        CreateSubjectDTO("TTI-TTU", "Seminario sobre Herramientas o Tecnicas Puntuales"),
+        // Trabajo Final
+        CreateSubjectDTO("TIP", "Taller de Trabajo de Insercion Profesional")
+      )))
+    ).foreach(careerService.create)
+    info("Students join their careers")
+    studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"))
+    studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"))
+    info("Creating poll for TPI")
+    pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer)))
+    pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer)))
+    pollService.create("TPI", CreatePollDTO("2016s1", Some(defaultOffer)))
+    pollService.create("TPI", CreatePollDTO("2016s2", Some(defaultOffer)))
+    pollService.create("TPI", CreatePollDTO("2017s1", Some(defaultOffer)))
+    pollService.create("TPI", CreatePollDTO("2017s2", Some(defaultOffer)))
+    pollService.create("TPI", CreatePollDTO("2018s1", Some(defaultOffer)))
+    info("Anwers for TPI 2015s1")
+    pollResultService.update(123, "TPI", "2015s1", Map(
+      "InPr" -> SelectedCourse("C1"),
+      "Orga" -> SelectedCourse("C1"),
+      "Mate1" -> SelectedCourse("C1"),
+      "Ing1" -> SelectedNonCourse("Voy a rendir libre")
+    ))
+    info("Anwers for TPI 2015s2")
+    pollResultService.update(123, "TPI", "2015s2", Map(
+      "InPr" -> Passed,
+      "Orga" -> Passed,
+      "Mate1" -> Passed,
+      "Ing1" -> Passed,
+      "Obj1" -> SelectedCourse("C1"),
+      "BD" -> SelectedCourse("C1"),
+      "EstrD" -> SelectedCourse("C1"),
+      "Ing2" -> SelectedCourse("C1")
+    ))
+    info("Anwers for TPI 2016s1")
+    pollResultService.update(123, "TPI", "2016s1", Map(
+      "Obj1" -> Passed,
+      "BD" -> Passed,
+      "EstrD" -> Passed,
+      "Ing2" -> Passed,
+      "Mate2" -> SelectedCourse("C1"),
+      "Obj2" -> SelectedCourse("C1"),
+      "SO" -> SelectedCourse("C1"),
+      "Redes" -> SelectedCourse("C1")
+    ))
+    info("Anwers for TPI 2016s2")
+    pollResultService.update(123, "TPI", "2016s2", Map(
+      "Mate2" -> Passed,
+      "Obj2" -> Passed,
+      "SO" -> Passed,
+      "Redes" -> Passed,
+      "EPers" -> SelectedCourse("C1"),
+      "UIs" -> SelectedCourse("C1"),
+      "IngSoft" -> SelectedCourse("C1"),
+      "PConc" -> SelectedCourse("C1")
+    ))
+    info("Anwers for TPI 2017s1")
+    pollResultService.update(123, "TPI", "2017s1", Map(
+      "EPers" -> Passed,
+      "UIs" -> Passed,
+      "IngSoft" -> SelectedCourse("C1"),
+      "PConc" -> SelectedCourse("C1"),
+      "LabSOR" -> SelectedCourse("C1")
+    ))
+    info("Anwers for TPI 2017s2")
+    pollResultService.update(123, "TPI", "2017s2", Map(
+      "IngSoft" -> Passed,
+      "LabSOR" -> Passed,
+      "PConc" -> SelectedCourse("C1"),
+      "TTI-TTU" -> SelectedNonCourse("Voy a cursar TTI segun oferta del Departamento de Ciencia y Tecnologia"),
+      "SemMod" -> SelectedCourse("C1")
+    ))
+    info("Anwers for TPI 2018s1")
+    pollResultService.update(123, "TPI", "2018s1", Map(
+      "PConc" -> Passed,
+      "TTI-TTU" -> Passed,
+      "SemMod" -> Passed,
+      "PF" -> SelectedCourse("C1"),
+      "Obj3" -> SelectedCourse("C1")
+    ))
     info("Done seeding!")
   }
+
+  def SelectedCourse(key:String) = PollSelectedOptionDTO(key, isCourse = true)
+  def SelectedNonCourse(key:String) = PollSelectedOptionDTO(key, isCourse = false)
+  def Passed = SelectedNonCourse("Ya aprobe")
 
   implicit class ScheduleFromBuilder(day: Day) {
     def from(fromHour: Int, fromMinutes: Int = 0): ScheduleToBuilder =
