@@ -3,6 +3,7 @@ package ar.edu.unq.arqsoft.services
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
+import org.joda.time.DateTime
 
 @Singleton
 class PollService extends Service {
@@ -22,9 +23,9 @@ class PollService extends Service {
     PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
   }
 
-  def create(careerShortName: String, dto: CreatePollDTO): PollDTO = inTransaction {
+  def create(careerShortName: String, dto: CreatePollDTO, createDate: DateTime = DateTime.now): PollDTO = inTransaction {
     val careerQuery = CareerDAO.whereShortName(careerShortName)
-    val newPoll = dto.asModel(careerQuery.single)
+    val newPoll = dto.asModel(careerQuery.single, createDate)
     PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
       val defaultOptions = OfferDAO.baseOfferOfNonCourse(NonCourseDAO.defaultOptions).toList

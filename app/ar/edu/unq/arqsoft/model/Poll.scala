@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 import org.squeryl.annotations.Transient
 import org.squeryl.{KeyedEntity, Query}
 
-case class Poll(key: String, careerId: KeyType, isOpen: Boolean) extends TableRow {
+case class Poll(key: String, careerId: KeyType, isOpen: Boolean, createDate: DateTime) extends TableRow {
   lazy val career = InscriptionPollSchema.careerPolls.right(this)
   lazy val offers = InscriptionPollSchema.pollPollOfferOptions.left(this)
 }
