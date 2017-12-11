@@ -1,7 +1,6 @@
 package ar.edu.unq.arqsoft.api
 
 import ar.edu.unq.arqsoft.api.InputAlias._
-import org.joda.time.DateTime
 
 trait InputDTO
 
@@ -26,6 +25,6 @@ case class CreateCourseDTO(key: String, schedules: List[CreateScheduleDTO]) exte
 
 case class CreateScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends InputDTO
 
-case class CreateStudentCareerDTO(studentFileNumber: Int, careerShortName: String, joinDate: Option[DateTime]) extends InputDTO
+case class CreateStudentCareerDTO(studentFileNumber: Int, careerShortName: String) extends InputDTO
 
 case class PollSelectedOptionDTO(key: String, isCourse: Boolean) extends InputDTO with OfferOptionDTO

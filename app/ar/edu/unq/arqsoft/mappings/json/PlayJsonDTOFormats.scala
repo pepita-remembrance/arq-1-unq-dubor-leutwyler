@@ -43,7 +43,6 @@ trait PlayOutputDTOFormats {
 }
 
 trait PlayInputDTOFormats {
-  implicit val dateReads = JodaReads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   implicit val createScheduleDTOReads = Json.reads[CreateScheduleDTO]
   implicit val createCourseDTOReads = Json.reads[CreateCourseDTO]
   implicit val createNonCourseDTOReads = Json.reads[CreateNonCourseDTO]

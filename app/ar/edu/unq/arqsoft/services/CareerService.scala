@@ -2,6 +2,7 @@ package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api.{CareerDTO, CreateCareerDTO, CreateStudentCareerDTO, PartialCareerDTO}
 import com.google.inject.Singleton
+import org.joda.time.DateTime
 
 @Singleton
 class CareerService
@@ -22,8 +23,8 @@ class CareerService
     CareerDAO.whereShortName(shortName).single
   }
 
-  def joinStudent(dto: CreateStudentCareerDTO): CareerDTO = inTransaction {
-    createStudentCareer(dto)._2
+  def joinStudent(dto: CreateStudentCareerDTO, joinDate:DateTime=DateTime.now): CareerDTO = inTransaction {
+    createStudentCareer(dto, joinDate)._2
   }
 
 }

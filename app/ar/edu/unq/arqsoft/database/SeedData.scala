@@ -5,6 +5,7 @@ import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.model.Day.Day
 import ar.edu.unq.arqsoft.services._
 import com.google.inject.Inject
+import org.joda.time.DateTime
 
 trait SeedData extends Logging {
   @Inject
@@ -300,8 +301,8 @@ trait SeedData extends Logging {
       )))
     ).foreach(careerService.create)
     info("Students join their careers")
-    studentService.joinCareer(CreateStudentCareerDTO(123, "TPI", None))
-    studentService.joinCareer(CreateStudentCareerDTO(456, "TPI", None))
+    studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"), joinDate = DateTime.now.withDate(2015, 2, 15))
+    studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"), joinDate = DateTime.now.withDate(2017, 3, 2))
     info("Creating poll for TPI")
     pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer)))
     pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer)))
