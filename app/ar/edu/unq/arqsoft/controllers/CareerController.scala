@@ -13,7 +13,7 @@ class CareerController @Inject()(cc: ControllerComponents, parse: PlayBodyParser
                                 )
   extends BasicController(cc, parse) with PlayJsonDTOFormats {
 
-  def create = JsonActionWithBody[CreateCareerDTO] {
+  def create = JsonAction withBody[CreateCareerDTO] {
     implicit request: Request[CreateCareerDTO] =>
       careerService.create(request.body)
   }
@@ -26,7 +26,7 @@ class CareerController @Inject()(cc: ControllerComponents, parse: PlayBodyParser
     careerService.byShortName(careerShortName)
   }
 
-  def createStudentCareer = JsonActionWithBody[CreateStudentCareerDTO] {
+  def createStudentCareer = JsonAction withBody[CreateStudentCareerDTO] {
     implicit request: Request[CreateStudentCareerDTO] =>
       careerService.joinStudent(request.body)
   }

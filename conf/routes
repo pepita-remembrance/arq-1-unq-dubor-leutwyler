@@ -9,6 +9,7 @@ GET          /seed                                                              
 # Students
 GET          /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.all
 GET          /students/:studentFileNumber                                                ar.edu.unq.arqsoft.controllers.StudentController.get(studentFileNumber :Int)
+GET          /students/:studentFileNumber/polls                                          ar.edu.unq.arqsoft.controllers.PollController.allOfStudent(studentFileNumber :Int)
 GET          /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey        ar.edu.unq.arqsoft.controllers.PollResultController.get(studentFileNumber :Int, careerShortName :String, pollKey :String)
 POST         /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.create
 POST         /students/join                                                              ar.edu.unq.arqsoft.controllers.StudentController.createStudentCareer
@@ -17,7 +18,7 @@ PATCH        /students/:studentFileNumber/careers/:careerShortName/polls/:pollKe
 # Careers
 GET          /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.all
 GET          /careers/:careerShortName                                                   ar.edu.unq.arqsoft.controllers.CareerController.get(careerShortName :String)
-GET          /careers/:careerShortName/polls                                             ar.edu.unq.arqsoft.controllers.PollController.allOf(careerShortName: String)
+GET          /careers/:careerShortName/polls                                             ar.edu.unq.arqsoft.controllers.PollController.allOfCareer(careerShortName: String)
 GET          /careers/:careerShortName/polls/:pollKey                                    ar.edu.unq.arqsoft.controllers.PollController.get(careerShortName: String, pollKey: String)
 POST         /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.create
 POST         /careers/join                                                               ar.edu.unq.arqsoft.controllers.CareerController.createStudentCareer

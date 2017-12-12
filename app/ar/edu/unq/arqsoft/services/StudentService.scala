@@ -2,6 +2,7 @@ package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
 import com.google.inject.Singleton
+import org.joda.time.DateTime
 
 @Singleton
 class StudentService extends Service with StudentCareerService {
@@ -20,8 +21,8 @@ class StudentService extends Service with StudentCareerService {
     StudentDAO.whereFileNumber(fileNumber).single
   }
 
-  def joinCareer(dto: CreateStudentCareerDTO): StudentDTO = inTransaction {
-    createStudentCareer(dto)._1
+  def joinCareer(dto: CreateStudentCareerDTO, joinDate:DateTime = DateTime.now): StudentDTO = inTransaction {
+    createStudentCareer(dto, joinDate)._1
   }
 
 }

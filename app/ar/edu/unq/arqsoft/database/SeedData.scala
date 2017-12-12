@@ -5,6 +5,7 @@ import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.model.Day.Day
 import ar.edu.unq.arqsoft.services._
 import com.google.inject.Inject
+import org.joda.time.DateTime
 
 trait SeedData extends Logging {
   @Inject
@@ -300,16 +301,16 @@ trait SeedData extends Logging {
       )))
     ).foreach(careerService.create)
     info("Students join their careers")
-    studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"))
-    studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"))
+    studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"), joinDate = DateTime.now.withDate(2014, 12, 15))
+    studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"), joinDate = DateTime.now.withDate(2017, 5, 15))
     info("Creating poll for TPI")
-    pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer)))
-    pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer)))
-    pollService.create("TPI", CreatePollDTO("2016s1", Some(defaultOffer)))
-    pollService.create("TPI", CreatePollDTO("2016s2", Some(defaultOffer)))
-    pollService.create("TPI", CreatePollDTO("2017s1", Some(defaultOffer)))
-    pollService.create("TPI", CreatePollDTO("2017s2", Some(defaultOffer)))
-    pollService.create("TPI", CreatePollDTO("2018s1", Some(defaultOffer)))
+    pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 2, 1))
+    pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 6, 1))
+    pollService.create("TPI", CreatePollDTO("2016s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2016, 2, 1))
+    pollService.create("TPI", CreatePollDTO("2016s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2016, 6, 1))
+    pollService.create("TPI", CreatePollDTO("2017s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2017, 2, 1))
+    pollService.create("TPI", CreatePollDTO("2017s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2017, 6, 1))
+    pollService.create("TPI", CreatePollDTO("2018s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2018, 2, 1))
     info("Anwers for TPI 2015s1")
     pollResultService.update(123, "TPI", "2015s1", Map(
       "InPr" -> SelectedCourse("C1"),

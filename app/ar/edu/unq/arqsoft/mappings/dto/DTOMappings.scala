@@ -4,6 +4,7 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
+import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
 
 trait DTOMappings
@@ -29,11 +30,12 @@ trait InputDTOMappings {
       Subject(extra1.id, dto.shortName, dto.longName)
   }
 
-  implicit class PollConverter(dto: CreatePollDTO) extends ModelConverter1[CreatePollDTO, Poll](dto) {
+  implicit class PollConverter(dto: CreatePollDTO) extends ModelConverter2[CreatePollDTO, Poll](dto) {
     override type Extra1 = Career
+    override type Extra2 = DateTime
 
-    override def asModel(extra1: Career): Poll =
-      Poll(dto.key, extra1.id, isOpen = true)
+    override def asModel(extra1: Career, extra2: DateTime): Poll =
+      Poll(dto.key, extra1.id, isOpen = true, extra2)
   }
 
   implicit class OfferOptionConverter(dto: CreateOfferOptionDTO) extends ModelConverter0[CreateOfferOptionDTO, OfferOption](dto) {
@@ -154,23 +156,14 @@ abstract class ModelConverter0[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DT
 }
 
 abstract class ModelConverter1[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1 <: TableRow
+  type Extra1
 
   def asModel(extra1: Extra1): Model
 }
 
 abstract class ModelConverter2[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1 <: TableRow
-  type Extra2 <: TableRow
+  type Extra1
+  type Extra2
 
   def asModel(extra1: Extra1, extra2: Extra2): Model
 }
-
-abstract class ModelConverter3[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1 <: TableRow
-  type Extra2 <: TableRow
-  type Extra3 <: TableRow
-
-  def asModel(extra1: Extra1, extra2: Extra2, extra3: Extra3): Model
-}
-
