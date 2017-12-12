@@ -142,6 +142,13 @@ class PollDAO extends ModelDAO[Poll](polls) {
       select(p)
         on (c.id === p.careerId)
     )
+
+  def pollsOfStudent(studentCareerQuery: Query[StudentCareer]): Query[Poll] =
+    join(studentCareerQuery, polls)((sc, p) =>
+      dsl.where(p.createDate gte sc.joinDate)
+        select (p)
+        on (sc.careerId === p.careerId)
+    )
 }
 
 @Singleton
@@ -176,7 +183,7 @@ class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOpt
         on(pso.pollResultId === pr.id, pso.subjectId === s.id)
     )
 
-  def addOptionsOfPollWithSubject(pollResultQuery: Query[PollResult], subjectQuery: Query[Subject]): Query[(Subject, PollSelectedOption)]=
+  def addOptionsOfPollWithSubject(pollResultQuery: Query[PollResult], subjectQuery: Query[Subject]): Query[(Subject, PollSelectedOption)] =
     join(pollResultQuery, subjectQuery, pollSelectedOptions)((pr, s, pso) =>
       select(s, pso)
         on(pso.pollResultId === pr.id, pso.subjectId === s.id)
@@ -190,4 +197,10 @@ class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOpt
 }
 
 @Singleton
-class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers)
+class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers) {
+  def whereStudent(studentQuery: Query[Student]): Query[StudentCareer] =
+    join(studentQuery, studentsCareers)((s, sc) =>
+      select(sc)
+        on (s.id === sc.studentId)
+    )
+}

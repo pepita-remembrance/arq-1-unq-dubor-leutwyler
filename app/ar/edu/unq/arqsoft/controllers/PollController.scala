@@ -17,12 +17,16 @@ class PollController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
       pollService.create(careerShortName, request.body)
   }
 
-  def allOf(careerShortName: String) = JsonAction {
+  def allOfCareer(careerShortName: String) = JsonAction {
     pollService.allOf(careerShortName)
   }
 
   def get(careerShortName: String, pollKey: String) = JsonAction {
     pollService.byCareerShortNameAndPollKey(careerShortName, pollKey)
+  }
+
+  def allOfStudent(studentFileNumber:Int) = JsonAction {
+    pollService.allOf(studentFileNumber)
   }
 
 }

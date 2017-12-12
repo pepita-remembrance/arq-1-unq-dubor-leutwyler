@@ -14,6 +14,9 @@ class PollService extends Service {
     OfferDAO.save(defaultOptionsBase)
   }
 
+  def allOf(studentFileNumber: Int): Iterable[PartialPollDTO] = inTransaction {
+    PollDAO.pollsOfStudent(StudentCareerDAO.whereStudent(StudentDAO.whereFileNumber(studentFileNumber))).mapAs[PartialPollDTO]
+  }
 
   def allOf(careerShortName: String): Iterable[PartialPollDTO] = inTransaction {
     PollDAO.pollsOfCareer(CareerDAO.whereShortName(careerShortName)).mapAs[PartialPollDTO]
