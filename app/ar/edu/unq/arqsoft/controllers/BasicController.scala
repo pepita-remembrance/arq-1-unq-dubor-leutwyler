@@ -5,8 +5,8 @@ import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import play.api.libs.json.{JsError, Json, Reads, Writes}
 import play.api.mvc._
 
-import scala.util.{Failure, Success, Try}
-import scala.concurrent.ExecutionContext.Implicits.global //This import provides the implicit execution context for Play json.validate
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success, Try} //This import provides the implicit execution context for Play json.validate
 
 class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
   extends AbstractController(cc)
@@ -17,16 +17,7 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
     _.validate[A].asEither.left.map(e => BadRequest(JsError.toJson(e)))
   )
 
-  def JsonAction[Out: Writes](block: => Out): Action[AnyContent] = Action {
-    Try(block) match {
-      case Success(obj) => Ok(Json.toJson(obj))
-      case Failure(ex) =>
-        error("Error ocurred: ", ex)
-        InternalServerError("BOOM!")
-    }
-  }
-
-  def JsonActionWithBody[In]: JsonActionWithBodyBuilder[In] = new JsonActionWithBodyBuilder[In]
+  def JsonAction = new JsonActionBuilder
 
   class JsonActionWithBodyBuilder[In] {
     def apply[Out: Writes](block: Request[In] => Out)(implicit reads: Reads[In]): Action[In] = Action(validateJson[In]) {
@@ -38,6 +29,19 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
             InternalServerError("BOOM!")
         }
     }
+  }
+
+  class JsonActionBuilder {
+    def apply[Out: Writes](block: => Out): Action[AnyContent] = Action {
+      Try(block) match {
+        case Success(obj) => Ok(Json.toJson(obj))
+        case Failure(ex) =>
+          error("Error ocurred: ", ex)
+          InternalServerError("BOOM!")
+      }
+    }
+
+    def withBody[In]: JsonActionWithBodyBuilder[In] = new JsonActionWithBodyBuilder[In]
   }
 
 }

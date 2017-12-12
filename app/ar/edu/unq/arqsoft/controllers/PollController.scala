@@ -12,7 +12,7 @@ class PollController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
                               )
   extends BasicController(cc, parse) with PlayJsonDTOFormats {
 
-  def create(careerShortName: String) = JsonActionWithBody[CreatePollDTO] {
+  def create(careerShortName: String) = JsonAction withBody[CreatePollDTO] {
     implicit request: Request[CreatePollDTO] =>
       pollService.create(careerShortName, request.body)
   }
