@@ -11,6 +11,8 @@ trait SeedData extends Logging {
   @Inject
   var studentService: StudentService = _
   @Inject
+  var adminService: AdminService = _
+  @Inject
   var careerService: CareerService = _
   @Inject
   var pollService: PollService = _
@@ -254,6 +256,11 @@ trait SeedData extends Logging {
       CreateStudentDTO(123, "marcogomez@gmail.com", "Marco", "Gomez"),
       CreateStudentDTO(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
     ).map(studentService.create)
+    info("Creating admins...")
+    List(
+      CreateAdminDTO(1, "pablo.suarez@gmail.com", "Pablo", "Suarez"),
+      CreateAdminDTO(2, "gabriela.arevalo@gmail.com", "Gabriela", "Arevalo")
+    ).map(adminService.create)
     info("Creating careers...")
     List(
       CreateCareerDTO("TPI", "Tecnicatura Universitaria en Programacion Informatica", Some(List(
@@ -303,6 +310,8 @@ trait SeedData extends Logging {
     info("Students join their careers")
     studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"), joinDate = DateTime.now.withDate(2014, 12, 15))
     studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"), joinDate = DateTime.now.withDate(2017, 5, 15))
+    info("Admins join their careers")
+    adminService.joinCareer(CreateAdminCareerDTO(1, "TPI"), joinDate = DateTime.now.withDate(2017, 12, 15))
     info("Creating poll for TPI")
     pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 2, 1))
     pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 6, 1))

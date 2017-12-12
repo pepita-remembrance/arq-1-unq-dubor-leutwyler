@@ -14,6 +14,10 @@ object OutputAlias {
 
 case class StudentDTO(fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO], pollResults: Iterable[PartialPollResultDTO]) extends OutputDTO
 
+case class AdminDTO(fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO]) extends OutputDTO
+
+case class PartialAdminDTO(fileNumber: Int, email: String, name: String, surname: String) extends OutputDTO
+
 case class PartialStudentDTO(fileNumber: Int, email: String, name: String, surname: String) extends OutputDTO
 
 case class CareerDTO(shortName: String, longName: String, subjects: Iterable[SubjectDTO], polls: Iterable[PartialPollDTO]) extends OutputDTO

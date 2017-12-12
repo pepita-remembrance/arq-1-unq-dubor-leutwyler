@@ -19,6 +19,12 @@ class StudentDAO extends ModelDAO[Student](students) {
 }
 
 @Singleton
+class AdminDAO extends ModelDAO[Admin](admins) {
+  def whereFileNumber(fileNumber: Int): Query[Admin] =
+    where(_.fileNumber === fileNumber)
+}
+
+@Singleton
 class CareerDAO extends ModelDAO[Career](careers) {
   def whereShortName(shortName: String): Query[Career] =
     where(_.shortName === shortName)
@@ -202,5 +208,14 @@ class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers) {
     join(studentQuery, studentsCareers)((s, sc) =>
       select(sc)
         on (s.id === sc.studentId)
+    )
+}
+
+@Singleton
+class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers) {
+  def whereStudent(adminQuery: Query[Admin]): Query[AdminCareer] =
+    join(adminQuery, adminsCareers)((s, sc) =>
+      select(sc)
+        on (s.id === sc.adminId)
     )
 }

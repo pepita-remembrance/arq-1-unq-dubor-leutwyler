@@ -18,6 +18,11 @@ trait InputDTOMappings {
       Student(dto.fileNumber, dto.email, dto.name, dto.surname)
   }
 
+  implicit class AdminConverter(dto: CreateAdminDTO) extends ModelConverter0[CreateAdminDTO, Admin](dto) {
+    override def asModel: Admin =
+      Admin(dto.fileNumber, dto.email, dto.name, dto.surname)
+  }
+
   implicit class CareerConverter(dto: CreateCareerDTO) extends ModelConverter0[CreateCareerDTO, Career](dto) {
     override def asModel: Career =
       Career(dto.shortName, dto.longName)
@@ -107,6 +112,9 @@ trait OutputDTOMappings {
   implicit def studentToPartialDTO(student: Student): PartialStudentDTO =
     PartialStudentDTO(student.fileNumber, student.email, student.name, student.surname)
 
+  implicit def adminToPartialDTO(admin: Admin): PartialAdminDTO =
+    PartialAdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname)
+
   implicit def careerToPartialDTO(career: Career): PartialCareerDTO =
     PartialCareerDTO(career.shortName, career.longName)
 
@@ -147,6 +155,9 @@ trait OutputDTOMappings {
 
   implicit def studentToDTO(student: Student): StudentDTO =
     StudentDTO(student.fileNumber, student.email, student.name, student.surname, student.careers.mapAs[PartialCareerDTO], student.results.mapAs[PartialPollResultDTO])
+
+  implicit def adminToDTO(admin: Admin): AdminDTO =
+    AdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])
 
 }
 

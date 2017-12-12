@@ -23,3 +23,9 @@ GET          /careers/:careerShortName/polls/:pollKey                           
 POST         /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.create
 POST         /careers/join                                                               ar.edu.unq.arqsoft.controllers.CareerController.createStudentCareer
 POST         /careers/:careerShortName/polls                                             ar.edu.unq.arqsoft.controllers.PollController.create(careerShortName :String)
+
+#Admins
+GET          /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.all
+GET          /admins/:adminFileNumber                                                    ar.edu.unq.arqsoft.controllers.AdminController.get(adminFileNumber :Int)
+POST         /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.create
+POST         /admins/join                                                                ar.edu.unq.arqsoft.controllers.AdminController.createAdminCareer

@@ -48,6 +48,7 @@ object InscriptionPollSchema extends Schema {
   val pollOfferOptions = table[PollOfferOption]
   val results = table[PollResult]
   val pollSelectedOptions = table[PollSelectedOption]
+  val admins = table[Admin]
 
   val studentResults = oneToManyRelation(students, results)
     .via((s, r) => s.id === r.studentId)
@@ -82,6 +83,18 @@ object InscriptionPollSchema extends Schema {
 
   val studentsCareers = manyToManyRelation(students, careers)
     .via[StudentCareer]((s, c, sc) => (s.id === sc.studentId, c.id === sc.careerId))
+
+  findAllTablesFor(TableRow.getClass)
+    .foreach(table =>
+      on(table.asInstanceOf[Table[TableRow]])(t =>
+        declare(
+          t.id is(primaryKey, autoIncremented)
+        )
+      )
+    )
+
+  val adminsCareers = manyToManyRelation(admins, careers)
+    .via[AdminCareer]((s, c, sc) => (s.id === sc.adminId, c.id === sc.careerId))
 
   findAllTablesFor(TableRow.getClass)
     .foreach(table =>
