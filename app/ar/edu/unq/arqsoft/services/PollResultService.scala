@@ -48,10 +48,10 @@ class PollResultService extends Service {
     baseResult
   }
 
-  def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: PollDeltaDTO): PollResultDTO = inTransaction {
+  def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: PollDeltaDTO, updateDate: DateTime = DateTime.now): PollResultDTO = inTransaction {
     if (delta.nonEmpty) {
       // Ensure it exists
-      getPollResult(studentFileNumber, careerShortName, pollKey)
+      val result = getPollResult(studentFileNumber, careerShortName, pollKey)
 
       val possibleOptions = this.possibleOptions(careerShortName, pollKey, delta.keys)
 
@@ -63,6 +63,9 @@ class PollResultService extends Service {
       val affectedOptions = PollSelectedOptionDAO.addOptionsOfPollWithSubject(pollResultQuery, usedSubjectsQuery).toList
 
       applyDelta(delta, affectedOptions, possibleOptions)
+
+      result.fillDate = updateDate
+      PollResultDAO.update(result)
     }
     getPollResult(studentFileNumber, careerShortName, pollKey)
   }
