@@ -317,7 +317,7 @@ trait SeedData extends Logging {
       "Orga" -> SelectedCourse("C1"),
       "Mate1" -> SelectedCourse("C1"),
       "Ing1" -> SelectedNonCourse("Voy a rendir libre")
-    ))
+    ), updateDate = DateTime.now.withDate(2015, 2, 12))
     info("Anwers for TPI 2015s2")
     pollResultService.update(123, "TPI", "2015s2", Map(
       "InPr" -> Passed,
@@ -328,7 +328,7 @@ trait SeedData extends Logging {
       "BD" -> SelectedCourse("C1"),
       "EstrD" -> SelectedCourse("C1"),
       "Ing2" -> SelectedCourse("C1")
-    ))
+    ), updateDate = DateTime.now.withDate(2015, 6, 12))
     info("Anwers for TPI 2016s1")
     pollResultService.update(123, "TPI", "2016s1", Map(
       "Obj1" -> Passed,
@@ -339,7 +339,7 @@ trait SeedData extends Logging {
       "Obj2" -> SelectedCourse("C1"),
       "SO" -> SelectedCourse("C1"),
       "Redes" -> SelectedCourse("C1")
-    ))
+    ), updateDate = DateTime.now.withDate(2016, 2, 12))
     info("Anwers for TPI 2016s2")
     pollResultService.update(123, "TPI", "2016s2", Map(
       "Mate2" -> Passed,
@@ -350,7 +350,7 @@ trait SeedData extends Logging {
       "UIs" -> SelectedCourse("C1"),
       "IngSoft" -> SelectedCourse("C1"),
       "PConc" -> SelectedCourse("C1")
-    ))
+    ), updateDate = DateTime.now.withDate(2016, 6, 12))
     info("Anwers for TPI 2017s1")
     pollResultService.update(123, "TPI", "2017s1", Map(
       "EPers" -> Passed,
@@ -358,7 +358,7 @@ trait SeedData extends Logging {
       "IngSoft" -> SelectedCourse("C1"),
       "PConc" -> SelectedCourse("C1"),
       "LabSOR" -> SelectedCourse("C1")
-    ))
+    ), updateDate = DateTime.now.withDate(2017, 2, 12))
     info("Anwers for TPI 2017s2")
     pollResultService.update(123, "TPI", "2017s2", Map(
       "IngSoft" -> Passed,
@@ -366,7 +366,7 @@ trait SeedData extends Logging {
       "PConc" -> SelectedCourse("C1"),
       "TTI-TTU" -> SelectedNonCourse("Voy a cursar TTI segun oferta del Departamento de Ciencia y Tecnologia"),
       "SemMod" -> SelectedCourse("C1")
-    ))
+    ), updateDate = DateTime.now.withDate(2017, 6, 12))
     info("Anwers for TPI 2018s1")
     pollResultService.update(123, "TPI", "2018s1", Map(
       "PConc" -> Passed,
@@ -374,7 +374,7 @@ trait SeedData extends Logging {
       "SemMod" -> Passed,
       "PF" -> SelectedCourse("C1"),
       "Obj3" -> SelectedCourse("C1")
-    ))
+    ), updateDate = DateTime.now.withDate(2018, 2, 12))
     info("Done seeding!")
   }
 

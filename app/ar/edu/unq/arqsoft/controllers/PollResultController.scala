@@ -21,4 +21,8 @@ class PollResultController @Inject()(cc: ControllerComponents, parse: PlayBodyPa
       pollResultService.update(studentFileNumber, careerShortName, pollKey, request.body)
   }
 
+  def allOfStudent(studentFileNumber: Int) = JsonAction {
+    pollResultService.pollResultsOf(studentFileNumber)
+  }
+
 }
