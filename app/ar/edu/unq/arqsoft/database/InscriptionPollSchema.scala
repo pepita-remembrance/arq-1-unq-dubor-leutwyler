@@ -83,18 +83,8 @@ object InscriptionPollSchema extends Schema {
 
   val studentsCareers = manyToManyRelation(students, careers)
     .via[StudentCareer]((s, c, sc) => (s.id === sc.studentId, c.id === sc.careerId))
-
-  findAllTablesFor(TableRow.getClass)
-    .foreach(table =>
-      on(table.asInstanceOf[Table[TableRow]])(t =>
-        declare(
-          t.id is(primaryKey, autoIncremented)
-        )
-      )
-    )
-
   val adminsCareers = manyToManyRelation(admins, careers)
-    .via[AdminCareer]((s, c, sc) => (s.id === sc.adminId, c.id === sc.careerId))
+    .via[AdminCareer]((a, c, ac) => (a.id === ac.adminId, c.id === ac.careerId))
 
   findAllTablesFor(TableRow.getClass)
     .foreach(table =>
