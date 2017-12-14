@@ -227,8 +227,8 @@ class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers) {
 @Singleton
 class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers) {
   def whereStudent(adminQuery: Query[Admin]): Query[AdminCareer] =
-    join(adminQuery, adminsCareers)((s, sc) =>
-      select(sc)
-        on (s.id === sc.adminId)
+    join(adminQuery, adminsCareers)((a, ac) =>
+      select(ac)
+        on (a.id === ac.adminId)
     )
 }

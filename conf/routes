@@ -12,7 +12,7 @@ GET          /students/:studentFileNumber                                       
 GET          /students/:studentFileNumber/polls                                          ar.edu.unq.arqsoft.controllers.PollController.allOfStudent(studentFileNumber :Int)
 GET          /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey        ar.edu.unq.arqsoft.controllers.PollResultController.get(studentFileNumber :Int, careerShortName :String, pollKey :String)
 POST         /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.create
-POST         /students/join                                                              ar.edu.unq.arqsoft.controllers.StudentController.createStudentCareer
+POST         /students/joinCareer                                                        ar.edu.unq.arqsoft.controllers.StudentController.createStudentCareer
 PATCH        /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey        ar.edu.unq.arqsoft.controllers.PollResultController.patch(studentFileNumber :Int, careerShortName :String, pollKey :String)
 
 # Careers
@@ -21,12 +21,14 @@ GET          /careers/:careerShortName                                          
 GET          /careers/:careerShortName/polls                                             ar.edu.unq.arqsoft.controllers.PollController.allOfCareer(careerShortName: String)
 GET          /careers/:careerShortName/polls/:pollKey                                    ar.edu.unq.arqsoft.controllers.PollController.get(careerShortName: String, pollKey: String)
 POST         /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.create
-POST         /careers/join                                                               ar.edu.unq.arqsoft.controllers.CareerController.createStudentCareer
+POST         /careers/joinStudent                                                        ar.edu.unq.arqsoft.controllers.CareerController.createStudentCareer
+POST         /careers/joinAdmin                                                          ar.edu.unq.arqsoft.controllers.CareerController.createAdminCareer
 POST         /careers/:careerShortName/polls                                             ar.edu.unq.arqsoft.controllers.PollController.create(careerShortName :String)
 
 #Admins
 GET          /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.all
 GET          /admins/:adminFileNumber                                                    ar.edu.unq.arqsoft.controllers.AdminController.get(adminFileNumber :Int)
 POST         /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.create
-POST         /admins/join                                                                ar.edu.unq.arqsoft.controllers.AdminController.createAdminCareer
+POST         /admins/joinCareer                                                          ar.edu.unq.arqsoft.controllers.AdminController.createAdminCareer
 GET          /admins/:adminFileNumber/careers                                            ar.edu.unq.arqsoft.controllers.AdminController.careers(adminFileNumber :Int)
+

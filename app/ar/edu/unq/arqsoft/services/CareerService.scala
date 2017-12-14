@@ -1,12 +1,12 @@
 package ar.edu.unq.arqsoft.services
 
-import ar.edu.unq.arqsoft.api.{CareerDTO, CreateCareerDTO, CreateStudentCareerDTO, PartialCareerDTO}
+import ar.edu.unq.arqsoft.api._
 import com.google.inject.Singleton
 import org.joda.time.DateTime
 
 @Singleton
 class CareerService
-  extends Service with StudentCareerService {
+  extends Service with StudentCareerService with AdminCareerService {
 
   def create(dto: CreateCareerDTO): CareerDTO = inTransaction {
     val newCareer = dto.asModel
@@ -25,6 +25,10 @@ class CareerService
 
   def joinStudent(dto: CreateStudentCareerDTO, joinDate:DateTime=DateTime.now): CareerDTO = inTransaction {
     createStudentCareer(dto, joinDate)._2
+  }
+
+  def joinAdmin(dto: CreateAdminCareerDTO, joinDate:DateTime=DateTime.now): CareerDTO = inTransaction {
+    createAdminCareer(dto, joinDate)._2
   }
 
 }
