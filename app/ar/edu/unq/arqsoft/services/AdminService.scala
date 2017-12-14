@@ -1,11 +1,10 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import org.joda.time.DateTime
 import com.google.inject.Singleton
 
 @Singleton
-class AdminService extends Service with AdminCareerService{
+class AdminService extends Service with AdminCareerService {
 
   def create(dto: CreateAdminDTO): AdminDTO = inTransaction {
     val newAdmin = dto.asModel
@@ -21,18 +20,15 @@ class AdminService extends Service with AdminCareerService{
     AdminDAO.whereFileNumber(fileNumber).single
   }
 
-  def joinCareer(dto: CreateAdminCareerDTO, joinDate:DateTime = DateTime.now): AdminDTO = inTransaction {
-    createAdminCareer(dto, joinDate)._1
+  def joinCareer(dto: CreateAdminCareerDTO): AdminDTO = inTransaction {
+    createAdminCareer(dto)._1
   }
 
   def careers(fileNumber: Int): Iterable[PartialCareerForAdminDTO] = inTransaction {
-    byFileNumber(fileNumber).careers.map(c => PartialCareerForAdminDTO(c.shortName, c.longName, CareerDAO.numberOfStudentsWithCareerKey(c.shortName).measures))
+    CareerDAO.careersOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(fileNumber))).mapAs[PartialCareerForAdminDTO]
   }
 
   def polls(fileNumber: Int): Iterable[PartialPollForAdminDTO] = inTransaction {
-    PollDAO.pollsOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(fileNumber))).mapAs[PartialPollDTO].map( c =>
-      PartialPollForAdminDTO(c.key, c.isOpen, c.career, PollResultDAO.studentsAnswered(
-        PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(c.career.shortName), c.key)).measures)
-    )
+    PollDAO.pollsOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(fileNumber))).mapAs[PartialPollForAdminDTO]
   }
 }

@@ -251,15 +251,11 @@ trait SeedData extends Logging {
     info("Seeding database...")
     info("Creating default poll offer options...")
     pollService.createDefaultOptions()
-    info("Creating students...")
-    List(
-      CreateStudentDTO(123, "marcogomez@gmail.com", "Marco", "Gomez"),
-      CreateStudentDTO(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
-    ).map(studentService.create)
     info("Creating admins...")
     List(
-      CreateAdminDTO(1, "pablo.suarez@gmail.com", "Pablo", "Suarez"),
-      CreateAdminDTO(2, "gabriela.arevalo@gmail.com", "Gabriela", "Arevalo")
+      CreateAdminDTO(147, "fidel.ml@gmail.com", "Pablo", "Suarez"),
+      CreateAdminDTO(258, "pablo.suarez@gmail.com", "Pablo", "Suarez"),
+      CreateAdminDTO(369, "gabriela.arevalo@gmail.com", "Gabriela", "Arevalo")
     ).map(adminService.create)
     info("Creating careers...")
     List(
@@ -307,11 +303,17 @@ trait SeedData extends Logging {
         CreateSubjectDTO("TIP", "Taller de Trabajo de Insercion Profesional")
       )))
     ).foreach(careerService.create)
+    info("Creating students...")
+    List(
+      CreateStudentDTO(123, "marcogomez@gmail.com", "Marco", "Gomez"),
+      CreateStudentDTO(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
+    ).map(studentService.create)
+    info("Admins join their careers")
+    adminService.joinCareer(CreateAdminCareerDTO(147, "TPI"))
+    adminService.joinCareer(CreateAdminCareerDTO(258, "TPI"))
     info("Students join their careers")
     studentService.joinCareer(CreateStudentCareerDTO(123, "TPI"), joinDate = DateTime.now.withDate(2014, 12, 15))
     studentService.joinCareer(CreateStudentCareerDTO(456, "TPI"), joinDate = DateTime.now.withDate(2017, 5, 15))
-    info("Admins join their careers")
-    adminService.joinCareer(CreateAdminCareerDTO(1, "TPI"), joinDate = DateTime.now.withDate(2017, 12, 15))
     info("Creating poll for TPI")
     pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 2, 1))
     pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 6, 1))
@@ -387,8 +389,10 @@ trait SeedData extends Logging {
     info("Done seeding!")
   }
 
-  def SelectedCourse(key:String) = PollSelectedOptionDTO(key, isCourse = true)
-  def SelectedNonCourse(key:String) = PollSelectedOptionDTO(key, isCourse = false)
+  def SelectedCourse(key: String) = PollSelectedOptionDTO(key, isCourse = true)
+
+  def SelectedNonCourse(key: String) = PollSelectedOptionDTO(key, isCourse = false)
+
   def Passed = SelectedNonCourse("Ya aprobe")
 
   implicit class ScheduleFromBuilder(day: Day) {

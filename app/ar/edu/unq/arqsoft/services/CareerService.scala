@@ -27,8 +27,8 @@ class CareerService
     createStudentCareer(dto, joinDate)._2
   }
 
-  def joinAdmin(dto: CreateAdminCareerDTO, joinDate:DateTime=DateTime.now): CareerDTO = inTransaction {
-    createAdminCareer(dto, joinDate)._2
+  def joinAdmin(dto: CreateAdminCareerDTO): CareerDTO = inTransaction {
+    createAdminCareer(dto)._2
   }
 
 }

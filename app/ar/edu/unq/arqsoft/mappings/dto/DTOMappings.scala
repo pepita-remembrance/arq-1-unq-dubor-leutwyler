@@ -1,10 +1,10 @@
 package ar.edu.unq.arqsoft.mappings.dto
 
 import ar.edu.unq.arqsoft.api._
+import ar.edu.unq.arqsoft.database.DSLFlavor
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
-import ar.edu.unq.arqsoft.DAOs
 import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
 
@@ -74,6 +74,8 @@ trait OutputDTOMappings {
 
   implicit class QueryConverter[A](query: Query[A]) {
     def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
+
+    def computeCount: Long = from(query)(q => compute(DSLFlavor.count)).single.measures
   }
 
   implicit class IterableConverter[A](iterable: Iterable[A]) {
@@ -119,8 +121,14 @@ trait OutputDTOMappings {
   implicit def careerToPartialDTO(career: Career): PartialCareerDTO =
     PartialCareerDTO(career.shortName, career.longName)
 
+  implicit def careerToPartialForAdminDTO(career: Career): PartialCareerForAdminDTO =
+    PartialCareerForAdminDTO(career.shortName, career.longName, career.students.computeCount)
+
   implicit def pollToPartialDTO(poll: Poll): PartialPollDTO =
     PartialPollDTO(poll.key, poll.isOpen, poll.career.single)
+
+  implicit def pollToPartialPollForAdminDTO(poll: Poll): PartialPollForAdminDTO =
+    PartialPollForAdminDTO(poll.key, poll.isOpen, poll.career.single, poll.results.computeCount)
 
   implicit def resultToPartialDTO(pollResult: PollResult): PartialPollResultDTO =
     PartialPollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate)
@@ -150,9 +158,6 @@ trait OutputDTOMappings {
 
   implicit def careerToDTO(career: Career): CareerDTO =
     CareerDTO(career.shortName, career.longName, career.subjects.mapAs[SubjectDTO], career.polls.mapAs[PartialPollDTO])
-
-  implicit def careerForAdminToDTO(career: CareerForAdmin): CareerForAdminDTO =
-    CareerForAdminDTO(career.shortName, career.longName, career.students, career.subjects.mapAs[SubjectDTO], career.polls.mapAs[PartialPollDTO])
 
   implicit def pollResultToDTO(pollResult: PollResult): PollResultDTO =
     PollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate, pollResult.selectedOptions)

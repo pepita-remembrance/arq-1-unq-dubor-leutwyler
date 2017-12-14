@@ -5,7 +5,6 @@ import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
-import org.squeryl.dsl.Measures
 import org.squeryl.{CanLookup, KeyedEntityDef, Query, Table}
 
 class ModelDAO[T](table: Table[T])
@@ -29,11 +28,11 @@ class CareerDAO extends ModelDAO[Career](careers) {
   def whereShortName(shortName: String): Query[Career] =
     where(_.shortName === shortName)
 
-  def numberOfStudentsWithCareerKey(shortName: String): Measures[Long] =
-    from(studentsCareers)(s =>
-      dsl.where(find(s.careerId).single.shortName === shortName)
-        compute count
-    ).single
+  def careersOfAdmin(adminCareerQuery: Query[AdminCareer]): Query[Career] =
+    join(adminCareerQuery, careers)((ac, c) =>
+      select(c)
+        on (ac.careerId === c.id)
+    )
 }
 
 @Singleton
@@ -164,7 +163,6 @@ class PollDAO extends ModelDAO[Poll](polls) {
 
   def pollsOfAdmin(adminCareerQuery: Query[AdminCareer]): Query[Poll] =
     join(adminCareerQuery, polls)((admin, p) =>
-      dsl.where(p.createDate gte admin.joinDate)
         select (p)
         on (admin.careerId === p.careerId)
     )
@@ -177,13 +175,6 @@ class PollResultDAO extends ModelDAO[PollResult](results) {
       select(r)
         on(r.studentId === s.id, r.pollId === p.id)
     )
-
-  def studentsAnswered(pollQuery: Query[Poll]): Measures[Long] =
-    join(pollQuery, results)((p, r) =>
-      dsl.where(p.id === r.pollId)
-      compute count
-      on(p.id === r.pollId)
-    ).single
 }
 
 @Singleton
