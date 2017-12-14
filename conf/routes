@@ -29,3 +29,4 @@ GET          /admins                                                            
 GET          /admins/:adminFileNumber                                                    ar.edu.unq.arqsoft.controllers.AdminController.get(adminFileNumber :Int)
 POST         /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.create
 POST         /admins/join                                                                ar.edu.unq.arqsoft.controllers.AdminController.createAdminCareer
+GET          /admins/:adminFileNumber/careers                                            ar.edu.unq.arqsoft.controllers.AdminController.careers(adminFileNumber :Int)

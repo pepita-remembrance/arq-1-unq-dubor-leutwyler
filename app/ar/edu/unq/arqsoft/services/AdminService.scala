@@ -24,4 +24,8 @@ class AdminService extends Service with AdminCareerService{
   def joinCareer(dto: CreateAdminCareerDTO, joinDate:DateTime = DateTime.now): AdminDTO = inTransaction {
     createAdminCareer(dto, joinDate)._1
   }
+
+  def careers(fileNumber: Int): Iterable[PartialCareerForAdminDTO] = inTransaction {
+    byFileNumber(fileNumber).careers.map(c => PartialCareerForAdminDTO(c.shortName, c.longName, CareerDAO.numberOfStudentsWithCareerKey(c.shortName).measures))
+  }
 }

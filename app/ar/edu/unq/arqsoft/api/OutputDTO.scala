@@ -22,7 +22,11 @@ case class PartialStudentDTO(fileNumber: Int, email: String, name: String, surna
 
 case class CareerDTO(shortName: String, longName: String, subjects: Iterable[SubjectDTO], polls: Iterable[PartialPollDTO]) extends OutputDTO
 
+case class CareerForAdminDTO(shortName: String, longName: String, students: Long, subjects: Iterable[SubjectDTO], polls: Iterable[PartialPollDTO]) extends OutputDTO
+
 case class PartialCareerDTO(shortName: String, longName: String) extends OutputDTO
+
+case class PartialCareerForAdminDTO(shortName: String, longName: String, students: Long) extends OutputDTO
 
 case class SubjectDTO(shortName: String, longName: String) extends OutputDTO
 

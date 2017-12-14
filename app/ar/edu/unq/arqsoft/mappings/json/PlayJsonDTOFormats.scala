@@ -12,6 +12,7 @@ trait PlayOutputDTOFormats {
   implicit val partialStudentDTOWrites = Json.writes[PartialStudentDTO]
   implicit val partialAdminDTOWrites = Json.writes[PartialAdminDTO]
   implicit val partialCareerDTOWrites = Json.writes[PartialCareerDTO]
+  implicit val partialCareerForAdminDTOWrites = Json.writes[PartialCareerForAdminDTO]
   implicit val subjectDTOWrites = Json.writes[SubjectDTO]
   implicit val scheduleDTOWrites = Json.writes[ScheduleDTO]
   implicit val courseDTOWrites = Json.writes[CourseDTO]

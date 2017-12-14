@@ -5,6 +5,7 @@ import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
+import org.squeryl.dsl.Measures
 import org.squeryl.{CanLookup, KeyedEntityDef, Query, Table}
 
 class ModelDAO[T](table: Table[T])
@@ -15,7 +16,6 @@ class ModelDAO[T](table: Table[T])
 class StudentDAO extends ModelDAO[Student](students) {
   def whereFileNumber(fileNumber: Int): Query[Student] =
     where(_.fileNumber === fileNumber)
-
 }
 
 @Singleton
@@ -28,6 +28,12 @@ class AdminDAO extends ModelDAO[Admin](admins) {
 class CareerDAO extends ModelDAO[Career](careers) {
   def whereShortName(shortName: String): Query[Career] =
     where(_.shortName === shortName)
+
+  def numberOfStudentsWithCareerKey(shortName: String): Measures[Long] =
+    from(studentsCareers)(s =>
+      dsl.where(find(s.careerId).single.shortName === shortName)
+        compute count
+    ).single
 }
 
 @Singleton
@@ -164,6 +170,13 @@ class PollResultDAO extends ModelDAO[PollResult](results) {
       select(r)
         on(r.studentId === s.id, r.pollId === p.id)
     )
+
+  def studentsAnswered(pollQuery: Query[Poll]): Measures[Long] =
+    join(pollQuery, results)((p, r) =>
+      dsl.where(p.id === r.pollId)
+      compute count
+      on(p.id === r.pollId)
+    ).single
 }
 
 @Singleton

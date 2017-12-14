@@ -8,6 +8,9 @@ case class Career(shortName: String, longName: String) extends TableRow {
   lazy val polls = InscriptionPollSchema.careerPolls.left(this)
 }
 
+case class CareerForAdmin(shortName: String, longName: String, students: Long) extends TableRow{
+}
+
 case class Subject(careerId: KeyType, shortName: String, longName: String) extends TableRow
 
 case class Course(key: String) extends TableRow with OfferOption {

@@ -4,6 +4,7 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
+import ar.edu.unq.arqsoft.DAOs
 import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
 
@@ -149,6 +150,9 @@ trait OutputDTOMappings {
 
   implicit def careerToDTO(career: Career): CareerDTO =
     CareerDTO(career.shortName, career.longName, career.subjects.mapAs[SubjectDTO], career.polls.mapAs[PartialPollDTO])
+
+  implicit def careerForAdminToDTO(career: CareerForAdmin): CareerForAdminDTO =
+    CareerForAdminDTO(career.shortName, career.longName, career.students, career.subjects.mapAs[SubjectDTO], career.polls.mapAs[PartialPollDTO])
 
   implicit def pollResultToDTO(pollResult: PollResult): PollResultDTO =
     PollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate, pollResult.selectedOptions)
