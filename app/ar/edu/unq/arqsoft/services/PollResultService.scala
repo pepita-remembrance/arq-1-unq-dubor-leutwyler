@@ -1,13 +1,17 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
-import ar.edu.unq.arqsoft.api.PollResultDTO
+import ar.edu.unq.arqsoft.api.{PartialPollResultDTO, PollResultDTO}
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
 import org.joda.time.DateTime
 
 @Singleton
 class PollResultService extends Service {
+
+  def pollResultsOf(studentFileNumber: Int): Iterable[PartialPollResultDTO] = inTransaction {
+    PollResultDAO.resultsOfStudent(StudentDAO.whereFileNumber(studentFileNumber)).mapAs[PartialPollResultDTO]
+  }
 
   def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResultDTO = inTransaction {
     getPollResult(studentFileNumber, careerShortName, pollKey)

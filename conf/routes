@@ -10,6 +10,7 @@ GET          /seed                                                              
 GET          /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.all
 GET          /students/:studentFileNumber                                                ar.edu.unq.arqsoft.controllers.StudentController.get(studentFileNumber :Int)
 GET          /students/:studentFileNumber/polls                                          ar.edu.unq.arqsoft.controllers.PollController.allOfStudent(studentFileNumber :Int)
+GET          /students/:studentFileNumber/results                                        ar.edu.unq.arqsoft.controllers.PollResultController.allOfStudent(studentFileNumber :Int)
 GET          /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey        ar.edu.unq.arqsoft.controllers.PollResultController.get(studentFileNumber :Int, careerShortName :String, pollKey :String)
 POST         /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.create
 POST         /students/join                                                              ar.edu.unq.arqsoft.controllers.StudentController.createStudentCareer
