@@ -35,7 +35,7 @@ case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType
   lazy val offer = InscriptionPollSchema.offerPollOfferOptions.right(this)
 }
 
-case class PollResult(pollId: KeyType, studentId: KeyType, fillDate: DateTime) extends TableRow {
+case class PollResult(pollId: KeyType, studentId: KeyType, var fillDate: DateTime) extends TableRow {
   lazy val poll = InscriptionPollSchema.pollResults.right(this)
   lazy val student = InscriptionPollSchema.studentResults.right(this)
   lazy val selectedOptions = InscriptionPollSchema.resultPollSelectedOptions.left(this)

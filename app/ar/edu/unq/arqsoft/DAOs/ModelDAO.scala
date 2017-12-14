@@ -175,6 +175,13 @@ class PollResultDAO extends ModelDAO[PollResult](results) {
       select(r)
         on(r.studentId === s.id, r.pollId === p.id)
     )
+
+  def resultsOfStudent(studentQuery: Query[Student]): Query[PollResult] =
+    join(studentQuery, results)((s, r) =>
+      select(r)
+        on (s.id === r.studentId)
+    )
+
 }
 
 @Singleton
