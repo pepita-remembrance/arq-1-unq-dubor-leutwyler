@@ -38,6 +38,7 @@ trait PlayOutputDTOFormats {
   }
   implicit val pollDTOWrites = Json.writes[PollDTO]
   implicit val partialPollDTOWrites = Json.writes[PartialPollDTO]
+  implicit val partialPollForAdminDTOWrites = Json.writes[PartialPollForAdminDTO]
   implicit val pollResultDTOWrites = Json.writes[PollResultDTO]
   implicit val partialPollResultDTOWrites = Json.writes[PartialPollResultDTO]
   implicit val careerDTOWrites = Json.writes[CareerDTO]

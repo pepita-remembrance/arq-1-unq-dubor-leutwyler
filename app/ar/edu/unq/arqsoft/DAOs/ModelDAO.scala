@@ -161,6 +161,13 @@ class PollDAO extends ModelDAO[Poll](polls) {
         select (p)
         on (sc.careerId === p.careerId)
     )
+
+  def pollsOfAdmin(adminCareerQuery: Query[AdminCareer]): Query[Poll] =
+    join(adminCareerQuery, polls)((admin, p) =>
+      dsl.where(p.createDate gte admin.joinDate)
+        select (p)
+        on (admin.careerId === p.careerId)
+    )
 }
 
 @Singleton
@@ -226,7 +233,7 @@ class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers) {
 
 @Singleton
 class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers) {
-  def whereStudent(adminQuery: Query[Admin]): Query[AdminCareer] =
+  def whereAdmin(adminQuery: Query[Admin]): Query[AdminCareer] =
     join(adminQuery, adminsCareers)((a, ac) =>
       select(ac)
         on (a.id === ac.adminId)

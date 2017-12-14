@@ -35,4 +35,8 @@ class AdminController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers
     adminService.careers(fileNumber)
   }
 
+  def polls(filenumber: Int) = JsonAction {
+    adminService.polls(filenumber)
+  }
+
 }

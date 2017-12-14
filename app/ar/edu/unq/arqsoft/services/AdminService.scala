@@ -28,4 +28,11 @@ class AdminService extends Service with AdminCareerService{
   def careers(fileNumber: Int): Iterable[PartialCareerForAdminDTO] = inTransaction {
     byFileNumber(fileNumber).careers.map(c => PartialCareerForAdminDTO(c.shortName, c.longName, CareerDAO.numberOfStudentsWithCareerKey(c.shortName).measures))
   }
+
+  def polls(fileNumber: Int): Iterable[PartialPollForAdminDTO] = inTransaction {
+    PollDAO.pollsOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(fileNumber))).mapAs[PartialPollDTO].map( c =>
+      PartialPollForAdminDTO(c.key, c.isOpen, c.career, PollResultDAO.studentsAnswered(
+        PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(c.career.shortName), c.key)).measures)
+    )
+  }
 }

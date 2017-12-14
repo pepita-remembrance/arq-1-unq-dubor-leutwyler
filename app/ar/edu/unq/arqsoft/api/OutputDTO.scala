@@ -42,6 +42,9 @@ case class PollDTO(key: String, isOpen: Boolean, carrer: PartialCareerDTO, offer
 
 case class PartialPollDTO(key: String, isOpen: Boolean, career: PartialCareerDTO) extends OutputDTO
 
+case class PartialPollForAdminDTO(key: String, isOpen: Boolean, career: PartialCareerDTO, answered: Long) extends OutputDTO
+
+
 case class NonCourseOptionDTO(key: String, isCourse: Boolean) extends OutputDTO with OfferOptionDTO
 
 object NonCourseOptionDTO {
