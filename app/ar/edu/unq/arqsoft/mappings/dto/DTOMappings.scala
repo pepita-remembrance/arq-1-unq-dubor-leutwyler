@@ -1,6 +1,7 @@
 package ar.edu.unq.arqsoft.mappings.dto
 
 import ar.edu.unq.arqsoft.api._
+import ar.edu.unq.arqsoft.database.DSLFlavor
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
@@ -16,6 +17,11 @@ trait InputDTOMappings {
   implicit class StudentConverter(dto: CreateStudentDTO) extends ModelConverter0[CreateStudentDTO, Student](dto) {
     override def asModel: Student =
       Student(dto.fileNumber, dto.email, dto.name, dto.surname)
+  }
+
+  implicit class AdminConverter(dto: CreateAdminDTO) extends ModelConverter0[CreateAdminDTO, Admin](dto) {
+    override def asModel: Admin =
+      Admin(dto.fileNumber, dto.email, dto.name, dto.surname)
   }
 
   implicit class CareerConverter(dto: CreateCareerDTO) extends ModelConverter0[CreateCareerDTO, Career](dto) {
@@ -68,6 +74,8 @@ trait OutputDTOMappings {
 
   implicit class QueryConverter[A](query: Query[A]) {
     def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
+
+    def computeCount: Long = from(query)(q => compute(DSLFlavor.count)).single.measures
   }
 
   implicit class IterableConverter[A](iterable: Iterable[A]) {
@@ -107,11 +115,20 @@ trait OutputDTOMappings {
   implicit def studentToPartialDTO(student: Student): PartialStudentDTO =
     PartialStudentDTO(student.fileNumber, student.email, student.name, student.surname)
 
+  implicit def adminToPartialDTO(admin: Admin): PartialAdminDTO =
+    PartialAdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname)
+
   implicit def careerToPartialDTO(career: Career): PartialCareerDTO =
     PartialCareerDTO(career.shortName, career.longName)
 
+  implicit def careerToPartialForAdminDTO(career: Career): PartialCareerForAdminDTO =
+    PartialCareerForAdminDTO(career.shortName, career.longName, career.students.computeCount)
+
   implicit def pollToPartialDTO(poll: Poll): PartialPollDTO =
     PartialPollDTO(poll.key, poll.isOpen, poll.career.single)
+
+  implicit def pollToPartialPollForAdminDTO(poll: Poll): PartialPollForAdminDTO =
+    PartialPollForAdminDTO(poll.key, poll.isOpen, poll.career.single, poll.results.computeCount)
 
   implicit def resultToPartialDTO(pollResult: PollResult): PartialPollResultDTO =
     PartialPollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate)
@@ -147,6 +164,9 @@ trait OutputDTOMappings {
 
   implicit def studentToDTO(student: Student): StudentDTO =
     StudentDTO(student.fileNumber, student.email, student.name, student.surname, student.careers.mapAs[PartialCareerDTO], student.results.mapAs[PartialPollResultDTO])
+
+  implicit def adminToDTO(admin: Admin): AdminDTO =
+    AdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])
 
 }
 

@@ -22,6 +22,10 @@ class PollService extends Service {
     PollDAO.pollsOfCareer(CareerDAO.whereShortName(careerShortName)).mapAs[PartialPollDTO]
   }
 
+  def allOfAdmin(adminFileNumber: Int): Iterable[PartialPollDTO] = inTransaction {
+    PollDAO.pollsOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(adminFileNumber))).mapAs[PartialPollDTO]
+  }
+
   def byCareerShortNameAndPollKey(careerShortName: String, pollKey: String): PollDTO = inTransaction {
     PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
   }

@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.controllers
 
-import ar.edu.unq.arqsoft.api.{CreateCareerDTO, CreateStudentCareerDTO}
+import ar.edu.unq.arqsoft.api.{CreateAdminCareerDTO, CreateCareerDTO, CreateStudentCareerDTO}
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.services.{CareerService, StudentService}
 import com.google.inject.{Inject, Singleton}
@@ -29,6 +29,11 @@ class CareerController @Inject()(cc: ControllerComponents, parse: PlayBodyParser
   def createStudentCareer = JsonAction withBody[CreateStudentCareerDTO] {
     implicit request: Request[CreateStudentCareerDTO] =>
       careerService.joinStudent(request.body)
+  }
+
+  def createAdminCareer = JsonAction withBody[CreateAdminCareerDTO] {
+    implicit request: Request[CreateAdminCareerDTO] =>
+      careerService.joinAdmin(request.body)
   }
 
 }

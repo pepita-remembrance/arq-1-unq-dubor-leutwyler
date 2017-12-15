@@ -10,7 +10,9 @@ trait PlayJsonDTOFormats
 trait PlayOutputDTOFormats {
   implicit val dateWrites = JodaWrites.jodaDateWrites("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   implicit val partialStudentDTOWrites = Json.writes[PartialStudentDTO]
+  implicit val partialAdminDTOWrites = Json.writes[PartialAdminDTO]
   implicit val partialCareerDTOWrites = Json.writes[PartialCareerDTO]
+  implicit val partialCareerForAdminDTOWrites = Json.writes[PartialCareerForAdminDTO]
   implicit val subjectDTOWrites = Json.writes[SubjectDTO]
   implicit val scheduleDTOWrites = Json.writes[ScheduleDTO]
   implicit val courseDTOWrites = Json.writes[CourseDTO]
@@ -36,10 +38,12 @@ trait PlayOutputDTOFormats {
   }
   implicit val pollDTOWrites = Json.writes[PollDTO]
   implicit val partialPollDTOWrites = Json.writes[PartialPollDTO]
+  implicit val partialPollForAdminDTOWrites = Json.writes[PartialPollForAdminDTO]
   implicit val pollResultDTOWrites = Json.writes[PollResultDTO]
   implicit val partialPollResultDTOWrites = Json.writes[PartialPollResultDTO]
   implicit val careerDTOWrites = Json.writes[CareerDTO]
   implicit val studentDTOWrites = Json.writes[StudentDTO]
+  implicit val adminDTOWrites = Json.writes[AdminDTO]
 }
 
 trait PlayInputDTOFormats {
@@ -58,6 +62,8 @@ trait PlayInputDTOFormats {
   implicit val createSubjectDTOReads = Json.reads[CreateSubjectDTO]
   implicit val createCareerDTOReads = Json.reads[CreateCareerDTO]
   implicit val createStudentDTOReads = Json.reads[CreateStudentDTO]
+  implicit val createAdminDTOReads = Json.reads[CreateAdminDTO]
   implicit val createStudentCareerDTO = Json.reads[CreateStudentCareerDTO]
+  implicit val createAdminCareerDTO = Json.reads[CreateAdminCareerDTO]
   implicit val pollSelectedOptionDTO = Json.reads[PollSelectedOptionDTO]
 }

@@ -10,6 +10,7 @@ import org.squeryl.{KeyedEntity, Query}
 case class Poll(key: String, careerId: KeyType, isOpen: Boolean, createDate: DateTime) extends TableRow {
   lazy val career = InscriptionPollSchema.careerPolls.right(this)
   lazy val offers = InscriptionPollSchema.pollPollOfferOptions.left(this)
+  lazy val results = InscriptionPollSchema.pollResults.left(this)
 }
 
 case class OfferOptionBase(offerId: KeyType, isCourse: Boolean) extends TableRow {
@@ -44,17 +45,16 @@ case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, var off
 
 trait OfferOption extends KeyedEntity[KeyType] {
   this: TableRow =>
-  @transient
-  @Transient
-  val isCourse: Boolean
 
-  @transient
-  @Transient
-  val key: String
+  def isCourse: Boolean
+
+  def key: String
 
   def base: Query[OfferOptionBase] = from(InscriptionPollSchema.offers)(baseOffer => where(baseOffer.isCourse === isCourse and baseOffer.offerId === id) select baseOffer)
 }
 
 case class NonCourseOption(key: String) extends TableRow with OfferOption {
+  @transient
+  @Transient
   val isCourse: Boolean = false
 }

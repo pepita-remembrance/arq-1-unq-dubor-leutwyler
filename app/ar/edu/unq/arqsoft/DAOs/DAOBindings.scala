@@ -8,6 +8,9 @@ trait DAOBindings {
   var StudentDAO: StudentDAO = _
 
   @Inject
+  var AdminDAO: AdminDAO = _
+
+  @Inject
   var CareerDAO: CareerDAO = _
 
   @Inject
@@ -39,5 +42,8 @@ trait DAOBindings {
 
   @Inject
   var StudentCareerDAO: StudentCareerDAO = _
+
+  @Inject
+  var AdminCareerDAO: AdminCareerDAO = _
 
 }

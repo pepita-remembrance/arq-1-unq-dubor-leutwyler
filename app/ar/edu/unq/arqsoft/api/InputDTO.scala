@@ -11,6 +11,8 @@ object InputAlias {
 
 case class CreateStudentDTO(fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
 
+case class CreateAdminDTO(fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
+
 case class CreateCareerDTO(shortName: String, longName: String, subjects: Option[List[CreateSubjectDTO]]) extends InputDTO
 
 case class CreateSubjectDTO(shortName: String, longName: String) extends InputDTO
@@ -26,5 +28,7 @@ case class CreateCourseDTO(key: String, schedules: List[CreateScheduleDTO]) exte
 case class CreateScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends InputDTO
 
 case class CreateStudentCareerDTO(studentFileNumber: Int, careerShortName: String) extends InputDTO
+
+case class CreateAdminCareerDTO(adminFileNumber: Int, careerShortName: String) extends InputDTO
 
 case class PollSelectedOptionDTO(key: String, isCourse: Boolean) extends InputDTO with OfferOptionDTO
