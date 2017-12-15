@@ -25,4 +25,8 @@ class PollResultController @Inject()(cc: ControllerComponents, parse: PlayBodyPa
     pollResultService.pollResultsOf(studentFileNumber)
   }
 
+  def tally(careerShortName: String, pollKey: String) = JsonAction {
+    pollResultService.tally(careerShortName: String, pollKey: String)
+  }
+
 }

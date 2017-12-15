@@ -28,10 +28,10 @@ case class PartialCareerForAdminDTO(shortName: String, longName: String, student
 
 case class SubjectDTO(shortName: String, longName: String) extends OutputDTO
 
-case class CourseDTO(key: String, schedules: Iterable[ScheduleDTO], isCourse: Boolean) extends OutputDTO with OfferOptionDTO
+case class CourseDTO(key: String, quota: Int, schedules: Iterable[ScheduleDTO], isCourse: Boolean) extends OutputDTO with OfferOptionDTO
 
 object CourseDTO {
-  def apply(key: String, schedules: Iterable[ScheduleDTO]): CourseDTO = CourseDTO(key, schedules, isCourse = true)
+  def apply(key: String, quota: Int, schedules: Iterable[ScheduleDTO]): CourseDTO = CourseDTO(key, quota, schedules, isCourse = true)
 }
 
 case class ScheduleDTO(day: Int, fromHour: Int, fromMinutes: Int, toHour: Int, toMinutes: Int) extends OutputDTO
@@ -51,3 +51,7 @@ object NonCourseOptionDTO {
 case class PollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO, fillDate: DateTime, results: ResultsDTO) extends OutputDTO
 
 case class PartialPollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO, fillDate: DateTime) extends OutputDTO
+
+case class OptionTallyDTO(option: OfferOptionDTO, students: Iterable[PartialStudentDTO])
+
+case class TallyDTO(subject: SubjectDTO, options: Iterable[OptionTallyDTO]) extends OutputDTO

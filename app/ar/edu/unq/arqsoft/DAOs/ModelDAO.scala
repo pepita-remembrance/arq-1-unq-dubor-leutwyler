@@ -58,7 +58,6 @@ class SubjectDAO extends ModelDAO[Subject](subjects) {
         on(s.subjectId === sub.id, s.offerId === w.offerId)
     ).distinct
 
-
 }
 
 @Singleton
@@ -104,6 +103,12 @@ class CourseDAO extends ModelDAO[Course](courses) {
         on(tuple._2.offerId === c.id, tuple._1.id === s.id, tuple._2.id === o.id)
     )
 
+  def coursesOfTally(query: Query[(Subject, OfferOptionBase, Student)]): Query[(Subject, Course, Student)] =
+    join(query, courses, subjects, students)((tuple, c, sub, s) =>
+      dsl.where(tuple._2.isCourse === true)
+        select(sub, c, s)
+        on(tuple._1.id === sub.id, tuple._2.offerId === c.id, tuple._3.id === s.id)
+    )
 }
 
 @Singleton
@@ -135,6 +140,13 @@ class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
         select(s, nc, o)
         on(tuple._2.offerId === nc.id, tuple._1.id === s.id, tuple._2.id === o.id)
     )
+
+  def nonCoursesOfTally(query: Query[(Subject, OfferOptionBase, Student)]): Query[(Subject, NonCourseOption, Student)] =
+    join(query, nonCourses, subjects, students)((tuple, nc, sub, s) =>
+      dsl.where(tuple._2.isCourse === false)
+        select(sub, nc, s)
+        on(tuple._1.id === sub.id, tuple._2.offerId === nc.id, tuple._3.id === s.id)
+    )
 }
 
 @Singleton
@@ -163,7 +175,7 @@ class PollDAO extends ModelDAO[Poll](polls) {
 
   def pollsOfAdmin(adminCareerQuery: Query[AdminCareer]): Query[Poll] =
     join(adminCareerQuery, polls)((admin, p) =>
-        select (p)
+      select(p)
         on (admin.careerId === p.careerId)
     )
 }
@@ -235,5 +247,14 @@ class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers) {
     join(adminQuery, adminsCareers)((a, ac) =>
       select(ac)
         on (a.id === ac.adminId)
+    )
+}
+
+object QueryTemplates {
+  def tallyQuery(pollId: KeyType): Query[(Subject, OfferOptionBase, Student)] =
+    join(subjects, offers, students, pollSelectedOptions, results)((sub, o, s, pso, r) =>
+      where(r.pollId === pollId)
+        select(sub, o, s)
+        on(pso.pollResultId === r.id, pso.offerId === o.id, pso.subjectId === sub.id, r.studentId === s.id)
     )
 }
