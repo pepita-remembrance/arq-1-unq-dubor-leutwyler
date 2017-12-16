@@ -1,13 +1,29 @@
 package ar.edu.unq.arqsoft.services
 
+import ar.edu.unq.arqsoft.DAOs.QueryTemplates
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
-import ar.edu.unq.arqsoft.api.{PartialPollResultDTO, PollResultDTO}
+import ar.edu.unq.arqsoft.api.{PartialPollResultDTO, PollResultDTO, TallyDTO}
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
 import org.joda.time.DateTime
 
 @Singleton
 class PollResultService extends Service {
+
+  def tally(careerShortName: String, pollKey: String): Iterable[TallyDTO] = inTransaction {
+    val poll = PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
+    val tallyQuery = QueryTemplates.tallyQuery(poll.id)
+
+    // Squeryl lacks support for UNION queries so...
+    val courseTally = CourseDAO.coursesOfTally(tallyQuery).toList
+    val nonCourseTally = NonCourseDAO.nonCoursesOfTally(tallyQuery).toList
+
+    (courseTally ++ nonCourseTally)
+      .groupBy(_._1)
+      .mapValues(_.groupBy(_._2: OfferOption))
+      .mapValues(_.mapValues(_.map(_._3)))
+      .mapAs[TallyDTO]
+  }
 
   def pollResultsOf(studentFileNumber: Int): Iterable[PartialPollResultDTO] = inTransaction {
     PollResultDAO.resultsOfStudent(StudentDAO.whereFileNumber(studentFileNumber)).mapAs[PartialPollResultDTO]

@@ -58,7 +58,7 @@ trait InputDTOMappings {
 
   implicit class CourseConverter(dto: CreateCourseDTO) extends ModelConverter0[CreateCourseDTO, Course](dto) {
     override def asModel: Course =
-      Course(dto.key)
+      Course(dto.key, dto.quota)
   }
 
   implicit class ScheduleConverter(dto: CreateScheduleDTO) extends ModelConverter1[CreateScheduleDTO, Schedule](dto) {
@@ -140,7 +140,7 @@ trait OutputDTOMappings {
     ScheduleDTO(schedule.day, schedule.fromHour, schedule.fromMinutes, schedule.toHour, schedule.toMinutes)
 
   implicit def courseToDTO(course: Course): CourseDTO =
-    CourseDTO(course.key, course.schedules.mapAs[ScheduleDTO])
+    CourseDTO(course.key, course.quota, course.schedules.mapAs[ScheduleDTO])
 
   implicit def nonCourseToDTO(nonCourse: NonCourseOption): NonCourseOptionDTO =
     NonCourseOptionDTO(nonCourse.key)
@@ -168,6 +168,11 @@ trait OutputDTOMappings {
   implicit def adminToDTO(admin: Admin): AdminDTO =
     AdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])
 
+  implicit def optionMapToOptionTallyDTO(data: (OfferOption, Iterable[Student])): OptionTallyDTO =
+    OptionTallyDTO(data._1, data._2.mapAs[PartialStudentDTO])
+
+  implicit def tallyMapToDTO(data: (Subject, Map[OfferOption, Iterable[Student]])): TallyDTO =
+    TallyDTO(data._1, data._2.mapAs[OptionTallyDTO])
 }
 
 

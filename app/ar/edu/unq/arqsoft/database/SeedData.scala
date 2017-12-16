@@ -24,165 +24,165 @@ trait SeedData extends Logging {
     Map(
       // Basicas
       "InPr" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 40, List(
           Lunes.from(9).to(11, 30),
           Jueves.from(9).to(11, 30),
           Miercoles.from(9).to(12)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 40, List(
           Lunes.from(12).to(14, 30),
           Jueves.from(12).to(14, 30),
           Miercoles.from(9).to(12)
         )),
-        CreateCourseDTO("C3", List(
+        CreateCourseDTO("C3", 40, List(
           Lunes.from(16).to(18, 30),
           Jueves.from(16).to(18, 30),
           Miercoles.from(18).to(21)
         )),
-        CreateCourseDTO("C4", List(
+        CreateCourseDTO("C4", 40, List(
           Lunes.from(19).to(21, 30),
           Jueves.from(19).to(21, 30),
           Miercoles.from(18).to(21)
         ))
       ),
       "Orga" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 40, List(
           Martes.from(9).to(12),
           Viernes.from(9).to(12)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 40, List(
           Martes.from(8, 30).to(11, 30),
           Sabado.from(9).to(12)
         )),
-        CreateCourseDTO("C3", List(
+        CreateCourseDTO("C3", 40, List(
           Martes.from(16).to(19),
           Viernes.from(16).to(19)
         )),
-        CreateCourseDTO("C4", List(
+        CreateCourseDTO("C4", 40, List(
           Martes.from(19).to(22),
           Viernes.from(19).to(22)
         ))
       ),
       "Mate1" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 40, List(
           Martes.from(9).to(13),
           Viernes.from(9).to(13)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 40, List(
           Lunes.from(18).to(22),
           Miercoles.from(18).to(22)
         )),
-        CreateCourseDTO("C3", List(
+        CreateCourseDTO("C3", 40, List(
           Lunes.from(9).to(13),
           Miercoles.from(9).to(13)
         ))
       ),
       "Obj1" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 40, List(
           Miercoles.from(15).to(19),
           Jueves.from(14).to(18)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 40, List(
           Lunes.from(18).to(22),
           Miercoles.from(18).to(22)
         ))
       ),
       "BD" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Martes.from(9).to(12),
           Miercoles.from(8).to(11)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 30, List(
           Martes.from(9).to(12),
           Miercoles.from(11).to(14)
         ))
       ),
       "EstrD" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 35, List(
           Lunes.from(15).to(17, 30),
           Martes.from(18).to(21),
           Sabado.from(8).to(10, 30)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 35, List(
           Lunes.from(18).to(20, 30),
           Martes.from(18).to(21),
           Sabado.from(11).to(13, 30)
         ))
       ),
       "Obj2" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Lunes.from(18).to(21),
           Martes.from(15).to(18)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 30, List(
           Lunes.from(18).to(21),
           Martes.from(18).to(21)
         ))
       ),
       // Avanzadas
       "Redes" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Martes.from(9).to(11),
           Jueves.from(8).to(12)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 30, List(
           Martes.from(18).to(22),
           Jueves.from(18).to(20)
         ))
       ),
       "SO" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Martes.from(18).to(22),
           Jueves.from(18).to(20)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 30, List(
           Lunes.from(18).to(22),
           Jueves.from(20).to(22)
         ))
       ),
       "PConc" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Lunes.from(14).to(18)
         ))
       ),
       "Mate2" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Lunes.from(11).to(13),
           Martes.from(12).to(14)
         )),
-        CreateCourseDTO("C2", List(
+        CreateCourseDTO("C2", 30, List(
           Jueves.from(18).to(22)
         ))
       ),
       "IngSoft" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Sabado.from(10).to(13),
           Miercoles.from(19).to(22)
         ))
       ),
       "UIs" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Jueves.from(16).to(22)
         ))
       ),
       "EPers" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Viernes.from(16).to(22)
         ))
       ),
       "PF" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Lunes.from(12).to(14),
           Martes.from(11).to(13)
         ))
       ),
       "DesApp" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Martes.from(16).to(22)
         ))
       ),
       "LabSOR" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Jueves.from(18).to(22)
         ))
       ),
@@ -193,13 +193,13 @@ trait SeedData extends Logging {
         CreateNonCourseDTO("Voy a rendir libre")
       ),
       "Ing2" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Jueves.from(14).to(18)
         ))
       ),
       // Opcionales
       "Seg" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Sabado.from(9).to(13)
         ))
       ),
@@ -207,7 +207,7 @@ trait SeedData extends Logging {
       //      "ProyLib" -> List(),
       //      "InArq" -> List(),
       "Obj3" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Miercoles.from(18).to(22)
         ))
       ),
@@ -216,20 +216,20 @@ trait SeedData extends Logging {
       //      "Geo" -> List(),
       //      "Decl" -> List(),
       "videojuegos" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Miercoles.from(9).to(13)
         ))
       ),
       //      "DADC" -> List(),
       // Seminarios
       "CLP" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Martes.from(18).to(20),
           Miercoles.from(18).to(20)
         ))
       ),
       "SemMod" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Martes.from(14).to(18)
         ))
       ),
@@ -240,7 +240,7 @@ trait SeedData extends Logging {
       ),
       // Trabajo Final
       "TIP" -> List(
-        CreateCourseDTO("C1", List(
+        CreateCourseDTO("C1", 30, List(
           Sabado.from(18).to(13)
         ))
       )
