@@ -12,7 +12,7 @@ object OutputAlias {
   type ResultsDTO = Map[SubjectShortName, OfferOptionDTO]
 }
 
-case class StudentDTO(fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO], pollResults: Iterable[PartialPollResultDTO]) extends OutputDTO
+case class StudentDTO(fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO], pollResults: Iterable[PartialPollResultDTO], polls: Iterable[PartialPollDTO]) extends OutputDTO
 
 case class AdminDTO(fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO]) extends OutputDTO
 
@@ -50,7 +50,7 @@ object NonCourseOptionDTO {
 
 case class PollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO, fillDate: DateTime, results: ResultsDTO) extends OutputDTO
 
-case class PartialPollResultDTO(poll: PartialPollDTO, student: PartialStudentDTO, fillDate: DateTime) extends OutputDTO
+case class PartialPollResultDTO(poll: PartialPollDTO, fillDate: DateTime) extends OutputDTO
 
 case class OptionTallyDTO(option: OfferOptionDTO, students: Iterable[PartialStudentDTO])
 

@@ -131,7 +131,7 @@ trait OutputDTOMappings {
     PartialPollForAdminDTO(poll.key, poll.isOpen, poll.career.single, poll.results.computeCount)
 
   implicit def resultToPartialDTO(pollResult: PollResult): PartialPollResultDTO =
-    PartialPollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate)
+    PartialPollResultDTO(pollResult.poll.single, pollResult.fillDate)
 
   implicit def subjectToDTO(subject: Subject): SubjectDTO =
     SubjectDTO(subject.shortName, subject.longName)
@@ -162,8 +162,18 @@ trait OutputDTOMappings {
   implicit def pollResultToDTO(pollResult: PollResult): PollResultDTO =
     PollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate, pollResult.selectedOptions)
 
-  implicit def studentToDTO(student: Student): StudentDTO =
-    StudentDTO(student.fileNumber, student.email, student.name, student.surname, student.careers.mapAs[PartialCareerDTO], student.results.mapAs[PartialPollResultDTO])
+  implicit def studentToDTO(student: Student): StudentDTO = {
+    val studentPolls = join(polls, studentsCareers)((p, sc) =>
+      where((sc.studentId === student.id) and (p.createDate gte sc.joinDate))
+        select (p)
+        on (sc.careerId === p.careerId)
+    )
+    StudentDTO(student.fileNumber, student.email, student.name, student.surname,
+      student.careers.mapAs[PartialCareerDTO],
+      student.results.mapAs[PartialPollResultDTO],
+      studentPolls.mapAs[PartialPollDTO]
+    )
+  }
 
   implicit def adminToDTO(admin: Admin): AdminDTO =
     AdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])

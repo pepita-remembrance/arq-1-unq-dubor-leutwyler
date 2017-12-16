@@ -4,7 +4,7 @@ import ar.edu.unq.arqsoft.api._
 import com.google.inject.Singleton
 
 @Singleton
-class AdminService extends Service with AdminCareerService {
+class AdminService extends Service {
 
   def create(dto: CreateAdminDTO): AdminDTO = inTransaction {
     val newAdmin = dto.asModel
@@ -18,10 +18,6 @@ class AdminService extends Service with AdminCareerService {
 
   def byFileNumber(fileNumber: Int): AdminDTO = inTransaction {
     AdminDAO.whereFileNumber(fileNumber).single
-  }
-
-  def joinCareer(dto: CreateAdminCareerDTO): AdminDTO = inTransaction {
-    createAdminCareer(dto)._1
   }
 
   def careers(fileNumber: Int): Iterable[PartialCareerForAdminDTO] = inTransaction {

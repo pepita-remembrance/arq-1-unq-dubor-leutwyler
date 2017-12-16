@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.controllers
 
-import ar.edu.unq.arqsoft.api.{CreateStudentCareerDTO, CreateStudentDTO}
+import ar.edu.unq.arqsoft.api.CreateStudentDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.services.{PollResultService, StudentService}
 import com.google.inject.{Inject, Singleton}
@@ -24,11 +24,6 @@ class StudentController @Inject()(cc: ControllerComponents, parse: PlayBodyParse
 
   def get(fileNumber: Int) = JsonAction {
     studentService.byFileNumber(fileNumber)
-  }
-
-  def createStudentCareer = JsonAction withBody[CreateStudentCareerDTO] {
-    implicit request: Request[CreateStudentCareerDTO] =>
-      studentService.joinCareer(request.body)
   }
 
 }
