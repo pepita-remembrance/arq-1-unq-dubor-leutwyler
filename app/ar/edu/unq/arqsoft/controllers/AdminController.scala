@@ -1,8 +1,8 @@
 package ar.edu.unq.arqsoft.controllers
 
-import ar.edu.unq.arqsoft.api.{CreateAdminCareerDTO, CreateAdminDTO}
+import ar.edu.unq.arqsoft.api.CreateAdminDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
-import ar.edu.unq.arqsoft.services.{AdminService}
+import ar.edu.unq.arqsoft.services.AdminService
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{ControllerComponents, PlayBodyParsers, Request}
 
@@ -24,11 +24,6 @@ class AdminController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers
 
   def get(fileNumber: Int) = JsonAction {
     adminService.byFileNumber(fileNumber)
-  }
-
-  def createAdminCareer = JsonAction withBody[CreateAdminCareerDTO] {
-    implicit request: Request[CreateAdminCareerDTO] =>
-      adminService.joinCareer(request.body)
   }
 
   def careers(fileNumber: Int) = JsonAction {

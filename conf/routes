@@ -3,34 +3,35 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
-# Init
+# Init routes
 GET          /seed                                                                       ar.edu.unq.arqsoft.controllers.InitController.seedDatabase
 
-# Students
+# Debug routes. Should be removed or properly classified if used.
+GET          /debug/careers                                                              ar.edu.unq.arqsoft.controllers.CareerController.all
+
+# Routes for student view
+# TODO: Replace GET /students and GET /students/:studentFileNumber with proper login routes.
 GET          /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.all
 GET          /students/:studentFileNumber                                                ar.edu.unq.arqsoft.controllers.StudentController.get(studentFileNumber :Int)
-GET          /students/:studentFileNumber/polls                                          ar.edu.unq.arqsoft.controllers.PollController.allOfStudent(studentFileNumber :Int)
-GET          /students/:studentFileNumber/results                                        ar.edu.unq.arqsoft.controllers.PollResultController.allOfStudent(studentFileNumber :Int)
 GET          /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey        ar.edu.unq.arqsoft.controllers.PollResultController.get(studentFileNumber :Int, careerShortName :String, pollKey :String)
-POST         /students                                                                   ar.edu.unq.arqsoft.controllers.StudentController.create
-POST         /students/joinCareer                                                        ar.edu.unq.arqsoft.controllers.StudentController.createStudentCareer
 PATCH        /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey        ar.edu.unq.arqsoft.controllers.PollResultController.patch(studentFileNumber :Int, careerShortName :String, pollKey :String)
+GET          /students/careers/:careerShortName/polls/:pollKey                           ar.edu.unq.arqsoft.controllers.PollController.get(careerShortName: String, pollKey: String)
 
-# Careers
-GET          /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.all
-GET          /careers/:careerShortName                                                   ar.edu.unq.arqsoft.controllers.CareerController.get(careerShortName :String)
-GET          /careers/:careerShortName/polls                                             ar.edu.unq.arqsoft.controllers.PollController.allOfCareer(careerShortName: String)
-GET          /careers/:careerShortName/polls/:pollKey                                    ar.edu.unq.arqsoft.controllers.PollController.get(careerShortName: String, pollKey: String)
-POST         /careers                                                                    ar.edu.unq.arqsoft.controllers.CareerController.create
-POST         /careers/joinStudent                                                        ar.edu.unq.arqsoft.controllers.CareerController.createStudentCareer
-POST         /careers/joinAdmin                                                          ar.edu.unq.arqsoft.controllers.CareerController.createAdminCareer
-POST         /careers/:careerShortName/polls                                             ar.edu.unq.arqsoft.controllers.PollController.create(careerShortName :String)
-
-#Admins
+# Routes for admin view
+# TODO: Replace GET /admins and GET /admins/:adminFileNumber with proper login routes.
 GET          /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.all
 GET          /admins/:adminFileNumber                                                    ar.edu.unq.arqsoft.controllers.AdminController.get(adminFileNumber :Int)
-POST         /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.create
-POST         /admins/joinCareer                                                          ar.edu.unq.arqsoft.controllers.AdminController.createAdminCareer
-GET          /admins/:adminFileNumber/careers                                            ar.edu.unq.arqsoft.controllers.AdminController.careers(adminFileNumber :Int)
 GET          /admins/:adminFileNumber/polls                                              ar.edu.unq.arqsoft.controllers.AdminController.polls(adminFileNumber :Int)
+GET          /admins/:adminFileNumber/careers                                            ar.edu.unq.arqsoft.controllers.AdminController.careers(adminFileNumber :Int)
+GET          /admins/careers/:careerShortName                                            ar.edu.unq.arqsoft.controllers.CareerController.get(careerShortName :String)
+GET          /admins/careers/:careerShortName/polls                                      ar.edu.unq.arqsoft.controllers.PollController.allOfCareer(careerShortName: String)
+GET          /admins/careers/:careerShortName/polls/:pollKey                             ar.edu.unq.arqsoft.controllers.PollController.get(careerShortName: String, pollKey: String)
 GET          /admins/careers/:careerShortName/polls/:pollKey/tally                       ar.edu.unq.arqsoft.controllers.PollResultController.tally(careerShortName: String, pollKey: String)
+
+# Create routes
+POST         /admins                                                                     ar.edu.unq.arqsoft.controllers.AdminController.create
+POST         /admins/careers                                                             ar.edu.unq.arqsoft.controllers.CareerController.create
+POST         /admins/students                                                            ar.edu.unq.arqsoft.controllers.StudentController.create
+POST         /admins/careers/:careerShortName/polls                                      ar.edu.unq.arqsoft.controllers.PollController.create(careerShortName :String)
+POST         /admins/careers/join/admins                                                 ar.edu.unq.arqsoft.controllers.CareerController.createAdminCareer
+POST         /admins/careers/join/students                                               ar.edu.unq.arqsoft.controllers.CareerController.createStudentCareer

@@ -1,12 +1,13 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
+import ar.edu.unq.arqsoft.model.{AdminCareer, StudentCareer}
 import com.google.inject.Singleton
 import org.joda.time.DateTime
 
 @Singleton
 class CareerService
-  extends Service with StudentCareerService with AdminCareerService {
+  extends Service {
 
   def create(dto: CreateCareerDTO): CareerDTO = inTransaction {
     val newCareer = dto.asModel
@@ -24,11 +25,17 @@ class CareerService
   }
 
   def joinStudent(dto: CreateStudentCareerDTO, joinDate:DateTime=DateTime.now): CareerDTO = inTransaction {
-    createStudentCareer(dto, joinDate)._2
+    val student = StudentDAO.whereFileNumber(dto.studentFileNumber).single
+    val career = CareerDAO.whereShortName(dto.careerShortName).single
+    StudentCareerDAO.save(StudentCareer(student.id, career.id, joinDate))
+    career
   }
 
   def joinAdmin(dto: CreateAdminCareerDTO): CareerDTO = inTransaction {
-    createAdminCareer(dto)._2
+    val admin = AdminDAO.whereFileNumber(dto.adminFileNumber).single
+    val career = CareerDAO.whereShortName(dto.careerShortName).single
+    AdminCareerDAO.save(AdminCareer(admin.id, career.id))
+    career
   }
 
 }

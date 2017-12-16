@@ -2,7 +2,7 @@ package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.DAOs.QueryTemplates
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
-import ar.edu.unq.arqsoft.api.{PartialPollResultDTO, PollResultDTO, TallyDTO}
+import ar.edu.unq.arqsoft.api.{PollResultDTO, TallyDTO}
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
 import org.joda.time.DateTime
@@ -23,10 +23,6 @@ class PollResultService extends Service {
       .mapValues(_.groupBy(_._2: OfferOption))
       .mapValues(_.mapValues(_.map(_._3)))
       .mapAs[TallyDTO]
-  }
-
-  def pollResultsOf(studentFileNumber: Int): Iterable[PartialPollResultDTO] = inTransaction {
-    PollResultDAO.resultsOfStudent(StudentDAO.whereFileNumber(studentFileNumber)).mapAs[PartialPollResultDTO]
   }
 
   def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResultDTO = inTransaction {
