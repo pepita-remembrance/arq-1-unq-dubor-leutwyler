@@ -1,9 +1,9 @@
 package ar.edu.unq.arqsoft.controllers
 
-import com.google.inject.{Inject, Singleton}
 import ar.edu.unq.arqsoft.api.CreateStudentDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.services.{PollResultService, StudentService}
+import com.google.inject.{Inject, Singleton}
 import play.api.mvc._
 
 @Singleton
@@ -13,7 +13,7 @@ class StudentController @Inject()(cc: ControllerComponents, parse: PlayBodyParse
                                  )
   extends BasicController(cc, parse) with PlayJsonDTOFormats {
 
-  def create = JsonActionWithBody[CreateStudentDTO] {
+  def create = JsonAction withBody[CreateStudentDTO] {
     implicit request: Request[CreateStudentDTO] =>
       studentService.create(request.body)
   }

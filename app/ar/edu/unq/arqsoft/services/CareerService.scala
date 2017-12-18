@@ -1,29 +1,41 @@
 package ar.edu.unq.arqsoft.services
 
-import com.google.inject.{Inject, Singleton}
-
-import ar.edu.unq.arqsoft.DAOs.{CareerDAO, StudentDAO, SubjectDAO}
-import ar.edu.unq.arqsoft.api.{CareerDTO, CreateCareerDTO, PartialCareerDTO}
+import ar.edu.unq.arqsoft.api._
+import ar.edu.unq.arqsoft.model.{AdminCareer, StudentCareer}
+import com.google.inject.Singleton
+import org.joda.time.DateTime
 
 @Singleton
-class CareerService @Inject()(careerDAO: CareerDAO, subjectDAO: SubjectDAO, studentDAO: StudentDAO)
-  extends Service with StudentCareerService{
+class CareerService
+  extends Service {
 
   def create(dto: CreateCareerDTO): CareerDTO = inTransaction {
     val newCareer = dto.asModel
-    careerDAO.save(newCareer)
-    dto.subjects.foreach(subjects => subjectDAO.save(subjects.map(_.asModel(newCareer))))
+    CareerDAO.save(newCareer)
+    dto.subjects.foreach(subjects => SubjectDAO.save(subjects.map(_.asModel(newCareer))))
     newCareer
   }
 
   def all: Iterable[PartialCareerDTO] = inTransaction {
-    careerDAO.all.mapAs[PartialCareerDTO]
+    CareerDAO.all.mapAs[PartialCareerDTO]
   }
 
-  def joinStudent(studentFileNumber: Int, careerShortName: String): CareerDTO = inTransaction {
-    val student = studentDAO.whereFileNumber(studentFileNumber).single
-    val career = careerDAO.whereShortName(careerShortName).single
-    joinCareer(student, career)
+  def byShortName(shortName: String): CareerDTO = inTransaction {
+    CareerDAO.whereShortName(shortName).single
+  }
+
+  def joinStudent(dto: CreateStudentCareerDTO, joinDate:DateTime=DateTime.now): CareerDTO = inTransaction {
+    val student = StudentDAO.whereFileNumber(dto.studentFileNumber).single
+    val career = CareerDAO.whereShortName(dto.careerShortName).single
+    StudentCareerDAO.save(StudentCareer(student.id, career.id, joinDate))
     career
   }
+
+  def joinAdmin(dto: CreateAdminCareerDTO): CareerDTO = inTransaction {
+    val admin = AdminDAO.whereFileNumber(dto.adminFileNumber).single
+    val career = CareerDAO.whereShortName(dto.careerShortName).single
+    AdminCareerDAO.save(AdminCareer(admin.id, career.id))
+    career
+  }
+
 }

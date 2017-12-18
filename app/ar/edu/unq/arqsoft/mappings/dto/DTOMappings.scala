@@ -1,9 +1,11 @@
 package ar.edu.unq.arqsoft.mappings.dto
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
+import ar.edu.unq.arqsoft.database.DSLFlavor
 import ar.edu.unq.arqsoft.database.DSLFlavor._
+import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
+import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
 
 trait DTOMappings
@@ -15,6 +17,11 @@ trait InputDTOMappings {
   implicit class StudentConverter(dto: CreateStudentDTO) extends ModelConverter0[CreateStudentDTO, Student](dto) {
     override def asModel: Student =
       Student(dto.fileNumber, dto.email, dto.name, dto.surname)
+  }
+
+  implicit class AdminConverter(dto: CreateAdminDTO) extends ModelConverter0[CreateAdminDTO, Admin](dto) {
+    override def asModel: Admin =
+      Admin(dto.fileNumber, dto.email, dto.name, dto.surname)
   }
 
   implicit class CareerConverter(dto: CreateCareerDTO) extends ModelConverter0[CreateCareerDTO, Career](dto) {
@@ -29,11 +36,12 @@ trait InputDTOMappings {
       Subject(extra1.id, dto.shortName, dto.longName)
   }
 
-  implicit class PollConverter(dto: CreatePollDTO) extends ModelConverter1[CreatePollDTO, Poll](dto) {
+  implicit class PollConverter(dto: CreatePollDTO) extends ModelConverter2[CreatePollDTO, Poll](dto) {
     override type Extra1 = Career
+    override type Extra2 = DateTime
 
-    override def asModel(extra1: Career): Poll =
-      Poll(dto.key, extra1.id, isOpen = true)
+    override def asModel(extra1: Career, extra2: DateTime): Poll =
+      Poll(dto.key, extra1.id, isOpen = true, extra2)
   }
 
   implicit class OfferOptionConverter(dto: CreateOfferOptionDTO) extends ModelConverter0[CreateOfferOptionDTO, OfferOption](dto) {
@@ -45,12 +53,12 @@ trait InputDTOMappings {
 
   implicit class NonCourseConverter(dto: CreateNonCourseDTO) extends ModelConverter0[CreateNonCourseDTO, NonCourseOption](dto) {
     override def asModel: NonCourseOption =
-      NonCourseOption(dto.textValue)
+      NonCourseOption(dto.key)
   }
 
   implicit class CourseConverter(dto: CreateCourseDTO) extends ModelConverter0[CreateCourseDTO, Course](dto) {
     override def asModel: Course =
-      Course(dto.shortName)
+      Course(dto.key, dto.quota)
   }
 
   implicit class ScheduleConverter(dto: CreateScheduleDTO) extends ModelConverter1[CreateScheduleDTO, Schedule](dto) {
@@ -66,11 +74,19 @@ trait OutputDTOMappings {
 
   implicit class QueryConverter[A](query: Query[A]) {
     def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
+
+    def computeCount: Long = from(query)(q => compute(DSLFlavor.count)).single.measures
   }
 
   implicit class IterableConverter[A](iterable: Iterable[A]) {
     def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
   }
+
+  implicit def queryPollSubjectOptionToDTO(query: Query[PollSubjectOption]): OutputAlias.ExtraDataDTO =
+    join(query, subjects)((ps, s) =>
+      select(s.shortName, ps.extraData)
+        on (ps.subjectId === s.id)
+    ).toMap
 
   implicit def queryOfferOptionBaseToDTO(query: Query[PollOfferOption]): OutputAlias.CareerOfferDTO = {
     val subjectWithCourse = join(query, subjects, offers, courses)((poo, s, o, c) =>
@@ -105,14 +121,23 @@ trait OutputDTOMappings {
   implicit def studentToPartialDTO(student: Student): PartialStudentDTO =
     PartialStudentDTO(student.fileNumber, student.email, student.name, student.surname)
 
+  implicit def adminToPartialDTO(admin: Admin): PartialAdminDTO =
+    PartialAdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname)
+
   implicit def careerToPartialDTO(career: Career): PartialCareerDTO =
     PartialCareerDTO(career.shortName, career.longName)
+
+  implicit def careerToPartialForAdminDTO(career: Career): PartialCareerForAdminDTO =
+    PartialCareerForAdminDTO(career.shortName, career.longName, career.students.computeCount)
 
   implicit def pollToPartialDTO(poll: Poll): PartialPollDTO =
     PartialPollDTO(poll.key, poll.isOpen, poll.career.single)
 
+  implicit def pollToPartialPollForAdminDTO(poll: Poll): PartialPollForAdminDTO =
+    PartialPollForAdminDTO(poll.key, poll.isOpen, poll.career.single, poll.results.computeCount)
+
   implicit def resultToPartialDTO(pollResult: PollResult): PartialPollResultDTO =
-    PartialPollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate)
+    PartialPollResultDTO(pollResult.poll.single, pollResult.fillDate)
 
   implicit def subjectToDTO(subject: Subject): SubjectDTO =
     SubjectDTO(subject.shortName, subject.longName)
@@ -121,10 +146,10 @@ trait OutputDTOMappings {
     ScheduleDTO(schedule.day, schedule.fromHour, schedule.fromMinutes, schedule.toHour, schedule.toMinutes)
 
   implicit def courseToDTO(course: Course): CourseDTO =
-    CourseDTO(course.shortName, course.schedules.mapAs[ScheduleDTO])
+    CourseDTO(course.key, course.quota, course.schedules.mapAs[ScheduleDTO])
 
   implicit def nonCourseToDTO(nonCourse: NonCourseOption): NonCourseOptionDTO =
-    NonCourseOptionDTO(nonCourse.textValue)
+    NonCourseOptionDTO(nonCourse.key)
 
   implicit def offerOptionToDTO(offerOption: OfferOption): OfferOptionDTO = offerOption match {
     case offer: Course => offer
@@ -135,7 +160,7 @@ trait OutputDTOMappings {
     pollOfferOption.offer.single.discriminated.single
 
   implicit def pollToDTO(poll: Poll): PollDTO =
-    PollDTO(poll.key, poll.isOpen, poll.career.single, poll.offers)
+    PollDTO(poll.key, poll.isOpen, poll.career.single, poll.offers, poll.extraData)
 
   implicit def careerToDTO(career: Career): CareerDTO =
     CareerDTO(career.shortName, career.longName, career.subjects.mapAs[SubjectDTO], career.polls.mapAs[PartialPollDTO])
@@ -143,9 +168,27 @@ trait OutputDTOMappings {
   implicit def pollResultToDTO(pollResult: PollResult): PollResultDTO =
     PollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate, pollResult.selectedOptions)
 
-  implicit def studentToDTO(student: Student): StudentDTO =
-    StudentDTO(student.fileNumber, student.email, student.name, student.surname, student.careers.mapAs[PartialCareerDTO], student.results.mapAs[PartialPollResultDTO])
+  implicit def studentToDTO(student: Student): StudentDTO = {
+    val studentPolls = join(polls, studentsCareers)((p, sc) =>
+      where((sc.studentId === student.id) and (p.createDate gte sc.joinDate))
+        select (p)
+        on (sc.careerId === p.careerId)
+    )
+    StudentDTO(student.fileNumber, student.email, student.name, student.surname,
+      student.careers.mapAs[PartialCareerDTO],
+      student.results.mapAs[PartialPollResultDTO],
+      studentPolls.mapAs[PartialPollDTO]
+    )
+  }
 
+  implicit def adminToDTO(admin: Admin): AdminDTO =
+    AdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])
+
+  implicit def optionMapToOptionTallyDTO(data: (OfferOption, Iterable[Student])): OptionTallyDTO =
+    OptionTallyDTO(data._1, data._2.mapAs[PartialStudentDTO])
+
+  implicit def tallyMapToDTO(data: (Subject, Map[OfferOption, Iterable[Student]])): TallyDTO =
+    TallyDTO(data._1, data._2.mapAs[OptionTallyDTO])
 }
 
 
@@ -154,23 +197,14 @@ abstract class ModelConverter0[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DT
 }
 
 abstract class ModelConverter1[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1 <: TableRow
+  type Extra1
 
   def asModel(extra1: Extra1): Model
 }
 
 abstract class ModelConverter2[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1 <: TableRow
-  type Extra2 <: TableRow
+  type Extra1
+  type Extra2
 
   def asModel(extra1: Extra1, extra2: Extra2): Model
 }
-
-abstract class ModelConverter3[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1 <: TableRow
-  type Extra2 <: TableRow
-  type Extra3 <: TableRow
-
-  def asModel(extra1: Extra1, extra2: Extra2, extra3: Extra3): Model
-}
-

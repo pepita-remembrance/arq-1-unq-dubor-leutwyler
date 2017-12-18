@@ -16,4 +16,5 @@ Play will start up on the HTTP port at http://localhost:9000/.   You don't need 
 
 ## Heroku
 
-[URL](https://murmuring-beyond-94607.herokuapp.com/v1/careers)
+* [URL](https://ins-poll-back-arqsoft-2017s2.herokuapp.com/)
+* [GIT](https://git.heroku.com/ins-poll-back-arqsoft-2017s2.git)

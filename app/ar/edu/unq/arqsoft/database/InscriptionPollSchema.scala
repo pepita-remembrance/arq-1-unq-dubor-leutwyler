@@ -32,10 +32,9 @@ trait DSLFlavor extends PrimitiveTypeMode with PrimitiveJodaTimeSupport
 
 object DSLFlavor extends DSLFlavor
 
-import DSLFlavor._ //This import provides the implicit FieldMapper for Schema.
+import ar.edu.unq.arqsoft.database.DSLFlavor._ //This import provides the implicit FieldMapper for Schema.
 
 object InscriptionPollSchema extends Schema {
-
 
   val students = table[Student]
   val careers = table[Career]
@@ -45,9 +44,11 @@ object InscriptionPollSchema extends Schema {
   val nonCourses = table[NonCourseOption]
   val schedules = table[Schedule]
   val polls = table[Poll]
+  val pollSubjectOption = table[PollSubjectOption]
   val pollOfferOptions = table[PollOfferOption]
   val results = table[PollResult]
   val pollSelectedOptions = table[PollSelectedOption]
+  val admins = table[Admin]
 
   val studentResults = oneToManyRelation(students, results)
     .via((s, r) => s.id === r.studentId)
@@ -59,6 +60,10 @@ object InscriptionPollSchema extends Schema {
     .via((c, s) => c.id === s.courseId)
   val pollResults = oneToManyRelation(polls, results)
     .via((p, pr) => p.id === pr.pollId)
+  val pollPollSubjectOptions = oneToManyRelation(polls, pollSubjectOption)
+    .via((p, ps) => p.id === ps.pollId)
+  val subjectPollSubjectOptions = oneToManyRelation(subjects, pollSubjectOption)
+    .via((s, ps) => s.id === ps.subjectId)
   val pollPollOfferOptions = oneToManyRelation(polls, pollOfferOptions)
     .via((p, poo) => p.id === poo.pollId)
   val subjectPollOfferOptions = oneToManyRelation(subjects, pollOfferOptions)
@@ -82,6 +87,8 @@ object InscriptionPollSchema extends Schema {
 
   val studentsCareers = manyToManyRelation(students, careers)
     .via[StudentCareer]((s, c, sc) => (s.id === sc.studentId, c.id === sc.careerId))
+  val adminsCareers = manyToManyRelation(admins, careers)
+    .via[AdminCareer]((a, c, ac) => (a.id === ac.adminId, c.id === ac.careerId))
 
   findAllTablesFor(TableRow.getClass)
     .foreach(table =>
@@ -107,19 +114,37 @@ object InscriptionPollSchema extends Schema {
 
   on(polls)(p =>
     declare(
-      columns(p.careerId, p.key) are indexed("idxCareerKey")
+      columns(p.careerId, p.key) are(unique, indexed("idxCareerKey"))
     )
   )
 
   on(results)(r =>
     declare(
-      columns(r.pollId, r.studentId) are indexed("idxStudentPoll")
+      columns(r.pollId, r.studentId) are(unique, indexed("idxStudentPoll"))
     )
   )
 
   on(subjects)(s =>
     declare(
       columns(s.careerId, s.shortName) are(unique, indexed("idxCarrerSubjectShortName"))
+    )
+  )
+
+  on(pollSubjectOption)(ps =>
+    declare(
+      columns(ps.pollId, ps.subjectId) are(unique, indexed("idxPollSubjectOptionCompositeKey"))
+    )
+  )
+
+  on(pollOfferOptions)(poo =>
+    declare(
+      columns(poo.pollId, poo.subjectId, poo.offerId) are(unique, indexed("idxPollOfferOptionCompositeKey"))
+    )
+  )
+
+  on(pollSelectedOptions)(pso =>
+    declare(
+      columns(pso.pollResultId, pso.subjectId, pso.offerId) are(unique, indexed("idxPollSelectedOptionCompositeKey"))
     )
   )
 
