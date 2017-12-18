@@ -197,6 +197,9 @@ class PollResultDAO extends ModelDAO[PollResult](results) {
 }
 
 @Singleton
+class PollSubjectOptionDAO extends ModelDAO[PollSubjectOption](pollSubjectOption)
+
+@Singleton
 class PollOfferOptionDAO extends ModelDAO[PollOfferOption](pollOfferOptions) {
   def optionsOfPoll(pollQuery: Query[Poll]): Query[PollOfferOption] =
     join(pollQuery, pollOfferOptions)((p, poo) =>

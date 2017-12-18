@@ -247,6 +247,50 @@ trait SeedData extends Logging {
     )
   }
 
+  def defaultExtraData: Map[String, String] = Map(
+    // Basicas
+    "InPr" -> "",
+    "Orga" -> "",
+    "Mate1" -> "",
+    "Obj1" -> "Requiere InPr",
+    "BD" -> "",
+    "EstrD" -> "",
+    "Obj2" -> "Requiere Obj1",
+    // Avanzadas
+    "Redes" -> "Requiere Orga",
+    "SO" -> "Requiere Obj2 y EstrD",
+    "PConc" -> "Requiere Obj2 y EstrD",
+    "Mate2" -> "Requiere Mate1",
+    "IngSoft" -> "Requiere Obj2",
+    "UIs" -> "Requiere Obj2",
+    "EPers" -> "Requiere Obj2",
+    "PF" -> "Requiere EstrD",
+    "DesApp" -> "Requiere UIs y EPers",
+    "LabSOR" -> "Requiere Redes",
+    // Idioma
+    "Ing1" -> "",
+    "Ing2" -> "Requiere Ing2",
+    // Opcionales
+    "Seg" -> "Requiere Redes y SO",
+    //      "BD2" -> "",
+    //      "ProyLib" -> "",
+    //      "InArq" -> "",
+    "Obj3" -> "Requiere 2 de 3: UIs, EPers o PF",
+    //      "InBio" -> "",
+    //      "Politicas" -> "",
+    //      "Geo" -> "",
+    //      "Decl" -> "",
+    "videojuegos" -> "Requiere Obj2 y EstrD",
+    //      "DADC" -> "",
+    // Seminarios
+    "CLP" -> "Requiere Obj2 y PF",
+    "SemMod" -> "Requiere Obj2",
+    // TTI/TTU
+    "TTI-TTU" -> "",
+    // Trabajo Final
+    "TIP" -> "Requiere el 85% de la carrera"
+  )
+
   def seed(): Unit = {
     info("Seeding database...")
     info("Creating default poll offer options...")
@@ -315,13 +359,13 @@ trait SeedData extends Logging {
     careerService.joinStudent(CreateStudentCareerDTO(123, "TPI"), joinDate = DateTime.now.withDate(2014, 12, 15))
     careerService.joinStudent(CreateStudentCareerDTO(456, "TPI"), joinDate = DateTime.now.withDate(2017, 5, 15))
     info("Creating poll for TPI")
-    pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 2, 1))
-    pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2015, 6, 1))
-    pollService.create("TPI", CreatePollDTO("2016s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2016, 2, 1))
-    pollService.create("TPI", CreatePollDTO("2016s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2016, 6, 1))
-    pollService.create("TPI", CreatePollDTO("2017s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2017, 2, 1))
-    pollService.create("TPI", CreatePollDTO("2017s2", Some(defaultOffer)), createDate = DateTime.now.withDate(2017, 6, 1))
-    pollService.create("TPI", CreatePollDTO("2018s1", Some(defaultOffer)), createDate = DateTime.now.withDate(2018, 2, 1))
+    pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2015, 2, 1))
+    pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2015, 6, 1))
+    pollService.create("TPI", CreatePollDTO("2016s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2016, 2, 1))
+    pollService.create("TPI", CreatePollDTO("2016s2", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2016, 6, 1))
+    pollService.create("TPI", CreatePollDTO("2017s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2017, 2, 1))
+    pollService.create("TPI", CreatePollDTO("2017s2", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2017, 6, 1))
+    pollService.create("TPI", CreatePollDTO("2018s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2018, 2, 1))
     info("Answers for TPI 2015s1")
     pollResultService.update(123, "TPI", "2015s1", Map(
       "InPr" -> SelectedCourse("C1"),

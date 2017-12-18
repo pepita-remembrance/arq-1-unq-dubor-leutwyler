@@ -47,6 +47,11 @@ class PollService extends Service {
           pollOfferOptions ++ defaultPollOfferOptions
       }
       PollOfferOptionDAO.save(offer)
+      val extraData = subjects.map { subject =>
+        val subjectExtraData = dto.extraData.getOrElse(Map.empty[String, String]).getOrElse(subject.shortName, "")
+        PollSubjectOption(newPoll.id, subject.id, subjectExtraData)
+      }
+      PollSubjectOptionDAO.save(extraData)
     }
     newPoll
   }

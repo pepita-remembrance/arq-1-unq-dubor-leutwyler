@@ -36,7 +36,6 @@ import ar.edu.unq.arqsoft.database.DSLFlavor._ //This import provides the implic
 
 object InscriptionPollSchema extends Schema {
 
-
   val students = table[Student]
   val careers = table[Career]
   val subjects = table[Subject]
@@ -45,6 +44,7 @@ object InscriptionPollSchema extends Schema {
   val nonCourses = table[NonCourseOption]
   val schedules = table[Schedule]
   val polls = table[Poll]
+  val pollSubjectOption = table[PollSubjectOption]
   val pollOfferOptions = table[PollOfferOption]
   val results = table[PollResult]
   val pollSelectedOptions = table[PollSelectedOption]
@@ -60,6 +60,10 @@ object InscriptionPollSchema extends Schema {
     .via((c, s) => c.id === s.courseId)
   val pollResults = oneToManyRelation(polls, results)
     .via((p, pr) => p.id === pr.pollId)
+  val pollPollSubjectOptions = oneToManyRelation(polls, pollSubjectOption)
+    .via((p, ps) => p.id === ps.pollId)
+  val subjectPollSubjectOptions = oneToManyRelation(subjects, pollSubjectOption)
+    .via((s, ps) => s.id === ps.subjectId)
   val pollPollOfferOptions = oneToManyRelation(polls, pollOfferOptions)
     .via((p, poo) => p.id === poo.pollId)
   val subjectPollOfferOptions = oneToManyRelation(subjects, pollOfferOptions)
@@ -123,6 +127,12 @@ object InscriptionPollSchema extends Schema {
   on(subjects)(s =>
     declare(
       columns(s.careerId, s.shortName) are(unique, indexed("idxCarrerSubjectShortName"))
+    )
+  )
+
+  on(pollSubjectOption)(ps =>
+    declare(
+      columns(ps.pollId, ps.subjectId) are(unique, indexed("idxPollSubjectOptionCompositeKey"))
     )
   )
 

@@ -35,6 +35,9 @@ trait DAOBindings {
   var PollResultDAO: PollResultDAO = _
 
   @Inject
+  var PollSubjectOptionDAO: PollSubjectOptionDAO = _
+
+  @Inject
   var PollOfferOptionDAO: PollOfferOptionDAO = _
 
   @Inject
