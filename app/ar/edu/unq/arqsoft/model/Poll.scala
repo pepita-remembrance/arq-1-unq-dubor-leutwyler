@@ -11,6 +11,7 @@ case class Poll(key: String, careerId: KeyType, isOpen: Boolean, createDate: Dat
   lazy val career = InscriptionPollSchema.careerPolls.right(this)
   lazy val offers = InscriptionPollSchema.pollPollOfferOptions.left(this)
   lazy val results = InscriptionPollSchema.pollResults.left(this)
+  lazy val extraData = InscriptionPollSchema.pollPollSubjectOptions.left(this)
 }
 
 case class OfferOptionBase(offerId: KeyType, isCourse: Boolean) extends TableRow {
@@ -27,6 +28,11 @@ object OfferOptionBase {
   def apply(course: Course): OfferOptionBase = new OfferOptionBase(course.id, true)
 
   def apply(nonCourse: NonCourseOption): OfferOptionBase = new OfferOptionBase(nonCourse.id, false)
+}
+
+case class PollSubjectOption(pollId: KeyType, subjectId: KeyType, extraData: String) extends TableRow {
+  lazy val poll = InscriptionPollSchema.pollPollSubjectOptions.right(this)
+  lazy val subject = InscriptionPollSchema.subjectPollSubjectOptions.right(this)
 }
 
 case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType) extends TableRow {

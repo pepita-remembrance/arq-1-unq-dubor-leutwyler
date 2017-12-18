@@ -82,6 +82,12 @@ trait OutputDTOMappings {
     def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
   }
 
+  implicit def queryPollSubjectOptionToDTO(query: Query[PollSubjectOption]): OutputAlias.ExtraDataDTO =
+    join(query, subjects)((ps, s) =>
+      select(s.shortName, ps.extraData)
+        on (ps.subjectId === s.id)
+    ).toMap
+
   implicit def queryOfferOptionBaseToDTO(query: Query[PollOfferOption]): OutputAlias.CareerOfferDTO = {
     val subjectWithCourse = join(query, subjects, offers, courses)((poo, s, o, c) =>
       where(o.isCourse === true)
@@ -154,7 +160,7 @@ trait OutputDTOMappings {
     pollOfferOption.offer.single.discriminated.single
 
   implicit def pollToDTO(poll: Poll): PollDTO =
-    PollDTO(poll.key, poll.isOpen, poll.career.single, poll.offers)
+    PollDTO(poll.key, poll.isOpen, poll.career.single, poll.offers, poll.extraData)
 
   implicit def careerToDTO(career: Career): CareerDTO =
     CareerDTO(career.shortName, career.longName, career.subjects.mapAs[SubjectDTO], career.polls.mapAs[PartialPollDTO])
