@@ -269,7 +269,7 @@ trait SeedData extends Logging {
     "LabSOR" -> "Requiere Redes",
     // Idioma
     "Ing1" -> "",
-    "Ing2" -> "Requiere Ing2",
+    "Ing2" -> "Requiere Ing1",
     // Opcionales
     "Seg" -> "Requiere Redes y SO",
     //      "BD2" -> "",
