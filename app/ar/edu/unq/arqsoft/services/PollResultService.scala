@@ -1,6 +1,5 @@
 package ar.edu.unq.arqsoft.services
 
-import ar.edu.unq.arqsoft.DAOs.QueryTemplates
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.api.{PollResultDTO, TallyDTO}
 import ar.edu.unq.arqsoft.model._
@@ -11,12 +10,9 @@ import org.joda.time.DateTime
 class PollResultService extends Service {
 
   def tally(careerShortName: String, pollKey: String): Iterable[TallyDTO] = inTransaction {
-    val poll = PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
-    val tallyQuery = QueryTemplates.tallyQuery(poll.id)
-
     // Squeryl lacks support for UNION queries so...
-    val courseTally = CourseDAO.coursesOfTally(tallyQuery).toList
-    val nonCourseTally = NonCourseDAO.nonCoursesOfTally(tallyQuery).toList
+    val courseTally = CourseDAO.tallyForPoll(careerShortName, pollKey).toList
+    val nonCourseTally = NonCourseDAO.tallyForPoll(careerShortName, pollKey).toList
 
     (courseTally ++ nonCourseTally)
       .groupBy(_._1)
@@ -30,20 +26,17 @@ class PollResultService extends Service {
   }
 
   protected def getPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResult = inTransaction {
-    PollResultDAO.resultsOfStudentForPoll(
-      StudentDAO.whereFileNumber(studentFileNumber),
-      PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey)
-    )
+    PollResultDAO.resultByStudentAndPoll(studentFileNumber, careerShortName, pollKey)
       .singleOption
       .getOrElse(updatedPollResult(studentFileNumber, careerShortName, pollKey))
   }
 
   protected def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResult = inTransaction {
-    val pollQuery = PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey)
+    val pollQuery = PollDAO.pollByCareerAndKey(careerShortName, pollKey)
     val student = StudentDAO.whereFileNumber(studentFileNumber).single
     val poll = pollQuery.single
-    val pollSubjects = SubjectDAO.subjectsOfPoll(pollQuery).toList
-    val defaultOption = OfferDAO.baseOfferOfNonCourse(NonCourseDAO.notYetOption).single
+    val pollSubjects = SubjectDAO.subjectsOfPoll(careerShortName, pollKey).toList
+    val defaultOption = OfferDAO.baseOfferOfNonCourse(NonCourseOption.notYet).single
     val newResult = PollResult(poll.id, student.id, DateTime.now)
     PollResultDAO.save(newResult)
     val selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption.id))
@@ -53,13 +46,8 @@ class PollResultService extends Service {
 
   protected def updatedPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): PollResult = inTransaction {
     val baseResult = newPollResult(studentFileNumber, careerShortName, pollKey)
-    val alreadyPassedOption = OfferDAO.baseOfferOfNonCourse(NonCourseDAO.alreadyPassedOption).single
-    val passedSubjects = SubjectDAO.subjectsWithOption(
-      PollSelectedOptionDAO.optionsOfPoll(PollResultDAO.resultsOfStudentForPoll(StudentDAO.whereFileNumber(studentFileNumber), PollDAO.pollsOfCareer(CareerDAO.whereShortName(careerShortName)))),
-      OfferDAO.baseOfferOfNonCourse(NonCourseDAO.alreadyPassedOption),
-      SubjectDAO.subjectsOfPoll(PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey))
-    )
-    val optionsToUpdate = PollSelectedOptionDAO.optionsOfPollWithSubject(PollResultDAO.find(baseResult.id), passedSubjects)
+    val alreadyPassedOption = OfferDAO.baseOfferOfNonCourse(NonCourseOption.alreadyPassed).single
+    val optionsToUpdate = PollSelectedOptionDAO.optionsByPollResultAndPassedSubjectsOfStudent(baseResult.id, studentFileNumber)
     PollSelectedOptionDAO.updateSelectionTo(optionsToUpdate, alreadyPassedOption.id)
     baseResult
   }
@@ -71,12 +59,7 @@ class PollResultService extends Service {
 
       val possibleOptions = this.possibleOptions(careerShortName, pollKey, delta.keys)
 
-      val pollResultQuery = PollResultDAO.resultsOfStudentForPoll(
-        StudentDAO.whereFileNumber(studentFileNumber),
-        PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey)
-      )
-      val usedSubjectsQuery = SubjectDAO.subjectsOfCareerWithName(CareerDAO.whereShortName(careerShortName), delta.keys)
-      val affectedOptions = PollSelectedOptionDAO.addOptionsOfPollWithSubject(pollResultQuery, usedSubjectsQuery).toList
+      val affectedOptions = PollSelectedOptionDAO.optionsByPollResultAndSubjectsWithSubject(studentFileNumber, careerShortName, pollKey, delta.keys).toList
 
       applyDelta(delta, affectedOptions, possibleOptions)
 
@@ -87,13 +70,9 @@ class PollResultService extends Service {
   }
 
   protected def possibleOptions(careerShortName: String, pollKey: String, subjectShortNames: Iterable[String]): Iterable[(Subject, OfferOption, OfferOptionBase)] = inTransaction {
-    val careerQuery = CareerDAO.whereShortName(careerShortName)
-    val pollOfferOptionsQuery = PollOfferOptionDAO.optionsOfPoll(PollDAO.pollsOfCareerWithKey(careerQuery, pollKey))
-    val usedSubjectsQuery = SubjectDAO.subjectsOfCareerWithName(careerQuery, subjectShortNames)
-    val usedOptionsQuery = OfferDAO.baseOfferOfPollOfferWithSubject(pollOfferOptionsQuery, usedSubjectsQuery)
     // Squeryl lacks support for UNION queries so...
-    val courseOptions = CourseDAO.addCoursesOfSubjectOffer(usedOptionsQuery).toList
-    val nonCoursesOptions = NonCourseDAO.addNonCoursesOfSubjectOffer(usedOptionsQuery).toList
+    val courseOptions = CourseDAO.coursesForSubjectsOfPollWithBaseOffer(subjectShortNames, careerShortName, pollKey).toList
+    val nonCoursesOptions = NonCourseDAO.nonCoursesForSubjectsOfPollWithBaseOffer(subjectShortNames, careerShortName, pollKey).toList
 
     courseOptions ++ nonCoursesOptions
   }

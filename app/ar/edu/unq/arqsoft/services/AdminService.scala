@@ -21,10 +21,10 @@ class AdminService extends Service {
   }
 
   def careers(fileNumber: Int): Iterable[PartialCareerForAdminDTO] = inTransaction {
-    CareerDAO.careersOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(fileNumber))).mapAs[PartialCareerForAdminDTO]
+    CareerDAO.careersOfAdmin(fileNumber).mapAs[PartialCareerForAdminDTO]
   }
 
   def polls(fileNumber: Int): Iterable[PartialPollForAdminDTO] = inTransaction {
-    PollDAO.pollsOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(fileNumber))).mapAs[PartialPollForAdminDTO]
+    PollDAO.pollsOfAdmin(fileNumber).mapAs[PartialPollForAdminDTO]
   }
 }

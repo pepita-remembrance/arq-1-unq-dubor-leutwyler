@@ -8,26 +8,26 @@ import org.joda.time.DateTime
 @Singleton
 class PollService extends Service {
   def createDefaultOptions(): Unit = inTransaction {
-    val defaultOptions = NonCourseDAO.defaultOptionStrings.map(NonCourseOption)
+    val defaultOptions = NonCourseOption.defaultOptionStrings.map(NonCourseOption(_))
     NonCourseDAO.save(defaultOptions, useBulk = false)
     val defaultOptionsBase = defaultOptions.map(nonCourse => OfferOptionBase(nonCourse))
     OfferDAO.save(defaultOptionsBase)
   }
 
   def allOf(studentFileNumber: Int): Iterable[PartialPollDTO] = inTransaction {
-    PollDAO.pollsOfStudent(StudentCareerDAO.whereStudent(StudentDAO.whereFileNumber(studentFileNumber))).mapAs[PartialPollDTO]
+    PollDAO.pollsOfStudent(studentFileNumber).mapAs[PartialPollDTO]
   }
 
   def allOf(careerShortName: String): Iterable[PartialPollDTO] = inTransaction {
-    PollDAO.pollsOfCareer(CareerDAO.whereShortName(careerShortName)).mapAs[PartialPollDTO]
+    PollDAO.pollsOfCareer(careerShortName).mapAs[PartialPollDTO]
   }
 
   def allOfAdmin(adminFileNumber: Int): Iterable[PartialPollDTO] = inTransaction {
-    PollDAO.pollsOfAdmin(AdminCareerDAO.whereAdmin(AdminDAO.whereFileNumber(adminFileNumber))).mapAs[PartialPollDTO]
+    PollDAO.pollsOfAdmin(adminFileNumber).mapAs[PartialPollDTO]
   }
 
   def byCareerShortNameAndPollKey(careerShortName: String, pollKey: String): PollDTO = inTransaction {
-    PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
+    PollDAO.pollByCareerAndKey(careerShortName, pollKey).single
   }
 
   def create(careerShortName: String, dto: CreatePollDTO, createDate: DateTime = DateTime.now): PollDTO = inTransaction {
@@ -35,8 +35,8 @@ class PollService extends Service {
     val newPoll = dto.asModel(careerQuery.single, createDate)
     PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
-      val defaultOptions = OfferDAO.baseOfferOfNonCourse(NonCourseDAO.defaultOptions).toList
-      val subjects = SubjectDAO.subjectsOfCareerWithName(careerQuery, offerMap.keys).toList
+      val defaultOptions = OfferDAO.baseOfferOfNonCourse(NonCourseOption.defaultOptionStrings).toList
+      val subjects = SubjectDAO.subjectsOfCareerWithName(careerShortName, offerMap.keys).toList
       val nonCourses = createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
       val offer = offerMap.flatMap {
         case (subjectShortName, options) =>
@@ -75,7 +75,7 @@ class PollService extends Service {
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Iterable[(NonCourseOption, OfferOptionBase)] = inTransaction {
-    val existingOffer = OfferDAO.addBaseOfferOfNonCourse(NonCourseDAO.whereTextValue(nonCoursesDTO.map(_.key))).toList
+    val existingOffer = NonCourseDAO.whereTextValueWithBaseOffer(nonCoursesDTO.map(_.key)).toList
     val existingTextValues = existingOffer.map(_._1.key)
     val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.key)).map(_.asModel)
     NonCourseDAO.save(toCreate, useBulk = false)

@@ -64,3 +64,10 @@ case class NonCourseOption(key: String) extends TableRow with OfferOption {
   @Transient
   val isCourse: Boolean = false
 }
+
+object NonCourseOption {
+  val notYet = "No voy a cursar"
+  val alreadyPassed = "Ya aprobe"
+  val noSuitableSchedule = "Ningun horario me sirve"
+  val defaultOptionStrings = List(notYet, alreadyPassed, noSuitableSchedule)
+}

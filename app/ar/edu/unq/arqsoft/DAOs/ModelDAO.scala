@@ -28,124 +28,131 @@ class CareerDAO extends ModelDAO[Career](careers) {
   def whereShortName(shortName: String): Query[Career] =
     where(_.shortName === shortName)
 
-  def careersOfAdmin(adminCareerQuery: Query[AdminCareer]): Query[Career] =
-    join(adminCareerQuery, careers)((ac, c) =>
-      select(c)
-        on (ac.careerId === c.id)
+  def careersOfAdmin(fileNumber: Int): Query[Career] =
+    join(careers, adminsCareers, admins)((c, ac, a) =>
+      dsl.where(a.fileNumber === fileNumber)
+        select c
+        on(c.id === ac.careerId, ac.adminId === a.id)
     )
 }
 
 @Singleton
 class SubjectDAO extends ModelDAO[Subject](subjects) {
-  def subjectsOfCareer(careerQuery: Query[Career]): Query[Subject] =
-    join(careerQuery, subjects)((c, s) =>
-      select(s)
-        on (c.id === s.careerId)
+  def subjectsOfCareerWithName(careerShortName: String, shortNames: Iterable[String]): Query[Subject] =
+    join(subjects, careers)((s, c) =>
+      dsl.where(
+        (c.shortName === careerShortName) and
+          (s.shortName in shortNames)
+      ) select s
+        on (s.careerId === c.id)
     )
 
-  def subjectsOfCareerWithName(careerQuery: Query[Career], shortNames: Iterable[String]): Query[Subject] =
-    subjectsOfCareer(careerQuery).where(_.shortName in shortNames)(dsl)
-
-  def subjectsOfPoll(pollQuery: Query[Poll])(implicit i1: DummyImplicit): Query[Subject] =
-    join(pollQuery, pollOfferOptions, subjects)((p, poo, s) =>
-      select(s)
-        on(s.id === poo.subjectId, p.id === poo.pollId)
+  def subjectsOfPoll(careerShortName: String, pollKey: String): Query[Subject] =
+    join(subjects, pollOfferOptions, polls, careers)((s, poo, p, c) =>
+      dsl.where((p.key === pollKey) and (c.shortName === careerShortName))
+        select s
+        on(s.id === poo.subjectId, poo.pollId === p.id, p.careerId === c.id)
     ).distinct
-
-  def subjectsWithOption(selectedOptionsQuery: Query[PollSelectedOption], wantedOption: Query[OfferOptionBase], subjectQuery: Query[Subject]): Query[Subject] =
-    join(selectedOptionsQuery, wantedOption, subjectQuery)((s, w, sub) =>
-      select(sub)
-        on(s.subjectId === sub.id, s.offerId === w.offerId)
-    ).distinct
-
 }
 
 @Singleton
 class OfferDAO extends ModelDAO[OfferOptionBase](offers) {
-  def addBaseOfferOfCourse(courseQuery: Query[Course]): Query[(Course, OfferOptionBase)] =
-    join(where(_.isCourse === true), courseQuery)((o, c) =>
-      select((c, o))
-        on (o.offerId === c.id)
-    )
-
-  def baseOfferOfCourse(courseQuery: Query[Course]): Query[OfferOptionBase] =
-    join(where(_.isCourse === true), courseQuery)((o, c) =>
-      select(o)
-        on (o.offerId === c.id)
-    )
-
-  def addBaseOfferOfNonCourse(nonCourseQuery: Query[NonCourseOption])(implicit i1: DummyImplicit): Query[(NonCourseOption, OfferOptionBase)] =
-    join(where(_.isCourse === false), nonCourseQuery)((o, nc) =>
-      select((nc, o))
+  def baseOfferOfNonCourse(textValues: Iterable[String]): Query[OfferOptionBase] =
+    join(offers, nonCourses)((o, nc) =>
+      dsl.where(
+        (o.isCourse === false) and
+          (nc.key in textValues)
+      ) select o
         on (o.offerId === nc.id)
     )
 
-  def baseOfferOfNonCourse(nonCourseQuery: Query[NonCourseOption])(implicit i1: DummyImplicit): Query[OfferOptionBase] =
-    join(where(_.isCourse === false), nonCourseQuery)((o, nc) =>
-      select(o)
+  def baseOfferOfNonCourse(textValue: String): Query[OfferOptionBase] =
+    join(offers, nonCourses)((o, nc) =>
+      dsl.where(
+        (o.isCourse === false) and
+          (nc.key === textValue)
+      ) select o
         on (o.offerId === nc.id)
-    )
-
-  def baseOfferOfPollOfferWithSubject(pollOfferOptionQuery: Query[PollOfferOption], subjectQuery: Query[Subject]): Query[(Subject, OfferOptionBase)] =
-    join(pollOfferOptionQuery, subjectQuery, offers)((poo, s, o) =>
-      select(s, o)
-        on(poo.offerId === o.id, poo.subjectId === s.id)
     )
 }
 
 @Singleton
 class CourseDAO extends ModelDAO[Course](courses) {
-  def addCoursesOfSubjectOffer(query: Query[(Subject, OfferOptionBase)]): Query[(Subject, Course, OfferOptionBase)] =
-  // Workarround to select from tuples
-    join(query, subjects, offers, courses)((tuple, s, o, c) =>
-      dsl.where(tuple._2.isCourse === true)
-        select(s, c, o)
-        on(tuple._2.offerId === c.id, tuple._1.id === s.id, tuple._2.id === o.id)
+  def coursesForSubjectsOfPollWithBaseOffer(subjectShortNames: Iterable[String], careerShortName: String, pollKey: String): Query[(Subject, Course, OfferOptionBase)] =
+    join(courses, offers, pollOfferOptions, polls, careers, subjects)((c, o, poo, p, career, s) =>
+      dsl.where(
+        (o.isCourse === true) and
+          (s.shortName in subjectShortNames) and
+          (career.shortName === careerShortName) and
+          (p.key === pollKey)
+      ) select(s, c, o)
+        on(c.id === o.offerId, o.id === poo.offerId, poo.pollId === p.id, p.careerId === career.id, poo.subjectId === s.id)
     )
 
-  def coursesOfTally(query: Query[(Subject, OfferOptionBase, Student)]): Query[(Subject, Course, Student)] =
-    join(query, courses, subjects, students)((tuple, c, sub, s) =>
-      dsl.where(tuple._2.isCourse === true)
-        select(sub, c, s)
-        on(tuple._1.id === sub.id, tuple._2.offerId === c.id, tuple._3.id === s.id)
+  def tallyForPoll(careerShortName: String, pollKey: String): Query[(Subject, Course, Student)] =
+    join(courses, offers, pollSelectedOptions, results, polls, careers, subjects, students)((c, o, pso, r, p, career, sub, s) =>
+      dsl.where(
+        (o.isCourse === true) and
+          (p.key === pollKey) and
+          (career.shortName === careerShortName)
+      ) select(sub, c, s)
+        on(
+        c.id === o.offerId,
+        o.id === pso.offerId,
+        pso.pollResultId === r.id,
+        r.pollId === p.id,
+        p.careerId === career.id,
+        pso.subjectId === s.id,
+        r.studentId === s.id
+      )
     )
 }
 
 @Singleton
 class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
-  val defaultOptionStrings = List("No voy a cursar", "Ya aprobe", "Ningun horario me sirve")
-
   def whereTextValue(textValue: String): Query[NonCourseOption] =
     where(_.key === textValue)
 
   def whereTextValue(textValues: Iterable[String]): Query[NonCourseOption] =
     where(_.key in textValues)
 
-  def defaultOptions: Query[NonCourseOption] =
-    whereTextValue(defaultOptionStrings)
-
-  def notYetOption: Query[NonCourseOption] =
-    whereTextValue(defaultOptionStrings(0))
-
-  def alreadyPassedOption: Query[NonCourseOption] =
-    whereTextValue(defaultOptionStrings(1))
-
-  def noSuitableScheduleOption: Query[NonCourseOption] =
-    whereTextValue(defaultOptionStrings(2))
-
-  def addNonCoursesOfSubjectOffer(query: Query[(Subject, OfferOptionBase)]): Query[(Subject, NonCourseOption, OfferOptionBase)] =
-  // Workarround to select from tuples
-    join(query, subjects, offers, nonCourses)((tuple, s, o, nc) =>
-      dsl.where(tuple._2.isCourse === false)
-        select(s, nc, o)
-        on(tuple._2.offerId === nc.id, tuple._1.id === s.id, tuple._2.id === o.id)
+  def whereTextValueWithBaseOffer(textValues: Iterable[String]): Query[(NonCourseOption, OfferOptionBase)] =
+    join(nonCourses, offers)((nc, o) =>
+      dsl.where(
+        (nc.key in textValues) and
+          (o.isCourse === false)
+      )
+        select(nc, o)
+        on (nc.id === o.offerId)
     )
 
-  def nonCoursesOfTally(query: Query[(Subject, OfferOptionBase, Student)]): Query[(Subject, NonCourseOption, Student)] =
-    join(query, nonCourses, subjects, students)((tuple, nc, sub, s) =>
-      dsl.where(tuple._2.isCourse === false)
-        select(sub, nc, s)
-        on(tuple._1.id === sub.id, tuple._2.offerId === nc.id, tuple._3.id === s.id)
+  def nonCoursesForSubjectsOfPollWithBaseOffer(subjectShortNames: Iterable[String], careerShortName: String, pollKey: String): Query[(Subject, NonCourseOption, OfferOptionBase)] =
+    join(nonCourses, offers, pollOfferOptions, polls, careers, subjects)((nc, o, poo, p, career, s) =>
+      dsl.where(
+        (o.isCourse === false) and
+          (s.shortName in subjectShortNames) and
+          (career.shortName === careerShortName) and
+          (p.key === pollKey)
+      ) select(s, nc, o)
+        on(nc.id === o.offerId, o.id === poo.offerId, poo.pollId === p.id, p.careerId === career.id, poo.subjectId === s.id)
+    )
+
+  def tallyForPoll(careerShortName: String, pollKey: String): Query[(Subject, NonCourseOption, Student)] =
+    join(nonCourses, offers, pollSelectedOptions, results, polls, careers, subjects, students)((nc, o, pso, r, p, career, sub, s) =>
+      dsl.where(
+        (o.isCourse === false) and
+          (p.key === pollKey) and
+          (career.shortName === careerShortName)
+      ) select(sub, nc, s)
+        on(
+        nc.id === o.offerId,
+        o.id === pso.offerId,
+        pso.pollResultId === r.id,
+        r.pollId === p.id,
+        p.careerId === career.id,
+        pso.subjectId === s.id,
+        r.studentId === s.id
+      )
     )
 }
 
@@ -154,78 +161,90 @@ class ScheduleDAO extends ModelDAO[Schedule](schedules)
 
 @Singleton
 class PollDAO extends ModelDAO[Poll](polls) {
-  def pollsOfCareerWithKey(careerQuery: Query[Career], pollKey: String): Query[Poll] =
-    join(careerQuery, where(_.key === pollKey))((c, p) =>
-      select(p)
-        on (c.id === p.careerId)
+  def pollByCareerAndKey(careerShortName: String, pollKey: String): Query[Poll] =
+    join(polls, careers)((p, c) =>
+      dsl.where(
+        (p.key === pollKey) and
+          (c.shortName === careerShortName)
+      ) select p
+        on (p.careerId === c.id)
     )
 
-  def pollsOfCareer(careerQuery: Query[Career]): Query[Poll] =
-    join(careerQuery, polls)((c, p) =>
-      select(p)
-        on (c.id === p.careerId)
+  def pollsOfCareer(careerShortName: String): Query[Poll] =
+    join(polls, careers)((p, c) =>
+      dsl.where(c.shortName === careerShortName)
+        select p
+        on (p.careerId === c.id)
     )
 
-  def pollsOfStudent(studentCareerQuery: Query[StudentCareer]): Query[Poll] =
-    join(studentCareerQuery, polls)((sc, p) =>
-      dsl.where(p.createDate gte sc.joinDate)
-        select (p)
-        on (sc.careerId === p.careerId)
+  def pollsOfStudent(studentFileNumber: Int): Query[Poll] =
+    join(polls, studentsCareers, students)((p, sc, s) =>
+      dsl.where(s.fileNumber === studentFileNumber)
+        select p
+        on(p.careerId === sc.careerId, sc.studentId === s.id)
     )
 
-  def pollsOfAdmin(adminCareerQuery: Query[AdminCareer]): Query[Poll] =
-    join(adminCareerQuery, polls)((admin, p) =>
-      select(p)
-        on (admin.careerId === p.careerId)
+  def pollsOfAdmin(adminFileNumber: Int): Query[Poll] =
+    join(polls, adminsCareers, admins)((p, ac, a) =>
+      dsl.where(a.fileNumber === adminFileNumber)
+        select p
+        on(p.careerId === ac.careerId, ac.adminId === a.id)
     )
 }
 
 @Singleton
 class PollResultDAO extends ModelDAO[PollResult](results) {
-  def resultsOfStudentForPoll(studentQuery: Query[Student], pollQuery: Query[Poll]): Query[PollResult] =
-    join(studentQuery, pollQuery, results)((s, p, r) =>
-      select(r)
-        on(r.studentId === s.id, r.pollId === p.id)
+  def resultByStudentAndPoll(studentFileNumber: Int, careerShortName: String, pollKey: String): Query[PollResult] =
+    join(results, students, polls, careers)((r, s, p, c) =>
+      dsl.where(
+        (s.fileNumber === studentFileNumber) and
+          (p.key === pollKey) and
+          (c.shortName === careerShortName)
+      ) select r
+        on(r.studentId === s.id, r.pollId === p.id, p.careerId === c.id)
     )
-
-  def resultsOfStudent(studentQuery: Query[Student]): Query[PollResult] =
-    join(studentQuery, results)((s, r) =>
-      select(r)
-        on (s.id === r.studentId)
-    )
-
 }
 
 @Singleton
 class PollSubjectOptionDAO extends ModelDAO[PollSubjectOption](pollSubjectOption)
 
 @Singleton
-class PollOfferOptionDAO extends ModelDAO[PollOfferOption](pollOfferOptions) {
-  def optionsOfPoll(pollQuery: Query[Poll]): Query[PollOfferOption] =
-    join(pollQuery, pollOfferOptions)((p, poo) =>
-      select(poo)
-        on (poo.pollId === p.id)
-    )
-}
+class PollOfferOptionDAO extends ModelDAO[PollOfferOption](pollOfferOptions)
 
 @Singleton
 class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOptions) {
-  def optionsOfPoll(pollResultQuery: Query[PollResult]): Query[PollSelectedOption] =
-    join(pollResultQuery, pollSelectedOptions)((pr, pso) =>
-      select(pso)
-        on (pso.pollResultId === pr.id)
+  def optionsByPollResultAndPassedSubjectsOfStudent(pollResultId: KeyType, studentFileNumber: Int): Query[PollSelectedOption] = {
+    val passedSubjects =
+      join(subjects, pollSelectedOptions, results, students, offers, nonCourses)((sub, pso, r, s, o, nc) =>
+        dsl.where(
+          (s.fileNumber === studentFileNumber) and
+            (o.isCourse === false) and
+            (nc.key === NonCourseOption.alreadyPassed)
+        ) select sub
+          on(
+          sub.id === pso.subjectId,
+          pso.pollResultId === r.id,
+          r.studentId === s.id,
+          pso.offerId === o.id,
+          o.offerId === nc.id
+        )
+      ).distinct
+    join(pollSelectedOptions, results, passedSubjects)((pso, r, s) =>
+      dsl.where(r.id === pollResultId)
+        select pso
+        on(pso.pollResultId === r.id, pso.subjectId === s.id)
     )
+  }
 
-  def optionsOfPollWithSubject(pollResultQuery: Query[PollResult], subjectQuery: Query[Subject]): Query[PollSelectedOption] =
-    join(pollResultQuery, subjectQuery, pollSelectedOptions)((pr, s, pso) =>
-      select(pso)
-        on(pso.pollResultId === pr.id, pso.subjectId === s.id)
-    )
-
-  def addOptionsOfPollWithSubject(pollResultQuery: Query[PollResult], subjectQuery: Query[Subject]): Query[(Subject, PollSelectedOption)] =
-    join(pollResultQuery, subjectQuery, pollSelectedOptions)((pr, s, pso) =>
-      select(s, pso)
-        on(pso.pollResultId === pr.id, pso.subjectId === s.id)
+  def optionsByPollResultAndSubjectsWithSubject(studentFileNumber: Int, careerShortName: String, pollKey: String, subjectShortNames: Iterable[String]): Query[(Subject, PollSelectedOption)] =
+    join(pollSelectedOptions, subjects, results, polls, careers, students)((pso, sub, r, p, c, s) =>
+      dsl.where(
+        (sub.shortName in subjectShortNames) and
+          (p.key === pollKey) and
+          (c.shortName === careerShortName) and
+          (s.fileNumber === studentFileNumber)
+      ) select(sub, pso)
+        on(pso.subjectId === sub.id, pso.pollResultId === r.id, r.pollId === p.id, p.careerId === c.id, r.studentId === s.id)
     )
 
   def updateSelectionTo(options: Query[PollSelectedOption], newValue: KeyType): Int =
@@ -236,28 +255,7 @@ class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOpt
 }
 
 @Singleton
-class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers) {
-  def whereStudent(studentQuery: Query[Student]): Query[StudentCareer] =
-    join(studentQuery, studentsCareers)((s, sc) =>
-      select(sc)
-        on (s.id === sc.studentId)
-    )
-}
+class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers)
 
 @Singleton
-class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers) {
-  def whereAdmin(adminQuery: Query[Admin]): Query[AdminCareer] =
-    join(adminQuery, adminsCareers)((a, ac) =>
-      select(ac)
-        on (a.id === ac.adminId)
-    )
-}
-
-object QueryTemplates {
-  def tallyQuery(pollId: KeyType): Query[(Subject, OfferOptionBase, Student)] =
-    join(subjects, offers, students, pollSelectedOptions, results)((sub, o, s, pso, r) =>
-      where(r.pollId === pollId)
-        select(sub, o, s)
-        on(pso.pollResultId === r.id, pso.offerId === o.id, pso.subjectId === sub.id, r.studentId === s.id)
-    )
-}
+class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers)
