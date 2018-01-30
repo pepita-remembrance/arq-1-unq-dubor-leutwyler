@@ -194,6 +194,12 @@ class PollResultDAO extends ModelDAO[PollResult](results) {
         on (s.id === r.studentId)
     )
 
+  def pollTally(pollId: KeyType): Query[(Subject, OfferOptionBase, Student)] =
+    join(subjects, offers, students, pollSelectedOptions, results)((sub, o, s, pso, r) =>
+      dsl.where(r.pollId === pollId)
+        select(sub, o, s)
+        on(pso.pollResultId === r.id, pso.offerId === o.id, pso.subjectId === sub.id, r.studentId === s.id)
+    )
 }
 
 @Singleton
@@ -250,14 +256,5 @@ class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers) {
     join(adminQuery, adminsCareers)((a, ac) =>
       select(ac)
         on (a.id === ac.adminId)
-    )
-}
-
-object QueryTemplates {
-  def tallyQuery(pollId: KeyType): Query[(Subject, OfferOptionBase, Student)] =
-    join(subjects, offers, students, pollSelectedOptions, results)((sub, o, s, pso, r) =>
-      where(r.pollId === pollId)
-        select(sub, o, s)
-        on(pso.pollResultId === r.id, pso.offerId === o.id, pso.subjectId === sub.id, r.studentId === s.id)
     )
 }

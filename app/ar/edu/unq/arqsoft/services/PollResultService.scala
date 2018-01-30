@@ -1,6 +1,5 @@
 package ar.edu.unq.arqsoft.services
 
-import ar.edu.unq.arqsoft.DAOs.QueryTemplates
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.api.{PollResultDTO, TallyDTO}
 import ar.edu.unq.arqsoft.model._
@@ -12,7 +11,7 @@ class PollResultService extends Service {
 
   def tally(careerShortName: String, pollKey: String): Iterable[TallyDTO] = inTransaction {
     val poll = PollDAO.pollsOfCareerWithKey(CareerDAO.whereShortName(careerShortName), pollKey).single
-    val tallyQuery = QueryTemplates.tallyQuery(poll.id)
+    val tallyQuery = PollResultDAO.pollTally(poll.id)
 
     // Squeryl lacks support for UNION queries so...
     val courseTally = CourseDAO.coursesOfTally(tallyQuery).toList
