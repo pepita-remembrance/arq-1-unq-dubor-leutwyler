@@ -72,15 +72,7 @@ trait InputDTOMappings {
 
 trait OutputDTOMappings {
 
-  implicit class QueryConverter[A](query: Query[A]) {
-    def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
-
-    def computeCount: Long = from(query)(q => compute(DSLFlavor.count)).single.measures
-  }
-
-  implicit class IterableConverter[A](iterable: Iterable[A]) {
-    def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
-  }
+  import MappingUtils._
 
   implicit def queryPollSubjectOptionToDTO(query: Query[PollSubjectOption]): OutputAlias.ExtraDataDTO =
     join(query, subjects)((ps, s) =>
@@ -171,7 +163,7 @@ trait OutputDTOMappings {
   implicit def studentToDTO(student: Student): StudentDTO = {
     val studentPolls = join(polls, studentsCareers)((p, sc) =>
       where((sc.studentId === student.id) and (p.createDate gte sc.joinDate))
-        select (p)
+        select p
         on (sc.careerId === p.careerId)
     )
     StudentDTO(student.fileNumber, student.email, student.name, student.surname,
@@ -207,4 +199,16 @@ abstract class ModelConverter2[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DT
   type Extra2
 
   def asModel(extra1: Extra1, extra2: Extra2): Model
+}
+
+object MappingUtils {
+  implicit class QueryConverter[A](query: Query[A]) {
+    def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
+
+    def computeCount: Long = from(query)(q => compute(DSLFlavor.count)).single.measures
+  }
+
+  implicit class IterableConverter[A](iterable: Iterable[A]) {
+    def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
+  }
 }

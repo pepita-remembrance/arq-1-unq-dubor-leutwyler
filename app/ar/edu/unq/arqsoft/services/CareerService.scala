@@ -1,7 +1,7 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.maybe.{Maybe, Something}
 import ar.edu.unq.arqsoft.model.{AdminCareer, StudentCareer}
 import com.google.inject.Singleton
 import org.joda.time.DateTime
@@ -14,7 +14,7 @@ class CareerService
     val newCareer = dto.asModel
     CareerDAO.save(newCareer)
     dto.subjects.foreach(subjects => SubjectDAO.save(subjects.map(_.asModel(newCareer))))
-    newCareer
+    Something(newCareer)
   }
 
   def all: Maybe[Iterable[PartialCareerDTO]] = inTransaction {
@@ -22,21 +22,27 @@ class CareerService
   }
 
   def byShortName(shortName: String): Maybe[CareerDTO] = inTransaction {
-    CareerDAO.whereShortName(shortName).single
+    CareerDAO.whereShortName(shortName)
+      .orNotFoundWith("short name", shortName)
+      .as[CareerDTO]
   }
 
-  def joinStudent(dto: CreateStudentCareerDTO, joinDate:DateTime=DateTime.now): Maybe[CareerDTO] = inTransaction {
-    val student = StudentDAO.whereFileNumber(dto.studentFileNumber).single
-    val career = CareerDAO.whereShortName(dto.careerShortName).single
-    StudentCareerDAO.save(StudentCareer(student.id, career.id, joinDate))
-    career
+  def joinStudent(dto: CreateStudentCareerDTO, joinDate: DateTime = DateTime.now): Maybe[CareerDTO] = inTransaction {
+    (for {
+      student <- StudentDAO.whereFileNumber(dto.studentFileNumber).orNotFoundWith("file number", dto.studentFileNumber)
+      career <- CareerDAO.whereShortName(dto.careerShortName).orNotFoundWith("short name", dto.careerShortName)
+      _ = StudentCareerDAO.save(StudentCareer(student.id, career.id, joinDate))
+    } yield career
+      ).as[CareerDTO]
   }
 
   def joinAdmin(dto: CreateAdminCareerDTO): Maybe[CareerDTO] = inTransaction {
-    val admin = AdminDAO.whereFileNumber(dto.adminFileNumber).single
-    val career = CareerDAO.whereShortName(dto.careerShortName).single
-    AdminCareerDAO.save(AdminCareer(admin.id, career.id))
-    career
+    (for {
+      admin <- AdminDAO.whereFileNumber(dto.adminFileNumber).orNotFoundWith("file number", dto.adminFileNumber)
+      career <- CareerDAO.whereShortName(dto.careerShortName).orNotFoundWith("short name", dto.careerShortName)
+      _ = AdminCareerDAO.save(AdminCareer(admin.id, career.id))
+    } yield career
+      ).as[CareerDTO]
   }
 
 }

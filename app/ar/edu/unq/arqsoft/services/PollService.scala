@@ -1,7 +1,7 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.maybe.{Maybe, Something}
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
 import org.joda.time.DateTime
@@ -13,6 +13,7 @@ class PollService extends Service {
     NonCourseDAO.save(defaultOptions, useBulk = false)
     val defaultOptionsBase = defaultOptions.map(nonCourse => OfferOptionBase(nonCourse))
     OfferDAO.save(defaultOptionsBase)
+    Something(())
   }
 
   def allOf(studentFileNumber: Int): Maybe[Iterable[PartialPollDTO]] = inTransaction {
@@ -28,7 +29,7 @@ class PollService extends Service {
   }
 
   def byCareerShortNameAndPollKey(careerShortName: String, pollKey: String): Maybe[PollDTO] = inTransaction {
-    PollDAO.pollByCareerAndKey(careerShortName, pollKey).single
+    Something(PollDAO.pollByCareerAndKey(careerShortName, pollKey).single)
   }
 
   def create(careerShortName: String, dto: CreatePollDTO, createDate: DateTime = DateTime.now): Maybe[PollDTO] = inTransaction {
@@ -54,13 +55,13 @@ class PollService extends Service {
       }
       PollSubjectOptionDAO.save(extraData)
     }
-    newPoll
+    Something(newPoll)
   }
 
   protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCoursesDTO: Iterable[(NonCourseOption, OfferOptionBase)]): Maybe[Iterable[OfferOptionBase]] = inTransaction {
     val courses = createCourses(optionsDTO.collect { case o: CreateCourseDTO => o }).get.map(_._2)
     val usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCoursesDTO.find(_._1.key == value).get._2)
-    courses ++ usedNonCourses
+    Something(courses ++ usedNonCourses)
   }
 
   protected def createCourses(coursesDTO: Iterable[CreateCourseDTO]): Maybe[Iterable[(Course, OfferOptionBase)]] = inTransaction {
@@ -72,7 +73,7 @@ class PollService extends Service {
     ScheduleDAO.save(schedules)
     val coursesOffer = courses.map(_._1).map(course => (course, OfferOptionBase(course)))
     OfferDAO.save(coursesOffer.map(_._2), useBulk = false)
-    coursesOffer
+    Something(coursesOffer)
   }
 
   protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Maybe[Iterable[(NonCourseOption, OfferOptionBase)]] = inTransaction {
@@ -82,6 +83,6 @@ class PollService extends Service {
     NonCourseDAO.save(toCreate, useBulk = false)
     val toCreateOffer = toCreate.map(nonCourse => (nonCourse, OfferOptionBase(nonCourse)))
     OfferDAO.save(toCreateOffer.map(_._2), useBulk = false)
-    existingOffer ++ toCreateOffer
+    Something(existingOffer ++ toCreateOffer)
   }
 }

@@ -2,7 +2,7 @@ package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.api.{PollResultDTO, TallyDTO}
-import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.maybe.{Maybe, Something}
 import ar.edu.unq.arqsoft.model._
 import com.google.inject.Singleton
 import org.joda.time.DateTime
@@ -23,15 +23,17 @@ class PollResultService extends Service {
   }
 
   def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResultDTO] = inTransaction {
-    getPollResult(studentFileNumber, careerShortName, pollKey).get
+    getPollResult(studentFileNumber, careerShortName, pollKey).as[PollResultDTO]
   }
 
   protected def getPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] = inTransaction {
-    PollResultDAO.resultByStudentAndPoll(studentFileNumber, careerShortName, pollKey)
-      .singleOption
-      .getOrElse(updatedPollResult(studentFileNumber, careerShortName, pollKey).get)
+    PollResultDAO.resultByStudentAndPoll(studentFileNumber, careerShortName, pollKey).singleOption match {
+      case Some(result) => Something(result)
+      case None => updatedPollResult(studentFileNumber, careerShortName, pollKey)
+    }
   }
 
+  // TODO: Continue from here!
   protected def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] = inTransaction {
     val pollQuery = PollDAO.pollByCareerAndKey(careerShortName, pollKey)
     val student = StudentDAO.whereFileNumber(studentFileNumber).single
@@ -42,7 +44,7 @@ class PollResultService extends Service {
     PollResultDAO.save(newResult)
     val selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption.id))
     PollSelectedOptionDAO.save(selectedOptions)
-    newResult
+    Something(newResult)
   }
 
   protected def updatedPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] = inTransaction {
@@ -50,7 +52,7 @@ class PollResultService extends Service {
     val alreadyPassedOption = OfferDAO.baseOfferOfNonCourse(NonCourseOption.alreadyPassed).single
     val optionsToUpdate = PollSelectedOptionDAO.optionsByPollResultAndPassedSubjectsOfStudent(baseResult.id, studentFileNumber)
     PollSelectedOptionDAO.updateSelectionTo(optionsToUpdate, alreadyPassedOption.id)
-    baseResult
+    Something(baseResult)
   }
 
   def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: PollDeltaDTO, updateDate: DateTime = DateTime.now): Maybe[PollResultDTO] = inTransaction {
@@ -67,7 +69,7 @@ class PollResultService extends Service {
       result.fillDate = updateDate
       PollResultDAO.update(result)
     }
-    getPollResult(studentFileNumber, careerShortName, pollKey).get
+    Something(getPollResult(studentFileNumber, careerShortName, pollKey).get)
   }
 
   protected def possibleOptions(careerShortName: String, pollKey: String, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, OfferOption, OfferOptionBase)]] = inTransaction {
@@ -75,7 +77,7 @@ class PollResultService extends Service {
     val courseOptions = CourseDAO.coursesForSubjectsOfPollWithBaseOffer(subjectShortNames, careerShortName, pollKey).toList
     val nonCoursesOptions = NonCourseDAO.nonCoursesForSubjectsOfPollWithBaseOffer(subjectShortNames, careerShortName, pollKey).toList
 
-    courseOptions ++ nonCoursesOptions
+    Something(courseOptions ++ nonCoursesOptions)
   }
 
   protected def applyDelta(delta: PollDeltaDTO,
@@ -93,6 +95,7 @@ class PollResultService extends Service {
       pso
     }
     PollSelectedOptionDAO.update(changed)
+    Something(())
   }
 
 }

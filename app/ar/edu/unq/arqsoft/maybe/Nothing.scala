@@ -20,4 +20,8 @@ object Nothing {
   }
 }
 
+case class EntityNotFound[K](property:String, value: K, entityName: String) extends Nothing {
+  def message: String = s"$entityName with $property valued $value not found"
+}
+
 case class UnexpectedResult(obj:Any) extends Nothing

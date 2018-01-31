@@ -1,7 +1,7 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.maybe.{Maybe, Something}
 import com.google.inject.Singleton
 
 @Singleton
@@ -10,7 +10,7 @@ class AdminService extends Service {
   def create(dto: CreateAdminDTO): Maybe[AdminDTO] = inTransaction {
     val newAdmin = dto.asModel
     AdminDAO.save(newAdmin)
-    newAdmin
+    Something(newAdmin)
   }
 
   def all: Maybe[Iterable[PartialAdminDTO]] = inTransaction {
@@ -18,7 +18,9 @@ class AdminService extends Service {
   }
 
   def byFileNumber(fileNumber: Int): Maybe[AdminDTO] = inTransaction {
-    AdminDAO.whereFileNumber(fileNumber).single
+    AdminDAO.whereFileNumber(fileNumber)
+      .orNotFoundWith("file number", fileNumber)
+      .as[AdminDTO]
   }
 
   def careers(fileNumber: Int): Maybe[Iterable[PartialCareerForAdminDTO]] = inTransaction {

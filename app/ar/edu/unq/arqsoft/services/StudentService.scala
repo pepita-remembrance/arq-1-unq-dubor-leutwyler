@@ -1,7 +1,7 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.maybe.{Maybe, Something}
 import com.google.inject.Singleton
 
 @Singleton
@@ -10,7 +10,7 @@ class StudentService extends Service {
   def create(dto: CreateStudentDTO): Maybe[StudentDTO] = inTransaction {
     val newStudent = dto.asModel
     StudentDAO.save(newStudent)
-    newStudent
+    Something(newStudent)
   }
 
   def all: Maybe[Iterable[PartialStudentDTO]] = inTransaction {
@@ -18,7 +18,7 @@ class StudentService extends Service {
   }
 
   def byFileNumber(fileNumber: Int): Maybe[StudentDTO] = inTransaction {
-    StudentDAO.whereFileNumber(fileNumber).single
+    Something(StudentDAO.whereFileNumber(fileNumber).single)
   }
 
 }
