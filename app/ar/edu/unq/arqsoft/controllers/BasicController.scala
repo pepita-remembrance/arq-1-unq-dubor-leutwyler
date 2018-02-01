@@ -38,7 +38,7 @@ trait MaybeToJsonResult extends Results with Logging {
   def convert[A: Writes](maybe: Maybe[A]): Result = maybe match {
     case Just(()) => NoContent
     case Just(obj) => Ok(Json.toJson(obj))
-    case notFound: EntityNotFound[_] =>
+    case notFound: EntityNotFound =>
       NotFound(notFound.message)
     case Nothing(msg) =>
       error(s"Error ocurred: $msg")

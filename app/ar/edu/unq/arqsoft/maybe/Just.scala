@@ -20,3 +20,9 @@ object Just {
 case class Something[A](get:A) extends Just[A] {
   def map[B](f: (A) => B): Maybe[B] = Something(f(get))
 }
+
+case class WithNothings[A](get: A,
+                           nothings: List[Nothing]) extends Just[A] {
+
+  def map[B](f: (A) => B): Maybe[B] = WithNothings(f(get), nothings)
+}

@@ -1,6 +1,5 @@
 package ar.edu.unq.arqsoft.maybe
 
-import scala.collection.GenTraversableOnce
 import scala.util.{Failure, Success, Try}
 
 trait Maybe[+A] {
@@ -70,8 +69,28 @@ object Maybe {
     case Failure(ex) => UnexpectedResult(ex)
   }
 
-  implicit def flattenMaybe[A](maybe: Maybe[A]):GenTraversableOnce[A] = {
-    maybe.map(List(_)).getOrElse(Nil)
+  implicit class RichTraversable[S[A] <: Traversable[A], T](originalTraversable: S[Maybe[T]]) {
+
+    /**
+      * Method to deal with Traversable[Maybe[T]], and turn it into Maybe[Traversable[T]]
+      * @return
+      *   * [Just]     Something(**EmptyTraversable**) if the original traversable was empty.
+      *   * [Just]     Something(Traversable[T]) if every Maybe in the original traversable was defined.
+      *   * [Just]     WithNothings(Traversable[T], List[Nothing]) in case some maybes are defined and some others are not.
+      *   * [Nothing]  AllNothings(Traversable[Nothing]) in case every maybe in the original traversable was empty.
+      */
+    def flattenMaybes: Maybe[S[T]] = {
+      // IDEA says this code does not compile but SBT compiles it just fine. IDEA bug?
+      originalTraversable match {
+        case seq if seq.forall(_.isDefined) =>
+          Something(seq.map(_.get).asInstanceOf[S[T]])
+        case seq if seq.forall(_.isEmpty) =>
+          AllNothings(seq.asInstanceOf[S[Nothing]])
+        case seq =>
+          val (justs, nothings) = seq.partition(_.isDefined)
+          WithNothings(justs.map(_.get).asInstanceOf[S[T]], nothings.toList.asInstanceOf[List[Nothing]])
+      }
+    }
   }
 
 }

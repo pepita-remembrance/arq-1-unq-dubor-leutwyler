@@ -22,15 +22,15 @@ class CareerService
   }
 
   def byShortName(shortName: String): Maybe[CareerDTO] = inTransaction {
-    CareerDAO.whereShortName(shortName)
+    CareerDAO.byShortName(shortName)
       .orNotFoundWith("short name", shortName)
       .as[CareerDTO]
   }
 
   def joinStudent(dto: CreateStudentCareerDTO, joinDate: DateTime = DateTime.now): Maybe[CareerDTO] = inTransaction {
     (for {
-      student <- StudentDAO.whereFileNumber(dto.studentFileNumber).orNotFoundWith("file number", dto.studentFileNumber)
-      career <- CareerDAO.whereShortName(dto.careerShortName).orNotFoundWith("short name", dto.careerShortName)
+      student <- StudentDAO.byFileNumber(dto.studentFileNumber).orNotFoundWith("file number", dto.studentFileNumber)
+      career <- CareerDAO.byShortName(dto.careerShortName).orNotFoundWith("short name", dto.careerShortName)
       _ = StudentCareerDAO.save(StudentCareer(student.id, career.id, joinDate))
     } yield career
       ).as[CareerDTO]
@@ -38,8 +38,8 @@ class CareerService
 
   def joinAdmin(dto: CreateAdminCareerDTO): Maybe[CareerDTO] = inTransaction {
     (for {
-      admin <- AdminDAO.whereFileNumber(dto.adminFileNumber).orNotFoundWith("file number", dto.adminFileNumber)
-      career <- CareerDAO.whereShortName(dto.careerShortName).orNotFoundWith("short name", dto.careerShortName)
+      admin <- AdminDAO.byFileNumber(dto.adminFileNumber).orNotFoundWith("file number", dto.adminFileNumber)
+      career <- CareerDAO.byShortName(dto.careerShortName).orNotFoundWith("short name", dto.careerShortName)
       _ = AdminCareerDAO.save(AdminCareer(admin.id, career.id))
     } yield career
       ).as[CareerDTO]

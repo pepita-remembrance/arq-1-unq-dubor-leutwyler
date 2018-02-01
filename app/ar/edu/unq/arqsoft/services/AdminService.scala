@@ -18,7 +18,7 @@ class AdminService extends Service {
   }
 
   def byFileNumber(fileNumber: Int): Maybe[AdminDTO] = inTransaction {
-    AdminDAO.whereFileNumber(fileNumber)
+    AdminDAO.byFileNumber(fileNumber)
       .orNotFoundWith("file number", fileNumber)
       .as[AdminDTO]
   }

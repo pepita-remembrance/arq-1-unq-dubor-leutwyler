@@ -22,7 +22,7 @@ trait Service extends DTOMappings with DAOBindings with Logging {
   implicit class RichQuery[In](query: Query[In])(implicit tagA: ClassTag[In]) {
     def orNotFoundWith[K](property: String, value: K): Maybe[In] = query.singleOption match {
       case Some(entity) => Something(entity)
-      case None => EntityNotFound(property, value, tagA.runtimeClass.getSimpleName)
+      case None => EntityNotFound(tagA.runtimeClass.getSimpleName, property, value)
     }
 
     def mapAs[Out](implicit fun: In => Out): Maybe[Iterable[Out]] =

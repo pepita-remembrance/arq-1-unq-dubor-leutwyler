@@ -36,7 +36,7 @@ class PollResultService extends Service {
   // TODO: Continue from here!
   protected def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] = inTransaction {
     val pollQuery = PollDAO.pollByCareerAndKey(careerShortName, pollKey)
-    val student = StudentDAO.whereFileNumber(studentFileNumber).single
+    val student = StudentDAO.byFileNumber(studentFileNumber).single
     val poll = pollQuery.single
     val pollSubjects = SubjectDAO.subjectsOfPoll(careerShortName, pollKey).toList
     val defaultOption = OfferDAO.baseOfferOfNonCourse(NonCourseOption.notYet).single

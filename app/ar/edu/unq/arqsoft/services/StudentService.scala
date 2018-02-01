@@ -18,7 +18,7 @@ class StudentService extends Service {
   }
 
   def byFileNumber(fileNumber: Int): Maybe[StudentDTO] = inTransaction {
-    Something(StudentDAO.whereFileNumber(fileNumber).single)
+    Something(StudentDAO.byFileNumber(fileNumber).single)
   }
 
 }

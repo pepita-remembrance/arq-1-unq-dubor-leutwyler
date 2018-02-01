@@ -33,7 +33,7 @@ class PollService extends Service {
   }
 
   def create(careerShortName: String, dto: CreatePollDTO, createDate: DateTime = DateTime.now): Maybe[PollDTO] = inTransaction {
-    val careerQuery = CareerDAO.whereShortName(careerShortName)
+    val careerQuery = CareerDAO.byShortName(careerShortName)
     val newPoll = dto.asModel(careerQuery.single, createDate)
     PollDAO.save(newPoll)
     dto.offer.foreach { offerMap =>
