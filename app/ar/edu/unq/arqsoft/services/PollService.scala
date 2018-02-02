@@ -1,7 +1,7 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.maybe.{Maybe, Something}
+import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.repository._
 import com.google.inject.{Inject, Singleton}
@@ -9,6 +9,7 @@ import org.joda.time.DateTime
 
 @Singleton
 class PollService @Inject()(pollRepository: PollRepository,
+                            courseRepository: CourseRepository,
                             nonCourseRepository: NonCourseRepository,
                             offerRepository: OfferRepository,
                             studentRepository: StudentRepository,
@@ -16,7 +17,8 @@ class PollService @Inject()(pollRepository: PollRepository,
                             adminRepository: AdminRepository,
                             subjectRepository: SubjectRepository,
                             pollOfferOptionRepository: PollOfferOptionRepository,
-                            pollSubjectOptionRepository: PollSubjectOptionRepository
+                            pollSubjectOptionRepository: PollSubjectOptionRepository,
+                            scheduleRepository: ScheduleRepository
                            ) extends Service {
   def createDefaultOptions(): Maybe[Unit] = {
     val defaultOptions = NonCourseOption.defaultOptionStrings.map(NonCourseOption(_))
@@ -66,7 +68,7 @@ class PollService @Inject()(pollRepository: PollRepository,
             subject <- Maybe.fromOption(subjects.find(_.shortName == subjectShortName),
               subjectRepository.notFoundByShortNameOfCareer(subjectShortName, career))
             pollOffer <- createOffer(options, nonCourses)
-            pollOfferOptions = pollOffer.map(option => PollOfferOption(newPoll.id, subject.id, option.id))
+            pollOfferOptions = pollOffer.map(option => PollOfferOption(newPoll.id, subject.id, option._2.id))
             defaultPollOfferOptions = defaultOptions
               .map(_._2)
               .map(baseOffer => PollOfferOption(newPoll.id, subject.id, baseOffer.id))
@@ -80,32 +82,32 @@ class PollService @Inject()(pollRepository: PollRepository,
       _ <- pollSubjectOptionRepository.save(extraData)
     } yield newPoll
 
-  //Continue from here!
-  protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCoursesDTO: Iterable[(NonCourseOption, OfferOptionBase)]): Maybe[Iterable[OfferOptionBase]] = inTransaction {
-    val courses = createCourses(optionsDTO.collect { case o: CreateCourseDTO => o }).get.map(_._2)
-    val usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCoursesDTO.find(_._1.key == value).get._2)
-    Something(courses ++ usedNonCourses)
-  }
+  protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCourses: Iterable[(NonCourseOption, OfferOptionBase)]): Maybe[Iterable[(OfferOption, OfferOptionBase)]] =
+    for {
+      courses <- createCourses(optionsDTO.collect { case o: CreateCourseDTO => o })
+      usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCourses.find(_._1.key == value).get)
+    } yield courses ++ usedNonCourses
 
-  protected def createCourses(coursesDTO: Iterable[CreateCourseDTO]): Maybe[Iterable[(Course, OfferOptionBase)]] = inTransaction {
+  protected def createCourses(coursesDTO: Iterable[CreateCourseDTO]): Maybe[Iterable[(Course, OfferOptionBase)]] = {
     val courses = coursesDTO.map(dto => (dto.asModel, dto))
-    CourseDAO.save(courses.map(_._1), useBulk = false)
-    val schedules = courses.flatMap { case (course, dto) =>
-      dto.schedules.map(_.asModel(course))
-    }
-    ScheduleDAO.save(schedules)
-    val coursesOffer = courses.map(_._1).map(course => (course, OfferOptionBase(course)))
-    OfferDAO.save(coursesOffer.map(_._2), useBulk = false)
-    Something(coursesOffer)
+    for {
+      _ <- courseRepository.save(courses.map(_._1), useBulk = false)
+      schedules = courses.flatMap { case (course, dto) =>
+        dto.schedules.map(_.asModel(course))
+      }
+      _ <- scheduleRepository.save(schedules)
+      coursesOffer = courses.map(_._1).map(course => (course, OfferOptionBase(course)))
+      _ <- offerRepository.save(coursesOffer.map(_._2), useBulk = false)
+    } yield coursesOffer
   }
 
-  protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Maybe[Iterable[(NonCourseOption, OfferOptionBase)]] = inTransaction {
-    val existingOffer = NonCourseDAO.whereTextValueWithBaseOffer(nonCoursesDTO.map(_.key)).toList
-    val existingTextValues = existingOffer.map(_._1.key)
-    val toCreate = nonCoursesDTO.filterNot(nonCourse => existingTextValues.contains(nonCourse.key)).map(_.asModel)
-    NonCourseDAO.save(toCreate, useBulk = false)
-    val toCreateOffer = toCreate.map(nonCourse => (nonCourse, OfferOptionBase(nonCourse)))
-    OfferDAO.save(toCreateOffer.map(_._2), useBulk = false)
-    Something(existingOffer ++ toCreateOffer)
-  }
+  protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Maybe[Iterable[(NonCourseOption, OfferOptionBase)]] =
+    for {
+      existingOffer <- nonCourseRepository.byKey(nonCoursesDTO.map(_.key))
+      existingTextValues = existingOffer.map(_._1.key).toList
+      toCreate = nonCoursesDTO.filterNot(dto => existingTextValues.contains(dto.key)).map(_.asModel)
+      _ <- nonCourseRepository.save(toCreate, useBulk = false)
+      toCreateOffer = toCreate.map(nonCourse => (nonCourse, OfferOptionBase(nonCourse)))
+      _ <- offerRepository.save(toCreateOffer.map(_._2), useBulk = false)
+    } yield existingOffer ++ toCreateOffer
 }

@@ -4,58 +4,65 @@ import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.api.{PollResultDTO, TallyDTO}
 import ar.edu.unq.arqsoft.maybe.{Maybe, Something}
 import ar.edu.unq.arqsoft.model._
-import com.google.inject.Singleton
+import ar.edu.unq.arqsoft.repository._
+import com.google.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 
 @Singleton
-class PollResultService extends Service {
+class PollResultService @Inject()(courseRepository: CourseRepository,
+                                  nonCourseRepository: NonCourseRepository,
+                                  pollRepository: PollRepository,
+                                  careerRepository: CareerRepository,
+                                  studentRepository: StudentRepository,
+                                  pollResultRepository: PollResultRepository,
+                                  subjectRepository: SubjectRepository,
+                                  pollSelectedOptionRepository: PollSelectedOptionRepository
+                                 ) extends Service {
 
-  def tally(careerShortName: String, pollKey: String): Maybe[Iterable[TallyDTO]] = inTransaction {
-    // Squeryl lacks support for UNION queries so...
-    val courseTally = CourseDAO.tallyForPoll(careerShortName, pollKey).toList
-    val nonCourseTally = NonCourseDAO.tallyForPoll(careerShortName, pollKey).toList
-
-    (courseTally ++ nonCourseTally)
+  def tally(careerShortName: String, pollKey: String): Maybe[Iterable[TallyDTO]] =
+    for {
+      career <- careerRepository.byShortName(careerShortName)
+      poll <- pollRepository.byKeyOfCareer(pollKey, career)
+      courseTally <- courseRepository.tallyByPoll(poll)
+      nonCourseTally <- nonCourseRepository.tallyByPoll(poll)
+    } yield (courseTally ++ nonCourseTally)
       .groupBy(_._1)
       .mapValues(_.groupBy(_._2: OfferOption))
       .mapValues(_.mapValues(_.map(_._3)))
-      .mapAs[TallyDTO]
-  }
 
-  def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResultDTO] = inTransaction {
-    getPollResult(studentFileNumber, careerShortName, pollKey).as[PollResultDTO]
-  }
+  def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResultDTO] =
+    getPollResult(studentFileNumber, careerShortName, pollKey)
 
-  protected def getPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] = inTransaction {
-    PollResultDAO.resultByStudentAndPoll(studentFileNumber, careerShortName, pollKey).singleOption match {
-      case Some(result) => Something(result)
-      case None => updatedPollResult(studentFileNumber, careerShortName, pollKey)
-    }
-  }
+  protected def getPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] =
+    for {
+      career <- careerRepository.byShortName(careerShortName)
+      poll <- pollRepository.byKeyOfCareer(pollKey, career)
+      student <- studentRepository.byFileNumber(studentFileNumber)
+      result <- pollResultRepository.byStudentAndPoll(student, poll, career)
+        .recover(updatedPollResult(student, poll))
+    } yield result
+
+  protected def newPollResult(student: Student, poll: Poll): Maybe[PollResult] =
+    for {
+      pollSubjects <- subjectRepository.getOfPoll(poll)
+      defaultOption <- nonCourseRepository.byKey(NonCourseOption.notYet)
+      newResult = PollResult(poll.id, student.id, DateTime.now)
+      _ <- pollResultRepository.save(newResult)
+      selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption._2.id))
+      _ <- pollSelectedOptionRepository.save(selectedOptions)
+    } yield newResult
+
+  protected def updatedPollResult(student: Student, poll: Poll): Maybe[PollResult] =
+    for {
+      baseResult <- newPollResult(student, poll)
+      alreadyPassedOption <- nonCourseRepository.byKey(NonCourseOption.alreadyPassed)
+      optionsToUpdate <- pollSelectedOptionRepository.getOfAlreadyPassedSubjects(baseResult)
+      _ = optionsToUpdate.foreach(_.offerId = alreadyPassedOption._2.id)
+      pollSelectedOptionRepository.update(optionsToUpdate)
+    } yield baseResult
 
   // TODO: Continue from here!
-  protected def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] = inTransaction {
-    val pollQuery = PollDAO.pollByCareerAndKey(careerShortName, pollKey)
-    val student = StudentDAO.byFileNumber(studentFileNumber).single
-    val poll = pollQuery.single
-    val pollSubjects = SubjectDAO.subjectsOfPoll(careerShortName, pollKey).toList
-    val defaultOption = OfferDAO.baseOfferOfNonCourse(NonCourseOption.notYet).single
-    val newResult = PollResult(poll.id, student.id, DateTime.now)
-    PollResultDAO.save(newResult)
-    val selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption.id))
-    PollSelectedOptionDAO.save(selectedOptions)
-    Something(newResult)
-  }
-
-  protected def updatedPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResult] = inTransaction {
-    val baseResult = newPollResult(studentFileNumber, careerShortName, pollKey).get
-    val alreadyPassedOption = OfferDAO.baseOfferOfNonCourse(NonCourseOption.alreadyPassed).single
-    val optionsToUpdate = PollSelectedOptionDAO.optionsByPollResultAndPassedSubjectsOfStudent(baseResult.id, studentFileNumber)
-    PollSelectedOptionDAO.updateSelectionTo(optionsToUpdate, alreadyPassedOption.id)
-    Something(baseResult)
-  }
-
-  def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: PollDeltaDTO, updateDate: DateTime = DateTime.now): Maybe[PollResultDTO] = inTransaction {
+  def update(studentFileNumber: Int, careerShortName: String, pollKey: String, delta: PollDeltaDTO, updateDate: DateTime = DateTime.now): Maybe[PollResultDTO] = {
     if (delta.nonEmpty) {
       // Ensure it exists
       val result = getPollResult(studentFileNumber, careerShortName, pollKey).get
@@ -72,7 +79,7 @@ class PollResultService extends Service {
     Something(getPollResult(studentFileNumber, careerShortName, pollKey).get)
   }
 
-  protected def possibleOptions(careerShortName: String, pollKey: String, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, OfferOption, OfferOptionBase)]] = inTransaction {
+  protected def possibleOptions(careerShortName: String, pollKey: String, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, OfferOption, OfferOptionBase)]] = {
     // Squeryl lacks support for UNION queries so...
     val courseOptions = CourseDAO.coursesForSubjectsOfPollWithBaseOffer(subjectShortNames, careerShortName, pollKey).toList
     val nonCoursesOptions = NonCourseDAO.nonCoursesForSubjectsOfPollWithBaseOffer(subjectShortNames, careerShortName, pollKey).toList
@@ -83,7 +90,7 @@ class PollResultService extends Service {
   protected def applyDelta(delta: PollDeltaDTO,
                            afectedOptions: Iterable[(Subject, PollSelectedOption)],
                            possibleOptions: Iterable[(Subject, OfferOption, OfferOptionBase)]
-                          ): Maybe[Unit] = inTransaction {
+                          ): Maybe[Unit] = {
     val changed = afectedOptions.map { case (subject, pso) =>
       val selectedOption = delta(subject.shortName)
       val selectedOffer = possibleOptions.find { case (sub, offer, base) =>

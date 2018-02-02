@@ -42,8 +42,8 @@ class Repository[T <: KeyedEntity[K], K](dao: SquerylDAO[T, K]) {
     dao.save(entity)
   }
 
-  def save(entities: Iterable[T]): Maybe[Unit] = inTransaction {
-    dao.save(entities)
+  def save(entities: Iterable[T], useBulk: Boolean = true): Maybe[Unit] = inTransaction {
+    dao.save(entities, useBulk)
   }
 
   def update(entity: T): Maybe[Unit] = inTransaction {

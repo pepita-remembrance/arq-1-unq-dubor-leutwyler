@@ -130,7 +130,7 @@ class PollResultRepository @Inject()(dao: PollResultDAO)
   def notFoundByStudentAndPoll(student: Student, career: Career, pollKey: String): EntityNotFound =
     notFoundBy("(student, poll)", (student.email, (career.shortName, pollKey)))
 
-  def byStudentAndPoll(student: Student, poll: Poll)(career: Career): Maybe[PollResult] =
+  def byStudentAndPoll(student: Student, poll: Poll, career: Career): Maybe[PollResult] =
     singleResult(dao.byStudentAndPoll(student.id, poll.id), notFoundByStudentAndPoll(student, career, poll.key))
 }
 
