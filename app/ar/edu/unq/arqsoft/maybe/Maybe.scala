@@ -12,13 +12,13 @@ trait Maybe[+A] {
 
   def getOrElse[B >: A](default: => B): B = if (isEmpty) default else get
 
-  def orElse[B >: A](alternative : => Maybe[B]) : Maybe[B] = if (isEmpty) alternative else this
+  def orElse[B >: A](alternative: => Maybe[B]): Maybe[B] = if (isEmpty) alternative else this
 
   def map[B](f: A => B): Maybe[B]
 
   def flatMap[B](f: A => Maybe[B]): Maybe[B]
 
-  def filter[B >: A](f: A => Boolean, alternative:Maybe[B]):Maybe[B] = if(isDefined && !f(get)) alternative else this
+  def filter[B >: A](f: A => Boolean, alternative: Maybe[B]): Maybe[B] = if (isDefined && !f(get)) alternative else this
 
   def fold[B](ifEmpty: => B)(f: A => B): B = if (isEmpty) ifEmpty else f(this.get)
 
@@ -37,11 +37,11 @@ trait Maybe[+A] {
 
   def exists(p: A => Boolean): Boolean = !isEmpty && p(this.get)
 
-  def contains[B >: A](elem : B): Boolean = !isEmpty && this.get==elem
+  def contains[B >: A](elem: B): Boolean = !isEmpty && this.get == elem
 
   def toList: List[A] = if (isEmpty) Nil else this.get :: Nil
 
-  def toOption: Option[A] = if(isEmpty) None else Option(this.get)
+  def toOption: Option[A] = if (isEmpty) None else Option(this.get)
 
   def recoverWith[B >: A](partial: PartialFunction[Maybe[A], Maybe[B]]): Maybe[B] = {
     if (partial isDefinedAt this) partial(this)
@@ -53,6 +53,9 @@ trait Maybe[+A] {
 }
 
 object Maybe {
+
+  def fromOption[T](option: Option[T], nothing: => Nothing): Maybe[T] =
+    option.map(Something(_)).getOrElse(nothing)
 
   implicit def try2Maybe[T](t: Try[T]): Maybe[T] = t match {
     case Success(k) => Something(k)
@@ -73,11 +76,12 @@ object Maybe {
 
     /**
       * Method to deal with Traversable[Maybe[T]], and turn it into Maybe[Traversable[T]]
+      *
       * @return
-      *   * [Just]     Something(**EmptyTraversable**) if the original traversable was empty.
-      *   * [Just]     Something(Traversable[T]) if every Maybe in the original traversable was defined.
-      *   * [Just]     WithNothings(Traversable[T], List[Nothing]) in case some maybes are defined and some others are not.
-      *   * [Nothing]  AllNothings(Traversable[Nothing]) in case every maybe in the original traversable was empty.
+      * * [Just]     Something(**EmptyTraversable**) if the original traversable was empty.
+      * * [Just]     Something(Traversable[T]) if every Maybe in the original traversable was defined.
+      * * [Just]     WithNothings(Traversable[T], List[Nothing]) in case some maybes are defined and some others are not.
+      * * [Nothing]  AllNothings(Traversable[Nothing]) in case every maybe in the original traversable was empty.
       */
     def flattenMaybes: Maybe[S[T]] = {
       // IDEA says this code does not compile but SBT compiles it just fine. IDEA bug?
