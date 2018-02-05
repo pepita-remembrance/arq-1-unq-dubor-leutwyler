@@ -4,6 +4,7 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.database.DSLFlavor
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
+import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.model._
 import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
@@ -70,17 +71,18 @@ trait InputDTOMappings {
 
 }
 
-trait OutputDTOMappings {
+trait OutputDTOMappings extends Logging {
 
   import MappingUtils._
 
-  implicit def queryPollSubjectOptionToDTO(query: Query[PollSubjectOption]): OutputAlias.ExtraDataDTO =
+  implicit def queryPollSubjectOptionToDTO(query: Query[PollSubjectOption]): OutputAlias.ExtraDataDTO = inTransaction {
     join(query, subjects)((ps, s) =>
       select(s.shortName, ps.extraData)
         on (ps.subjectId === s.id)
     ).toMap
+  }
 
-  implicit def queryOfferOptionBaseToDTO(query: Query[PollOfferOption]): OutputAlias.CareerOfferDTO = {
+  implicit def queryOfferOptionBaseToDTO(query: Query[PollOfferOption]): OutputAlias.CareerOfferDTO = inTransaction {
     val subjectWithCourse = join(query, subjects, offers, courses)((poo, s, o, c) =>
       where(o.isCourse === true)
         select(s.shortName, c)
@@ -96,7 +98,7 @@ trait OutputDTOMappings {
       .mapValues(_.map(_._2))
   }
 
-  implicit def querySelectedOptionsToDTO(query: Query[PollSelectedOption]): OutputAlias.ResultsDTO = {
+  implicit def querySelectedOptionsToDTO(query: Query[PollSelectedOption]): OutputAlias.ResultsDTO = inTransaction {
     val subjectWithCourse = join(query, subjects, offers, courses)((poo, s, o, c) =>
       where(o.isCourse === true)
         select(s.shortName, c)
@@ -110,57 +112,74 @@ trait OutputDTOMappings {
     (subjectWithCourse ++ subjectWithNonCourse).toMap
   }
 
-  implicit def studentToPartialDTO(student: Student): PartialStudentDTO =
+  implicit def studentToPartialDTO(student: Student): PartialStudentDTO = inTransaction {
     PartialStudentDTO(student.fileNumber, student.email, student.name, student.surname)
-
-  implicit def adminToPartialDTO(admin: Admin): PartialAdminDTO =
-    PartialAdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname)
-
-  implicit def careerToPartialDTO(career: Career): PartialCareerDTO =
-    PartialCareerDTO(career.shortName, career.longName)
-
-  implicit def careerToPartialForAdminDTO(career: Career): PartialCareerForAdminDTO =
-    PartialCareerForAdminDTO(career.shortName, career.longName, career.students.computeCount)
-
-  implicit def pollToPartialDTO(poll: Poll): PartialPollDTO =
-    PartialPollDTO(poll.key, poll.isOpen, poll.career.single)
-
-  implicit def pollToPartialPollForAdminDTO(poll: Poll): PartialPollForAdminDTO =
-    PartialPollForAdminDTO(poll.key, poll.isOpen, poll.career.single, poll.results.computeCount)
-
-  implicit def resultToPartialDTO(pollResult: PollResult): PartialPollResultDTO =
-    PartialPollResultDTO(pollResult.poll.single, pollResult.fillDate)
-
-  implicit def subjectToDTO(subject: Subject): SubjectDTO =
-    SubjectDTO(subject.shortName, subject.longName)
-
-  implicit def scheduleToDTO(schedule: Schedule): ScheduleDTO =
-    ScheduleDTO(schedule.day, schedule.fromHour, schedule.fromMinutes, schedule.toHour, schedule.toMinutes)
-
-  implicit def courseToDTO(course: Course): CourseDTO =
-    CourseDTO(course.key, course.quota, course.schedules.mapAs[ScheduleDTO])
-
-  implicit def nonCourseToDTO(nonCourse: NonCourseOption): NonCourseOptionDTO =
-    NonCourseOptionDTO(nonCourse.key)
-
-  implicit def offerOptionToDTO(offerOption: OfferOption): OfferOptionDTO = offerOption match {
-    case offer: Course => offer
-    case offer: NonCourseOption => offer
   }
 
-  implicit def pollOfferOptionToDTO(pollOfferOption: PollOfferOption): OfferOptionDTO =
+  implicit def adminToPartialDTO(admin: Admin): PartialAdminDTO = inTransaction {
+    PartialAdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname)
+  }
+
+  implicit def careerToPartialDTO(career: Career): PartialCareerDTO = inTransaction {
+    PartialCareerDTO(career.shortName, career.longName)
+  }
+
+  implicit def careerToPartialForAdminDTO(career: Career): PartialCareerForAdminDTO = inTransaction {
+    PartialCareerForAdminDTO(career.shortName, career.longName, career.students.computeCount)
+  }
+
+  implicit def pollToPartialDTO(poll: Poll): PartialPollDTO = inTransaction {
+    PartialPollDTO(poll.key, poll.isOpen, poll.career.single)
+  }
+
+  implicit def pollToPartialPollForAdminDTO(poll: Poll): PartialPollForAdminDTO = inTransaction {
+    PartialPollForAdminDTO(poll.key, poll.isOpen, poll.career.single, poll.results.computeCount)
+  }
+
+  implicit def resultToPartialDTO(pollResult: PollResult): PartialPollResultDTO = inTransaction {
+    PartialPollResultDTO(pollResult.poll.single, pollResult.fillDate)
+  }
+
+  implicit def subjectToDTO(subject: Subject): SubjectDTO = inTransaction {
+    SubjectDTO(subject.shortName, subject.longName)
+  }
+
+  implicit def scheduleToDTO(schedule: Schedule): ScheduleDTO = inTransaction {
+    ScheduleDTO(schedule.day, schedule.fromHour, schedule.fromMinutes, schedule.toHour, schedule.toMinutes)
+  }
+
+  implicit def courseToDTO(course: Course): CourseDTO = inTransaction {
+    CourseDTO(course.key, course.quota, course.schedules.mapAs[ScheduleDTO])
+  }
+
+  implicit def nonCourseToDTO(nonCourse: NonCourseOption): NonCourseOptionDTO = inTransaction {
+    NonCourseOptionDTO(nonCourse.key)
+  }
+
+  implicit def offerOptionToDTO(offerOption: OfferOption): OfferOptionDTO = inTransaction {
+    offerOption match {
+      case offer: Course => offer
+      case offer: NonCourseOption => offer
+    }
+  }
+
+  implicit def pollOfferOptionToDTO(pollOfferOption: PollOfferOption): OfferOptionDTO = inTransaction {
     pollOfferOption.offer.single.discriminated.single
+  }
 
-  implicit def pollToDTO(poll: Poll): PollDTO =
+  implicit def pollToDTO(poll: Poll): PollDTO = inTransaction {
     PollDTO(poll.key, poll.isOpen, poll.career.single, poll.offers, poll.extraData)
+  }
 
-  implicit def careerToDTO(career: Career): CareerDTO =
+  implicit def careerToDTO(career: Career): CareerDTO = inTransaction {
     CareerDTO(career.shortName, career.longName, career.subjects.mapAs[SubjectDTO], career.polls.mapAs[PartialPollDTO])
+  }
 
-  implicit def pollResultToDTO(pollResult: PollResult): PollResultDTO =
+  implicit def pollResultToDTO(pollResult: PollResult): PollResultDTO = inTransaction {
     PollResultDTO(pollResult.poll.single, pollResult.student.single, pollResult.fillDate, pollResult.selectedOptions)
+  }
 
-  implicit def studentToDTO(student: Student): StudentDTO = {
+  implicit def studentToDTO(student: Student): StudentDTO = inTransaction {
     val studentPolls = join(polls, studentsCareers)((p, sc) =>
       where((sc.studentId === student.id) and (p.createDate gte sc.joinDate))
         select p
@@ -173,14 +192,17 @@ trait OutputDTOMappings {
     )
   }
 
-  implicit def adminToDTO(admin: Admin): AdminDTO =
+  implicit def adminToDTO(admin: Admin): AdminDTO = inTransaction {
     AdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])
+  }
 
-  implicit def optionMapToOptionTallyDTO(data: (OfferOption, Iterable[Student])): OptionTallyDTO =
+  implicit def optionMapToOptionTallyDTO(data: (OfferOption, Iterable[Student])): OptionTallyDTO = inTransaction {
     OptionTallyDTO(data._1, data._2.mapAs[PartialStudentDTO])
+  }
 
-  implicit def tallyMapToDTO(data: (Subject, Map[OfferOption, Iterable[Student]])): TallyDTO =
+  implicit def tallyMapToDTO(data: (Subject, Map[OfferOption, Iterable[Student]])): TallyDTO = inTransaction {
     TallyDTO(data._1, data._2.mapAs[OptionTallyDTO])
+  }
 }
 
 
@@ -202,6 +224,7 @@ abstract class ModelConverter2[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DT
 }
 
 object MappingUtils {
+
   implicit class QueryConverter[A](query: Query[A]) {
     def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
 
@@ -211,4 +234,5 @@ object MappingUtils {
   implicit class IterableConverter[A](iterable: Iterable[A]) {
     def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
   }
+
 }

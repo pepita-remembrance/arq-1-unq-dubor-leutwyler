@@ -13,13 +13,13 @@ class StudentService @Inject()(studentRepository: StudentRepository
     val newModel = dto.asModel
     for {
       _ <- studentRepository.save(newModel)
-    } yield newModel
+    } yield newModel.as[StudentDTO]
   }
 
   def all: Maybe[Iterable[PartialStudentDTO]] =
-    studentRepository.all()
+    studentRepository.all().mapAs[PartialStudentDTO]
 
   def byFileNumber(fileNumber: Int): Maybe[StudentDTO] =
-    studentRepository.byFileNumber(fileNumber)
+    studentRepository.byFileNumber(fileNumber).as[StudentDTO]
 
 }

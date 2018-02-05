@@ -72,7 +72,7 @@ object Maybe {
     case Failure(ex) => UnexpectedResult(ex)
   }
 
-  implicit class RichTraversable[S[A] <: Traversable[A], T](originalTraversable: S[Maybe[T]]) {
+  implicit class RichIterableMaybe[T](originalTraversable: Iterable[Maybe[T]]) {
 
     /**
       * Method to deal with Traversable[Maybe[T]], and turn it into Maybe[Traversable[T]]
@@ -83,16 +83,16 @@ object Maybe {
       * * [Just]     WithNothings(Traversable[T], List[Nothing]) in case some maybes are defined and some others are not.
       * * [Nothing]  AllNothings(Traversable[Nothing]) in case every maybe in the original traversable was empty.
       */
-    def flattenMaybes: Maybe[S[T]] = {
+    def flattenMaybes: Maybe[Iterable[T]] = {
       // IDEA says this code does not compile but SBT compiles it just fine. IDEA bug?
       originalTraversable match {
         case seq if seq.forall(_.isDefined) =>
-          Something(seq.map(_.get).asInstanceOf[S[T]])
+          Something(seq.map(_.get))
         case seq if seq.forall(_.isEmpty) =>
-          AllNothings(seq.asInstanceOf[S[Nothing]])
+          AllNothings(seq.asInstanceOf[Iterable[Nothing]])
         case seq =>
           val (justs, nothings) = seq.partition(_.isDefined)
-          WithNothings(justs.map(_.get).asInstanceOf[S[T]], nothings.toList.asInstanceOf[List[Nothing]])
+          WithNothings(justs.map(_.get), nothings.toList.asInstanceOf[List[Nothing]])
       }
     }
   }

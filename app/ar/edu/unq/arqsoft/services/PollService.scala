@@ -23,7 +23,7 @@ class PollService @Inject()(pollRepository: PollRepository,
   def createDefaultOptions(): Maybe[Unit] = {
     val defaultOptions = NonCourseOption.defaultOptionStrings.map(NonCourseOption(_))
     for {
-      _ <- nonCourseRepository.save(defaultOptions)
+      _ <- nonCourseRepository.save(defaultOptions, useBulk = false)
       defaultOptionsBase = defaultOptions.map(nonCourse => OfferOptionBase(nonCourse))
       _ <- offerRepository.save(defaultOptionsBase)
     } yield ()
@@ -33,32 +33,32 @@ class PollService @Inject()(pollRepository: PollRepository,
     for {
       student <- studentRepository.byFileNumber(studentFileNumber)
       polls <- pollRepository.getOfStudent(student)
-    } yield polls
+    } yield polls.mapAs[PartialPollDTO]
 
   def allOf(careerShortName: String): Maybe[Iterable[PartialPollDTO]] =
     for {
       career <- careerRepository.byShortName(careerShortName)
       polls <- pollRepository.getOfCareer(career)
-    } yield polls
+    } yield polls.mapAs[PartialPollDTO]
 
   def allOfAdmin(adminFileNumber: Int): Maybe[Iterable[PartialPollDTO]] =
     for {
       admin <- adminRepository.byFileNumber(adminFileNumber)
       polls <- pollRepository.getOfAdmin(admin)
-    } yield polls
+    } yield polls.mapAs[PartialPollDTO]
 
   def byCareerShortNameAndPollKey(careerShortName: String, pollKey: String): Maybe[PollDTO] =
     for {
       career <- careerRepository.byShortName(careerShortName)
       poll <- pollRepository.byKeyOfCareer(pollKey, career)
-    } yield poll
+    } yield poll.as[PollDTO]
 
   def create(careerShortName: String, dto: CreatePollDTO, createDate: DateTime = DateTime.now): Maybe[PollDTO] =
     for {
       career <- careerRepository.byShortName(careerShortName)
       newPoll = dto.asModel(career, createDate)
       _ <- pollRepository.save(newPoll)
-      defaultOptions <- nonCourseRepository.byKey(NonCourseOption.defaultOptionStrings)
+            defaultOptions <- nonCourseRepository.byKey(NonCourseOption.defaultOptionStrings)
       offerMap = dto.offer.getOrElse(Map.empty)
       subjects <- subjectRepository.byShortNameOfCareer(offerMap.keys, career)
       nonCourses <- createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
@@ -80,10 +80,11 @@ class PollService @Inject()(pollRepository: PollRepository,
         PollSubjectOption(newPoll.id, subject.id, subjectExtraData)
       }
       _ <- pollSubjectOptionRepository.save(extraData)
-    } yield newPoll
+    } yield newPoll.as[PollDTO]
 
   protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCourses: Iterable[(NonCourseOption, OfferOptionBase)]): Maybe[Iterable[(OfferOption, OfferOptionBase)]] =
     for {
+    // Squeryl lacks support for UNION queries so...
       courses <- createCourses(optionsDTO.collect { case o: CreateCourseDTO => o })
       usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCourses.find(_._1.key == value).get)
     } yield courses ++ usedNonCourses

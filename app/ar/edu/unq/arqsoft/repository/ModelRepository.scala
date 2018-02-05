@@ -67,8 +67,8 @@ class OfferRepository @Inject()(dao: OfferDAO)
 @Singleton
 class CourseRepository @Inject()(dao: CourseDAO)
   extends ModelRepository[Course](dao) {
-  def getOfPollBySubjectName(poll: Poll, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, Course, OfferOptionBase)]] = inTransaction {
-    dao.getOfPollBySubjectName(poll.id, subjectShortNames).toList
+  def getOfPollResultBySubjectName(pollResult: PollResult, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, Course, OfferOptionBase)]] = inTransaction {
+    dao.getOfPollBySubjectName(pollResult.pollId, subjectShortNames).toList
   }
 
   def tallyByPoll(poll: Poll): Maybe[Iterable[(Subject, Course, Student)]] = inTransaction {
@@ -89,8 +89,8 @@ class NonCourseRepository @Inject()(dao: NonCourseDAO)
   def byKey(key: String): Maybe[(NonCourseOption, OfferOptionBase)] =
     singleResult(dao.byKey(key), notFoundByKey(key))
 
-  def getOfSubjectByPoll(subjectShortNames: Iterable[String], poll: Poll): Maybe[Iterable[(Subject, NonCourseOption, OfferOptionBase)]] = inTransaction {
-    dao.getOfSubjectByPoll(subjectShortNames, poll.id).toList
+  def getOfPollResultBySubjectName(pollResult: PollResult, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, NonCourseOption, OfferOptionBase)]] = inTransaction {
+    dao.getOfPollBySubjectName(pollResult.pollId, subjectShortNames).toList
   }
 
   def tallyByPoll(poll: Poll): Maybe[Iterable[(Subject, NonCourseOption, Student)]] = inTransaction {

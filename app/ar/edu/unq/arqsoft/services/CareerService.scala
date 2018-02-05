@@ -22,26 +22,26 @@ class CareerService @Inject()(careerRepository: CareerRepository,
       _ <- careerRepository.save(newModel)
       newSubjects = dto.subjects.getOrElse(Nil).map(_.asModel(newModel))
       _ <- subjectRepository.save(newSubjects)
-    } yield newModel
+    } yield newModel.as[CareerDTO]
   }
 
   def all: Maybe[Iterable[PartialCareerDTO]] =
-    careerRepository.all()
+    careerRepository.all().mapAs[PartialCareerDTO]
 
   def byShortName(shortName: String): Maybe[CareerDTO] =
-    careerRepository.byShortName(shortName)
+    careerRepository.byShortName(shortName).as[CareerDTO]
 
   def joinStudent(dto: CreateStudentCareerDTO, joinDate: DateTime = DateTime.now): Maybe[CareerDTO] =
     for {
       student <- studentRepository.byFileNumber(dto.studentFileNumber)
       career <- careerRepository.byShortName(dto.careerShortName)
       _ <- studentCareerRepository.save(StudentCareer(student.id, career.id, joinDate))
-    } yield career
+    } yield career.as[CareerDTO]
 
   def joinAdmin(dto: CreateAdminCareerDTO): Maybe[CareerDTO] =
     for {
       admin <- adminRepository.byFileNumber(dto.adminFileNumber)
       career <- careerRepository.byShortName(dto.careerShortName)
       _ <- adminCareerRepository.save(AdminCareer(admin.id, career.id))
-    } yield career
+    } yield career.as[CareerDTO]
 }

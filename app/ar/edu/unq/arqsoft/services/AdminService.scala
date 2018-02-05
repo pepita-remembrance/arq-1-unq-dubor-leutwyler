@@ -15,24 +15,24 @@ class AdminService @Inject()(adminRepository: AdminRepository,
     val newModel = dto.asModel
     for {
       _ <- adminRepository.save(newModel)
-    } yield newModel
+    } yield newModel.as[AdminDTO]
   }
 
   def all: Maybe[Iterable[PartialAdminDTO]] =
-    adminRepository.all()
+    adminRepository.all().mapAs[PartialAdminDTO]
 
   def byFileNumber(fileNumber: Int): Maybe[AdminDTO] =
-    adminRepository.byFileNumber(fileNumber)
+    adminRepository.byFileNumber(fileNumber).as[AdminDTO]
 
   def careers(fileNumber: Int): Maybe[Iterable[PartialCareerForAdminDTO]] =
     for {
       admin <- adminRepository.byFileNumber(fileNumber)
       careers <- careerRepository.getOfAdmin(admin)
-    } yield careers
+    } yield careers.mapAs[PartialCareerForAdminDTO]
 
   def polls(fileNumber: Int): Maybe[Iterable[PartialPollForAdminDTO]] =
     for {
       admin <- adminRepository.byFileNumber(fileNumber)
       polls <- pollRepository.getOfAdmin(admin)
-    } yield polls
+    } yield polls.mapAs[PartialPollForAdminDTO]
 }

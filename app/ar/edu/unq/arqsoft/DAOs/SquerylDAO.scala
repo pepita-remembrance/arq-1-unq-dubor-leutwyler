@@ -5,7 +5,7 @@ import org.squeryl.dsl.QueryDsl
 import org.squeryl.dsl.ast.{LogicalBoolean, TrueLogicalBoolean}
 import org.squeryl.internals.FieldReferenceLinker.{createEqualityExpressionWithLastAccessedFieldReferenceAndConstant => createEqualityExpression}
 
-abstract class SquerylDAO[T <: KeyedEntity[K], K](table: Table[T], _entityName: Option[String])(implicit val dsl: QueryDsl, val ked: KeyedEntityDef[T, K], toCanLookup: K => CanLookup) {
+abstract class SquerylDAO[T <: KeyedEntity[K], K](table: Table[T], _entityName: Option[String])(implicit dsl: QueryDsl, val ked: KeyedEntityDef[T, K], toCanLookup: K => CanLookup) {
 
   def entityName: String = _entityName.getOrElse(table.name)
 
