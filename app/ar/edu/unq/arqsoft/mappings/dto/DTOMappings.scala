@@ -4,7 +4,6 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.database.DSLFlavor
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
-import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.model._
 import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
@@ -71,7 +70,7 @@ trait InputDTOMappings {
 
 }
 
-trait OutputDTOMappings extends Logging {
+trait OutputDTOMappings {
 
   import MappingUtils._
 
