@@ -1,0 +1,125 @@
+[
+  //PATCH        /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey         PollDeltaDTO
+  {
+    "Baz1": {
+      "key": "Ya aprobe",
+      "isCourse": false
+    },
+    "Baz2": {
+      "key": "C1",
+      "isCourse": true
+    },
+    "Baz3": {
+      "key": "No tengo ganas de ir.",
+      "isCourse": false
+    }
+  },
+  //POST         /admins         CreateAdminDTO
+  {
+    "fileNumber": 666,
+    "email": "foo@bar.com",
+    "name": "Foo",
+    "surname": "Bar"
+  },
+  //POST         /admins/careers         CreateCareerDTO
+  {
+    "shortName": "BAZ",
+    "longName": "Baz Bar Foo",
+    "subjects": [
+      {
+        "shortName": "Baz1",
+        "longName": "Baz I"
+      },
+      {
+        "shortName": "Baz2",
+        "longName": "Baz II"
+      },
+      {
+        "shortName": "Baz3",
+        "longName": "Baz III"
+      }
+    ]
+  },
+  //POST         /admins/students         CreateStudentDTO
+  {
+    "fileNumber": 999,
+    "email": "bar@foo.com",
+    "name": "Bar",
+    "surname": "Foo"
+  },
+  //POST         /admins/careers/:careerShortName/polls         CreatePollDTO
+  {
+    "key": "BAZZZ",
+    "offer": {
+      "Baz1": [
+        {
+          "key": "C1",
+          "quota": 30,
+          "schedules": [
+            {
+              "day": 1,
+              "fromHour": 9,
+              "fromMinutes": 0,
+              "toHour": 11,
+              "toMinutes": 59
+            }
+          ]
+        },
+        {
+          "key": "No tengo ganas de ir."
+        }
+      ],
+      "Baz2": [
+        {
+          "key": "C1",
+          "quota": 30,
+          "schedules": [
+            {
+              "day": 1,
+              "fromHour": 9,
+              "fromMinutes": 0,
+              "toHour": 11,
+              "toMinutes": 59
+            }
+          ]
+        },
+        {
+          "key": "No tengo ganas de ir."
+        }
+      ],
+      "Baz3": [
+        {
+          "key": "C1",
+          "quota": 30,
+          "schedules": [
+            {
+              "day": 1,
+              "fromHour": 9,
+              "fromMinutes": 0,
+              "toHour": 11,
+              "toMinutes": 59
+            }
+          ]
+        },
+        {
+          "key": "No tengo ganas de ir."
+        }
+      ]
+    },
+    "extraData": {
+      "Baz1": "Requiere que vengas.",
+      "Baz2": "Requiere que vengas.",
+      "Baz3": "Requiere que vengas."
+    }
+  },
+  //POST         /admins/careers/join/admins         CreateAdminCareerDTO
+  {
+    "adminFileNumber": 666,
+    "careerShortName": "BAZ"
+  },
+  //POST         /admins/careers/join/students         CreateStudentCareerDTO
+  {
+    "studentFileNumber": 999,
+    "careerShortName": "BAZ"
+  }
+]

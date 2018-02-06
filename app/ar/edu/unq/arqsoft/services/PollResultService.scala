@@ -28,7 +28,8 @@ class PollResultService @Inject()(courseRepository: CourseRepository,
     } yield (courseTally ++ nonCourseTally)
       .groupBy(_._1)
       .mapValues(_.groupBy(_._2: OfferOption))
-      .mapValues(_.mapValues(_.map(_._3))).mapAs[TallyDTO]
+      .mapValues(_.mapValues(_.map(_._3)))
+      .mapAs[TallyDTO]
 
   def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResultDTO] =
     getPollResult(studentFileNumber, careerShortName, pollKey).as[PollResultDTO]
