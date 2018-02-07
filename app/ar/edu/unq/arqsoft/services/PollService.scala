@@ -21,11 +21,11 @@ class PollService @Inject()(pollRepository: PollRepository,
                             scheduleRepository: ScheduleRepository
                            ) extends Service {
   def createDefaultOptions(): Maybe[Unit] = {
-    val defaultOptions = NonCourseOption.defaultOptionStrings.map(NonCourseOption(_))
+    val defaultBases = NonCourseOption.defaultOptionStrings.map((_, OfferOptionBase.forNonCourse))
     for {
-      _ <- nonCourseRepository.save(defaultOptions, useBulk = false)
-      defaultOptionsBase = defaultOptions.map(nonCourse => OfferOptionBase(nonCourse))
-      _ <- offerRepository.save(defaultOptionsBase)
+      _ <- offerRepository.save(defaultBases.map(_._2), useBulk = false)
+      defaultsNonCourses = defaultBases.map { case (key, base) => NonCourseOption(key, base.id) }
+      _ <- nonCourseRepository.save(defaultsNonCourses, useBulk = false)
     } yield ()
   }
 
@@ -58,7 +58,7 @@ class PollService @Inject()(pollRepository: PollRepository,
       career <- careerRepository.byShortName(careerShortName)
       newPoll = dto.asModel(career, createDate)
       _ <- pollRepository.save(newPoll)
-            defaultOptions <- nonCourseRepository.byKey(NonCourseOption.defaultOptionStrings)
+      defaultOptions <- nonCourseRepository.byKey(NonCourseOption.defaultOptionStrings)
       offerMap = dto.offer.getOrElse(Map.empty)
       subjects <- subjectRepository.byShortNameOfCareer(offerMap.keys, career)
       nonCourses <- createNonCourses(offerMap.values.flatten.collect({ case o: CreateNonCourseDTO => o }))
@@ -68,10 +68,8 @@ class PollService @Inject()(pollRepository: PollRepository,
             subject <- Maybe.fromOption(subjects.find(_.shortName == subjectShortName),
               subjectRepository.notFoundByShortNameOfCareer(subjectShortName, career))
             pollOffer <- createOffer(options, nonCourses)
-            pollOfferOptions = pollOffer.map(option => PollOfferOption(newPoll.id, subject.id, option._2.id))
-            defaultPollOfferOptions = defaultOptions
-              .map(_._2)
-              .map(baseOffer => PollOfferOption(newPoll.id, subject.id, baseOffer.id))
+            pollOfferOptions = pollOffer.map(option => PollOfferOption(newPoll.id, subject.id, option.offerId))
+            defaultPollOfferOptions = defaultOptions.map(option => PollOfferOption(newPoll.id, subject.id, option.offerId))
           } yield pollOfferOptions ++ defaultPollOfferOptions
       }.flattenMaybes
       _ <- pollOfferOptionRepository.save(offersLists.flatten)
@@ -82,33 +80,33 @@ class PollService @Inject()(pollRepository: PollRepository,
       _ <- pollSubjectOptionRepository.save(extraData)
     } yield newPoll.as[PollDTO]
 
-  protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCourses: Iterable[(NonCourseOption, OfferOptionBase)]): Maybe[Iterable[(OfferOption, OfferOptionBase)]] =
+  protected def createOffer(optionsDTO: Iterable[CreateOfferOptionDTO], nonCourses: Iterable[NonCourseOption]): Maybe[Iterable[OfferOption]] =
     for {
     // Squeryl lacks support for UNION queries so...
       courses <- createCourses(optionsDTO.collect { case o: CreateCourseDTO => o })
-      usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCourses.find(_._1.key == value).get)
+      usedNonCourses = optionsDTO.collect({ case o: CreateNonCourseDTO => o.key }).map(value => nonCourses.find(_.key == value).get)
     } yield courses ++ usedNonCourses
 
-  protected def createCourses(coursesDTO: Iterable[CreateCourseDTO]): Maybe[Iterable[(Course, OfferOptionBase)]] = {
-    val courses = coursesDTO.map(dto => (dto.asModel, dto))
+  protected def createCourses(coursesDTO: Iterable[CreateCourseDTO]): Maybe[Iterable[Course]] = {
+    val toCreate = coursesDTO.map((_, OfferOptionBase.forCourse))
     for {
-      _ <- courseRepository.save(courses.map(_._1), useBulk = false)
-      schedules = courses.flatMap { case (course, dto) =>
+      _ <- offerRepository.save(toCreate.map(_._2), useBulk = false)
+      coursesOffer = toCreate.map { case (dto, base) => (dto, dto.asModel(base)) }
+      _ <- courseRepository.save(coursesOffer.map(_._2), useBulk = false)
+      schedules = coursesOffer.flatMap { case (dto, course) =>
         dto.schedules.map(_.asModel(course))
       }
       _ <- scheduleRepository.save(schedules)
-      coursesOffer = courses.map(_._1).map(course => (course, OfferOptionBase(course)))
-      _ <- offerRepository.save(coursesOffer.map(_._2), useBulk = false)
-    } yield coursesOffer
+    } yield coursesOffer.map(_._2)
   }
 
-  protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Maybe[Iterable[(NonCourseOption, OfferOptionBase)]] =
+  protected def createNonCourses(nonCoursesDTO: Iterable[CreateNonCourseDTO]): Maybe[Iterable[NonCourseOption]] =
     for {
       existingOffer <- nonCourseRepository.byKey(nonCoursesDTO.map(_.key))
-      existingTextValues = existingOffer.map(_._1.key).toList
-      toCreate = nonCoursesDTO.filterNot(dto => existingTextValues.contains(dto.key)).map(_.asModel)
-      _ <- nonCourseRepository.save(toCreate, useBulk = false)
-      toCreateOffer = toCreate.map(nonCourse => (nonCourse, OfferOptionBase(nonCourse)))
-      _ <- offerRepository.save(toCreateOffer.map(_._2), useBulk = false)
+      existingTextValues = existingOffer.map(_.key).toList
+      toCreate = nonCoursesDTO.filterNot(dto => existingTextValues.contains(dto.key)).map((_, OfferOptionBase.forNonCourse))
+      _ <- offerRepository.save(toCreate.map(_._2), useBulk = false)
+      toCreateOffer = toCreate.map { case (dto, base) => dto.asModel(base) }
+      _ <- nonCourseRepository.save(toCreateOffer, useBulk = false)
     } yield existingOffer ++ toCreateOffer
 }

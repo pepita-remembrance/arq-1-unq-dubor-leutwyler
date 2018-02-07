@@ -49,7 +49,7 @@ class PollResultService @Inject()(courseRepository: CourseRepository,
       defaultOption <- nonCourseRepository.byKey(NonCourseOption.notYet)
       newResult = PollResult(poll.id, student.id, DateTime.now)
       _ <- pollResultRepository.save(newResult)
-      selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption._2.id))
+      selectedOptions = pollSubjects.map(subject => PollSelectedOption(newResult.id, subject.id, defaultOption.offerId))
       _ <- pollSelectedOptionRepository.save(selectedOptions)
     } yield newResult
 
@@ -58,7 +58,7 @@ class PollResultService @Inject()(courseRepository: CourseRepository,
       baseResult <- newPollResult(student, poll)
       alreadyPassedOption <- nonCourseRepository.byKey(NonCourseOption.alreadyPassed)
       optionsToUpdate <- pollSelectedOptionRepository.getOfAlreadyPassedSubjects(baseResult)
-      _ = optionsToUpdate.foreach(_.offerId = alreadyPassedOption._2.id)
+      _ = optionsToUpdate.foreach(_.offerId = alreadyPassedOption.offerId)
       _ <- pollSelectedOptionRepository.update(optionsToUpdate)
     } yield baseResult
 
@@ -72,7 +72,7 @@ class PollResultService @Inject()(courseRepository: CourseRepository,
       _ <- pollResultRepository.update(result)
     } yield result.as[PollResultDTO]
 
-  protected def possibleOptions(pollResult: PollResult, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, OfferOption, OfferOptionBase)]] =
+  protected def possibleOptions(pollResult: PollResult, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, OfferOption)]] =
     for {
     // Squeryl lacks support for UNION queries so...
       courseOptions <- courseRepository.getOfPollResultBySubjectName(pollResult, subjectShortNames)
@@ -81,17 +81,17 @@ class PollResultService @Inject()(courseRepository: CourseRepository,
 
   protected def applyDelta(delta: PollDeltaDTO,
                            afectedOptions: Iterable[(Subject, PollSelectedOption)],
-                           availableOptions: Iterable[(Subject, OfferOption, OfferOptionBase)]
+                           availableOptions: Iterable[(Subject, OfferOption)]
                           ): Maybe[Unit] = {
     val changed = for {
       (subject, pso) <- afectedOptions
       selectedOption = delta(subject.shortName)
-      (_, _, selectedOffer) = availableOptions.find { case (sub, offer, base) =>
+      (_, selectedOffer) = availableOptions.find { case (sub, offer) =>
         sub == subject &&
           offer.key == selectedOption.key &&
-          base.isCourse == selectedOption.isCourse
+          offer.isCourse == selectedOption.isCourse
       }.get
-      _ = pso.offerId = selectedOffer.id
+      _ = pso.offerId = selectedOffer.offerId
     } yield pso
     pollSelectedOptionRepository.update(changed)
   }
