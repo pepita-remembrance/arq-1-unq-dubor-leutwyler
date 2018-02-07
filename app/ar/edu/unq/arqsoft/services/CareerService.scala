@@ -1,41 +1,47 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
+import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model.{AdminCareer, StudentCareer}
-import com.google.inject.Singleton
+import ar.edu.unq.arqsoft.repository._
+import com.google.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 
 @Singleton
-class CareerService
-  extends Service {
+class CareerService @Inject()(careerRepository: CareerRepository,
+                              studentRepository: StudentRepository,
+                              subjectRepository: SubjectRepository,
+                              studentCareerRepository: StudentCareerRepository,
+                              adminRepository: AdminRepository,
+                              adminCareerRepository: AdminCareerRepository
+                             ) extends Service {
 
-  def create(dto: CreateCareerDTO): CareerDTO = inTransaction {
-    val newCareer = dto.asModel
-    CareerDAO.save(newCareer)
-    dto.subjects.foreach(subjects => SubjectDAO.save(subjects.map(_.asModel(newCareer))))
-    newCareer
+  def create(dto: CreateCareerDTO): Maybe[CareerDTO] = {
+    val newModel = dto.asModel
+    for {
+      _ <- careerRepository.save(newModel)
+      newSubjects = dto.subjects.getOrElse(Nil).map(_.asModel(newModel))
+      _ <- subjectRepository.save(newSubjects)
+    } yield newModel.as[CareerDTO]
   }
 
-  def all: Iterable[PartialCareerDTO] = inTransaction {
-    CareerDAO.all.mapAs[PartialCareerDTO]
-  }
+  def all: Maybe[Iterable[PartialCareerDTO]] =
+    careerRepository.all().mapAs[PartialCareerDTO]
 
-  def byShortName(shortName: String): CareerDTO = inTransaction {
-    CareerDAO.whereShortName(shortName).single
-  }
+  def byShortName(shortName: String): Maybe[CareerDTO] =
+    careerRepository.byShortName(shortName).as[CareerDTO]
 
-  def joinStudent(dto: CreateStudentCareerDTO, joinDate:DateTime=DateTime.now): CareerDTO = inTransaction {
-    val student = StudentDAO.whereFileNumber(dto.studentFileNumber).single
-    val career = CareerDAO.whereShortName(dto.careerShortName).single
-    StudentCareerDAO.save(StudentCareer(student.id, career.id, joinDate))
-    career
-  }
+  def joinStudent(dto: CreateStudentCareerDTO, joinDate: DateTime = DateTime.now): Maybe[CareerDTO] =
+    for {
+      student <- studentRepository.byFileNumber(dto.studentFileNumber)
+      career <- careerRepository.byShortName(dto.careerShortName)
+      _ <- studentCareerRepository.save(StudentCareer(student.id, career.id, joinDate))
+    } yield career.as[CareerDTO]
 
-  def joinAdmin(dto: CreateAdminCareerDTO): CareerDTO = inTransaction {
-    val admin = AdminDAO.whereFileNumber(dto.adminFileNumber).single
-    val career = CareerDAO.whereShortName(dto.careerShortName).single
-    AdminCareerDAO.save(AdminCareer(admin.id, career.id))
-    career
-  }
-
+  def joinAdmin(dto: CreateAdminCareerDTO): Maybe[CareerDTO] =
+    for {
+      admin <- adminRepository.byFileNumber(dto.adminFileNumber)
+      career <- careerRepository.byShortName(dto.careerShortName)
+      _ <- adminCareerRepository.save(AdminCareer(admin.id, career.id))
+    } yield career.as[CareerDTO]
 }

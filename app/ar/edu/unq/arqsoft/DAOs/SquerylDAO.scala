@@ -5,7 +5,7 @@ import org.squeryl.dsl.QueryDsl
 import org.squeryl.dsl.ast.{LogicalBoolean, TrueLogicalBoolean}
 import org.squeryl.internals.FieldReferenceLinker.{createEqualityExpressionWithLastAccessedFieldReferenceAndConstant => createEqualityExpression}
 
-abstract class SquerylDAO[T, K](table: Table[T], _entityName: Option[String])(implicit val dsl: QueryDsl, val ked: KeyedEntityDef[T, K], toCanLookup: K => CanLookup) {
+abstract class SquerylDAO[T <: KeyedEntity[K], K](table: Table[T], _entityName: Option[String])(implicit dsl: QueryDsl, val ked: KeyedEntityDef[T, K], toCanLookup: K => CanLookup) {
 
   def entityName: String = _entityName.getOrElse(table.name)
 
@@ -15,7 +15,7 @@ abstract class SquerylDAO[T, K](table: Table[T], _entityName: Option[String])(im
   def find(key: K): Query[T] =
     all.where(entity => createEqualityExpression(ked.getId(entity), key, toCanLookup(key)))
 
-  def where(fields: (T => LogicalBoolean)*): Query[T] =
+  def search(fields: (T => LogicalBoolean)*): Query[T] =
     all.where(
       fields.fold((entity => TrueLogicalBoolean): T => LogicalBoolean) {
         case (expr1, expr2) => entity: T => expr1(entity).and(expr2(entity))

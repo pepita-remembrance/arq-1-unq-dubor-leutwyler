@@ -1,15 +1,30 @@
 package ar.edu.unq.arqsoft.services
 
-import ar.edu.unq.arqsoft.DAOs._
-import ar.edu.unq.arqsoft.database.DSLFlavor
+import ar.edu.unq.arqsoft.api.OutputDTO
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.mappings.dto.DTOMappings
-import org.squeryl.Query
+import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.model.TableRow
 
-trait Service extends DTOMappings with DAOBindings with Logging {
+trait Service extends DTOMappings with Logging {
 
-  def inTransaction[A](a: => A): A = DSLFlavor.inTransaction(a)
+  implicit class RichMaybe[In <: TableRow](maybe: Maybe[In]) {
+    def as[Out <: OutputDTO](implicit fun: In => Out): Maybe[Out] =
+      maybe.map(fun)
+  }
 
-  implicit def queryToIterable[A](query: Query[A]): Iterable[A] = DSLFlavor.queryToIterable(query)
+  implicit class RichMaybeIterable[In <: TableRow](maybe: Maybe[Iterable[In]]) {
+    def mapAs[Out <: OutputDTO](implicit fun: In => Out): Maybe[Iterable[Out]] =
+      maybe.map(_.map(fun))
+  }
 
+  implicit class RichIterable[In](iterable: Iterable[In]) {
+    def mapAs[Out](implicit fun: In => Out): Iterable[Out] =
+      iterable.map(fun)
+  }
+
+  implicit class RichTableRow[In <: TableRow](row: In) {
+    def as[Out <: OutputDTO](implicit fun: In => Out): Out =
+      fun(row)
+  }
 }

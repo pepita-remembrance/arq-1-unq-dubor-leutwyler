@@ -1,30 +1,38 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import com.google.inject.Singleton
+import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.repository.{AdminRepository, CareerRepository, PollRepository}
+import com.google.inject.{Inject, Singleton}
 
 @Singleton
-class AdminService extends Service {
+class AdminService @Inject()(adminRepository: AdminRepository,
+                             careerRepository: CareerRepository,
+                             pollRepository: PollRepository
+                            ) extends Service {
 
-  def create(dto: CreateAdminDTO): AdminDTO = inTransaction {
-    val newAdmin = dto.asModel
-    AdminDAO.save(newAdmin)
-    newAdmin
+  def create(dto: CreateAdminDTO): Maybe[AdminDTO] = {
+    val newModel = dto.asModel
+    for {
+      _ <- adminRepository.save(newModel)
+    } yield newModel.as[AdminDTO]
   }
 
-  def all: Iterable[PartialAdminDTO] = inTransaction {
-    AdminDAO.all.mapAs[PartialAdminDTO]
-  }
+  def all: Maybe[Iterable[PartialAdminDTO]] =
+    adminRepository.all().mapAs[PartialAdminDTO]
 
-  def byFileNumber(fileNumber: Int): AdminDTO = inTransaction {
-    AdminDAO.whereFileNumber(fileNumber).single
-  }
+  def byFileNumber(fileNumber: Int): Maybe[AdminDTO] =
+    adminRepository.byFileNumber(fileNumber).as[AdminDTO]
 
-  def careers(fileNumber: Int): Iterable[PartialCareerForAdminDTO] = inTransaction {
-    CareerDAO.careersOfAdmin(fileNumber).mapAs[PartialCareerForAdminDTO]
-  }
+  def careers(fileNumber: Int): Maybe[Iterable[PartialCareerForAdminDTO]] =
+    for {
+      admin <- adminRepository.byFileNumber(fileNumber)
+      careers <- careerRepository.getOfAdmin(admin)
+    } yield careers.mapAs[PartialCareerForAdminDTO]
 
-  def polls(fileNumber: Int): Iterable[PartialPollForAdminDTO] = inTransaction {
-    PollDAO.pollsOfAdmin(fileNumber).mapAs[PartialPollForAdminDTO]
-  }
+  def polls(fileNumber: Int): Maybe[Iterable[PartialPollForAdminDTO]] =
+    for {
+      admin <- adminRepository.byFileNumber(fileNumber)
+      polls <- pollRepository.getOfAdmin(admin)
+    } yield polls.mapAs[PartialPollForAdminDTO]
 }

@@ -3,6 +3,7 @@ package ar.edu.unq.arqsoft.database
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.model.Day.Day
+import ar.edu.unq.arqsoft.model.NonCourseOption
 import ar.edu.unq.arqsoft.services._
 import com.google.inject.Inject
 import org.joda.time.DateTime
@@ -437,7 +438,7 @@ trait SeedData extends Logging {
 
   def SelectedNonCourse(key: String) = PollSelectedOptionDTO(key, isCourse = false)
 
-  def Passed = SelectedNonCourse("Ya aprobe")
+  def Passed = SelectedNonCourse(NonCourseOption.alreadyPassed)
 
   implicit class ScheduleFromBuilder(day: Day) {
     def from(fromHour: Int, fromMinutes: Int = 0): ScheduleToBuilder =
