@@ -4,7 +4,6 @@ import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import org.joda.time.DateTime
-import org.squeryl.annotations.Transient
 import org.squeryl.{KeyedEntity, Query}
 
 case class Poll(key: String, careerId: KeyType, isOpen: Boolean, createDate: DateTime) extends TableRow {
@@ -30,14 +29,9 @@ object OfferOptionBase {
   def apply(nonCourse: NonCourseOption): OfferOptionBase = new OfferOptionBase(nonCourse.id, false)
 }
 
-case class PollSubjectOption(pollId: KeyType, subjectId: KeyType, extraData: String) extends TableRow {
-  lazy val poll = InscriptionPollSchema.pollPollSubjectOptions.right(this)
-  lazy val subject = InscriptionPollSchema.subjectPollSubjectOptions.right(this)
-}
+case class PollSubjectOption(pollId: KeyType, subjectId: KeyType, extraData: String) extends TableRow
 
 case class PollOfferOption(pollId: KeyType, subjectId: KeyType, offerId: KeyType) extends TableRow {
-  lazy val poll = InscriptionPollSchema.pollPollOfferOptions.right(this)
-  lazy val subject = InscriptionPollSchema.subjectPollOfferOptions.right(this)
   lazy val offer = InscriptionPollSchema.offerPollOfferOptions.right(this)
 }
 
@@ -52,18 +46,10 @@ case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, var off
 trait OfferOption extends KeyedEntity[KeyType] {
   this: TableRow =>
 
-  def isCourse: Boolean
-
   def key: String
-
-  def base: Query[OfferOptionBase] = from(InscriptionPollSchema.offers)(baseOffer => where(baseOffer.isCourse === isCourse and baseOffer.offerId === id) select baseOffer)
 }
 
-case class NonCourseOption(key: String) extends TableRow with OfferOption {
-  @transient
-  @Transient
-  val isCourse: Boolean = false
-}
+case class NonCourseOption(key: String) extends TableRow with OfferOption
 
 object NonCourseOption {
   val notYet = "No voy a cursar"
