@@ -44,21 +44,23 @@ trait InputDTOMappings {
       Poll(dto.key, extra1.id, isOpen = true, extra2)
   }
 
-  implicit class OfferOptionConverter(dto: CreateOfferOptionDTO) extends ModelConverter0[CreateOfferOptionDTO, OfferOption](dto) {
-    override def asModel: OfferOption = dto match {
-      case dto: CreateCourseDTO => dto.asModel
-      case dto: CreateNonCourseDTO => dto.asModel
-    }
+  implicit class NonCourseConverter(dto: CreateNonCourseDTO) extends ModelConverter1[CreateNonCourseDTO, NonCourseOption](dto) {
+
+    override type Extra1 = OfferOptionBase
+
+    override def asModel(extra1: OfferOptionBase): NonCourseOption =
+      NonCourseOption(dto.key, extra1.id)
   }
 
-  implicit class NonCourseConverter(dto: CreateNonCourseDTO) extends ModelConverter0[CreateNonCourseDTO, NonCourseOption](dto) {
-    override def asModel: NonCourseOption =
-      NonCourseOption(dto.key)
-  }
+  implicit class CourseConverter(dto: CreateCourseDTO) extends ModelConverter1[CreateCourseDTO, Course](dto) {
+    override type Extra1 = OfferOptionBase
 
-  implicit class CourseConverter(dto: CreateCourseDTO) extends ModelConverter0[CreateCourseDTO, Course](dto) {
-    override def asModel: Course =
-      Course(dto.key, dto.quota)
+    override def asModel(extra1: OfferOptionBase): Course =
+      Course(dto.key, dto.quota, extra1.id)
+
+    def asModel: Course =
+      Course(dto.key, dto.quota, 0)
+
   }
 
   implicit class ScheduleConverter(dto: CreateScheduleDTO) extends ModelConverter1[CreateScheduleDTO, Schedule](dto) {
@@ -82,15 +84,13 @@ trait OutputDTOMappings {
   }
 
   implicit def queryOfferOptionBaseToDTO(query: Query[PollOfferOption]): OutputAlias.CareerOfferDTO = inTransaction {
-    val subjectWithCourse = join(query, subjects, offers, courses)((poo, s, o, c) =>
-      where(o.isCourse === true)
+    val subjectWithCourse = join(query, subjects, courses)((poo, s, c) =>
         select(s.shortName, c)
-        on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === c.id)
+        on(poo.subjectId === s.id, poo.offerId === c.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
-    val subjectWithNonCourse = join(query, subjects, offers, nonCourses)((poo, s, o, nc) =>
-      where(o.isCourse === false)
+    val subjectWithNonCourse = join(query, subjects, nonCourses)((poo, s, nc) =>
         select(s.shortName, nc)
-        on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === nc.id)
+        on(poo.subjectId === s.id, poo.offerId === nc.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     (subjectWithCourse ++ subjectWithNonCourse)
       .groupBy({ case (subject, _) => subject })
@@ -98,15 +98,13 @@ trait OutputDTOMappings {
   }
 
   implicit def querySelectedOptionsToDTO(query: Query[PollSelectedOption]): OutputAlias.ResultsDTO = inTransaction {
-    val subjectWithCourse = join(query, subjects, offers, courses)((poo, s, o, c) =>
-      where(o.isCourse === true)
+    val subjectWithCourse = join(query, subjects, courses)((poo, s, c) =>
         select(s.shortName, c)
-        on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === c.id)
+        on(poo.subjectId === s.id, poo.offerId === c.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
-    val subjectWithNonCourse = join(query, subjects, offers, nonCourses)((poo, s, o, nc) =>
-      where(o.isCourse === false)
+    val subjectWithNonCourse = join(query, subjects, nonCourses)((poo, s, nc) =>
         select(s.shortName, nc)
-        on(poo.subjectId === s.id, poo.offerId === o.id, o.offerId === nc.id)
+        on(poo.subjectId === s.id, poo.offerId === nc.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     (subjectWithCourse ++ subjectWithNonCourse).toMap
   }
@@ -163,7 +161,7 @@ trait OutputDTOMappings {
   }
 
   implicit def pollOfferOptionToDTO(pollOfferOption: PollOfferOption): OfferOptionDTO = inTransaction {
-    pollOfferOption.offer.single.discriminated.single
+    pollOfferOption.offer.single.discriminated
   }
 
   implicit def pollToDTO(poll: Poll): PollDTO = inTransaction {

@@ -54,25 +54,21 @@ class OfferDAO extends ModelDAO[OfferOptionBase](offers)
 
 @Singleton
 class CourseDAO extends ModelDAO[Course](courses) {
-  def getOfPollBySubjectName(pollId: KeyType, subjectShortNames: Iterable[String]): Query[(Subject, Course, OfferOptionBase)] =
-    join(courses, offers, pollOfferOptions, subjects)((c, o, poo, s) =>
+  def getOfPollBySubjectName(pollId: KeyType, subjectShortNames: Iterable[String]): Query[(Subject, Course)] =
+    join(courses, pollOfferOptions, subjects)((c, poo, s) =>
       where(
-        (o.isCourse === true) and
-          (s.shortName in subjectShortNames) and
+        (s.shortName in subjectShortNames) and
           (poo.pollId === pollId)
-      ) select(s, c, o)
-        on(c.id === o.offerId, o.id === poo.offerId, poo.subjectId === s.id)
+      ) select(s, c)
+        on(c.offerId === poo.offerId, poo.subjectId === s.id)
     )
 
   def tallyByPoll(pollId: KeyType): Query[(Subject, Course, Student)] =
-    join(courses, offers, pollSelectedOptions, results, subjects, students)((c, o, pso, r, sub, s) =>
-      where(
-        (o.isCourse === true) and
-          (r.pollId === pollId)
-      ) select(sub, c, s)
+    join(courses, pollSelectedOptions, results, subjects, students)((c, pso, r, sub, s) =>
+      where(r.pollId === pollId)
+        select(sub, c, s)
         on(
-        c.id === o.offerId,
-        o.id === pso.offerId,
+        c.offerId === pso.offerId,
         pso.pollResultId === r.id,
         pso.subjectId === s.id,
         r.studentId === s.id
@@ -82,43 +78,27 @@ class CourseDAO extends ModelDAO[Course](courses) {
 
 @Singleton
 class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
-  def byKey(textValues: Iterable[String]): Query[(NonCourseOption, OfferOptionBase)] =
-    join(nonCourses, offers)((nc, o) =>
-      where(
-        (o.isCourse === false) and
-          (nc.key in textValues)
-      ) select(nc, o)
-        on (o.offerId === nc.id)
-    )
+  def byKey(textValues: Iterable[String]): Query[NonCourseOption] =
+    search(_.key in textValues)
 
-  def byKey(textValue: String): Query[(NonCourseOption, OfferOptionBase)] =
-    join(nonCourses, offers)((nc, o) =>
-      where(
-        (o.isCourse === false) and
-          (nc.key === textValue)
-      ) select(nc, o)
-        on (o.offerId === nc.id)
-    )
+  def byKey(textValue: String): Query[NonCourseOption] =
+    search(_.key === textValue)
 
-  def getOfPollBySubjectName(pollId: KeyType, subjectShortNames: Iterable[String]): Query[(Subject, NonCourseOption, OfferOptionBase)] =
-    join(nonCourses, offers, pollOfferOptions, subjects)((nc, o, poo, s) =>
+  def getOfPollBySubjectName(pollId: KeyType, subjectShortNames: Iterable[String]): Query[(Subject, NonCourseOption)] =
+    join(nonCourses, pollOfferOptions, subjects)((nc, poo, s) =>
       where(
-        (o.isCourse === false) and
-          (s.shortName in subjectShortNames) and
+        (s.shortName in subjectShortNames) and
           (poo.pollId === pollId)
-      ) select(s, nc, o)
-        on(nc.id === o.offerId, o.id === poo.offerId, poo.subjectId === s.id)
+      ) select(s, nc)
+        on(nc.offerId === poo.offerId, poo.subjectId === s.id)
     )
 
   def tallyByPoll(pollId: KeyType): Query[(Subject, NonCourseOption, Student)] =
-    join(nonCourses, offers, pollSelectedOptions, results, subjects, students)((nc, o, pso, r, sub, s) =>
-      where(
-        (o.isCourse === false) and
-          (r.pollId === pollId)
-      ) select(sub, nc, s)
+    join(nonCourses, pollSelectedOptions, results, subjects, students)((nc, pso, r, sub, s) =>
+      where(r.pollId === pollId)
+        select(sub, nc, s)
         on(
-        nc.id === o.offerId,
-        o.id === pso.offerId,
+        nc.offerId === pso.offerId,
         pso.pollResultId === r.id,
         pso.subjectId === s.id,
         r.studentId === s.id
@@ -168,17 +148,15 @@ class PollOfferOptionDAO extends ModelDAO[PollOfferOption](pollOfferOptions)
 class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOptions) {
   def getByPollAndOfPassedSubjectsOfStudent(pollResultId: KeyType, studentId: KeyType): Query[PollSelectedOption] = {
     val passedSubjects =
-      join(subjects, pollSelectedOptions, results, offers, nonCourses)((sub, pso, r, o, nc) =>
+      join(subjects, pollSelectedOptions, results, nonCourses)((sub, pso, r, nc) =>
         where(
           (r.studentId === studentId) and
-            (o.isCourse === false) and
             (nc.key === NonCourseOption.alreadyPassed)
         ) select sub
           on(
           sub.id === pso.subjectId,
           pso.pollResultId === r.id,
-          pso.offerId === o.id,
-          o.offerId === nc.id
+          pso.offerId === nc.offerId
         )
       ).distinct
     join(pollSelectedOptions, results, passedSubjects)((pso, r, s) =>

@@ -76,14 +76,10 @@ object InscriptionPollSchema extends Schema {
     .via((s, pso) => s.id === pso.subjectId)
   val offerPollSelectedOptions = oneToManyRelation(offers, pollSelectedOptions)
     .via((o, pso) => o.id === pso.offerId)
-  /*   Squeryl does not support discriminator columns, left here as documentation/expectations
-  val courseOffer = oneToManyRelation(courses, offers)
-    .when(o.isCourse)
-    .via((c, o) => c.id === o.offerId)
-  val nonCourseOffer = oneToManyRelation(nonCourseOption, offers)
-    .when(!o.isCourse)
-    .via((nc, o) => nc.id === o.offerId)
-  */
+  val courseOffer = oneToManyRelation(offers, courses)
+    .via((o, c) => o.id === c.offerId)
+  val nonCourseOffer = oneToManyRelation(offers, nonCourses)
+    .via((o, nc) => o.id === nc.offerId)
 
   val studentsCareers = manyToManyRelation(students, careers)
     .via[StudentCareer]((s, c, sc) => (s.id === sc.studentId, c.id === sc.careerId))
@@ -127,6 +123,18 @@ object InscriptionPollSchema extends Schema {
   on(subjects)(s =>
     declare(
       columns(s.careerId, s.shortName) are(unique, indexed("idxCarrerSubjectShortName"))
+    )
+  )
+
+  on(courses)(c =>
+    declare(
+      c.offerId is (unique, indexed("idsCourseOffer"))
+    )
+  )
+
+  on(nonCourses)(nc =>
+    declare(
+      nc.offerId is (unique, indexed("idsNonCourseOffer"))
     )
   )
 

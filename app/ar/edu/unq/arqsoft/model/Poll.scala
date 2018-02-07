@@ -1,10 +1,8 @@
 package ar.edu.unq.arqsoft.model
 
-import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import org.joda.time.DateTime
-import org.squeryl.{KeyedEntity, Query}
 
 case class Poll(key: String, careerId: KeyType, isOpen: Boolean, createDate: DateTime) extends TableRow {
   lazy val career = InscriptionPollSchema.careerPolls.right(this)
@@ -13,20 +11,19 @@ case class Poll(key: String, careerId: KeyType, isOpen: Boolean, createDate: Dat
   lazy val extraData = InscriptionPollSchema.pollPollSubjectOptions.left(this)
 }
 
-case class OfferOptionBase(offerId: KeyType, isCourse: Boolean) extends TableRow {
-  def discriminated: Query[OfferOption] = {
+case class OfferOptionBase(isCourse: Boolean) extends TableRow {
+  def discriminated: OfferOption =
     if (isCourse) {
-      from(InscriptionPollSchema.courses)(c => where(c.id === offerId) select c)
+      InscriptionPollSchema.courseOffer.left(this).single
     } else {
-      from(InscriptionPollSchema.nonCourses)(c => where(c.id === offerId) select c)
+      InscriptionPollSchema.nonCourseOffer.left(this).single
     }
-  }
 }
 
 object OfferOptionBase {
-  def apply(course: Course): OfferOptionBase = new OfferOptionBase(course.id, true)
+  def forCourse: OfferOptionBase = this.apply(isCourse = true)
 
-  def apply(nonCourse: NonCourseOption): OfferOptionBase = new OfferOptionBase(nonCourse.id, false)
+  def forNonCourse: OfferOptionBase = this.apply(isCourse = false)
 }
 
 case class PollSubjectOption(pollId: KeyType, subjectId: KeyType, extraData: String) extends TableRow
@@ -43,13 +40,17 @@ case class PollResult(pollId: KeyType, studentId: KeyType, var fillDate: DateTim
 
 case class PollSelectedOption(pollResultId: KeyType, subjectId: KeyType, var offerId: KeyType) extends TableRow
 
-trait OfferOption extends KeyedEntity[KeyType] {
-  this: TableRow =>
-
+trait OfferOption {
   def key: String
+
+  def offerId: KeyType
+
+  def isCourse:Boolean
 }
 
-case class NonCourseOption(key: String) extends TableRow with OfferOption
+case class NonCourseOption(key: String, offerId: KeyType) extends TableRow with OfferOption {
+  def isCourse: Boolean = false
+}
 
 object NonCourseOption {
   val notYet = "No voy a cursar"

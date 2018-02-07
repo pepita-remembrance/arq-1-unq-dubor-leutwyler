@@ -11,6 +11,8 @@ case class Career(shortName: String, longName: String) extends TableRow {
 
 case class Subject(careerId: KeyType, shortName: String, longName: String) extends TableRow
 
-case class Course(key: String, quota: Int) extends TableRow with OfferOption {
+case class Course(key: String, quota: Int, offerId: KeyType) extends TableRow with OfferOption {
   lazy val schedules = InscriptionPollSchema.courseSchedules.left(this)
+
+  def isCourse: Boolean = true
 }
