@@ -57,10 +57,6 @@ trait InputDTOMappings {
 
     override def asModel(extra1: OfferOptionBase): Course =
       Course(dto.key, dto.quota, extra1.id)
-
-    def asModel: Course =
-      Course(dto.key, dto.quota, 0)
-
   }
 
   implicit class ScheduleConverter(dto: CreateScheduleDTO) extends ModelConverter1[CreateScheduleDTO, Schedule](dto) {
@@ -158,10 +154,6 @@ trait OutputDTOMappings {
       case offer: Course => offer
       case offer: NonCourseOption => offer
     }
-  }
-
-  implicit def pollOfferOptionToDTO(pollOfferOption: PollOfferOption): OfferOptionDTO = inTransaction {
-    pollOfferOption.offer.single.discriminated
   }
 
   implicit def pollToDTO(poll: Poll): PollDTO = inTransaction {
