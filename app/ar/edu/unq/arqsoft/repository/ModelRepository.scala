@@ -6,10 +6,15 @@ import ar.edu.unq.arqsoft.DAOs._
 import ar.edu.unq.arqsoft.maybe.{EntityNotFound, Maybe}
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import ar.edu.unq.arqsoft.model._
+import ar.edu.unq.arqsoft.utils.MultiResultChecker
 import com.google.inject.Singleton
+import org.squeryl.Query
 
-class ModelRepository[T <: TableRow](dao: ModelDAO[T])
-  extends Repository[T, KeyType](dao)
+abstract class ModelRepository[T <: TableRow](dao: ModelDAO[T])
+  extends Repository[T, KeyType](dao) {
+  protected def multiResult[A](query: Query[A], checker: Iterable[A] => Maybe[Iterable[A]]): Maybe[Iterable[A]] =
+    inTransaction(query.toList).flatMap(checker)
+}
 
 @Singleton
 class StudentRepository @Inject()(dao: StudentDAO)
@@ -51,9 +56,15 @@ class SubjectRepository @Inject()(dao: SubjectDAO)
   def notFoundByShortNameOfCareer(shortName: String, career: Career): EntityNotFound =
     notFoundBy("(career, short name)", (career.shortName, shortName))
 
-  def byShortNameOfCareer(shortNames: Iterable[String], career: Career): Maybe[Iterable[Subject]] = inTransaction {
-    dao.byShortNameOfCareer(shortNames, career.id).toList
-  }
+  def byShortNameOfCareer(shortNames: Iterable[String], career: Career): Maybe[Iterable[Subject]] =
+    multiResult(dao.byShortNameOfCareer(shortNames, career.id),
+      new MultiResultChecker[Subject, String](shortNames,
+        subjects => shortName => subjects.find(_.shortName == shortName) match {
+          case Some(_) => None
+          case None => Some(notFoundByShortNameOfCareer(shortName, career))
+        }
+      )
+    )
 
   def getOfPoll(poll: Poll): Maybe[Iterable[Subject]] = inTransaction {
     dao.getOfPoll(poll.id).toList

@@ -2,7 +2,7 @@ package ar.edu.unq.arqsoft.controllers
 
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
-import ar.edu.unq.arqsoft.maybe.{EntityNotFound, Just, Maybe, Nothing}
+import ar.edu.unq.arqsoft.maybe._
 import play.api.libs.json.{JsError, Json, Reads, Writes}
 import play.api.mvc._
 
@@ -40,6 +40,8 @@ trait MaybeToJsonResult extends Results with Logging {
     case Just(obj) => Ok(Json.toJson(obj))
     case notFound: EntityNotFound =>
       NotFound(notFound.message)
+    case manyNotFound: NotFounds =>
+      BadRequest(manyNotFound.message)
     case Nothing(msg) =>
       error(s"Error ocurred: $msg")
       InternalServerError("BOOM!")
