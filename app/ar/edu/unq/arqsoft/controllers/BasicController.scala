@@ -42,6 +42,8 @@ trait MaybeToJsonResult extends Results with Logging {
       NotFound(notFound.message)
     case manyNotFound: NotFounds =>
       BadRequest(manyNotFound.message)
+    case saveError: SaveError =>
+      BadRequest(saveError.message)
     case Nothing(msg) =>
       error(s"Error ocurred: $msg")
       InternalServerError("BOOM!")

@@ -31,6 +31,12 @@ object EntityNotFound {
     EntityNotFound(s"$entityName with $property valued $value not found")
 }
 
+case class SaveError(message: String) extends Nothing with Message
+
+object SaveError {
+  def apply(entityName: String): SaveError = new SaveError(s"Error saving $entityName")
+}
+
 case class UnexpectedResult(obj: Any) extends Nothing
 
 trait MultiNothing[N <: Nothing] extends Nothing {

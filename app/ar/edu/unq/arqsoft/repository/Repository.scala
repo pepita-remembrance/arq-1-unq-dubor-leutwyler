@@ -2,13 +2,15 @@ package ar.edu.unq.arqsoft.repository
 
 import ar.edu.unq.arqsoft.DAOs.SquerylDAO
 import ar.edu.unq.arqsoft.database.DSLFlavor
+import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.maybe._
+import org.h2.jdbc.JdbcBatchUpdateException
 import org.squeryl.dsl.ast.LogicalBoolean
 import org.squeryl.{KeyedEntity, Query, SquerylSQLException}
 
 import scala.util.Try
 
-class Repository[T <: KeyedEntity[K], K](dao: SquerylDAO[T, K]) {
+class Repository[T <: KeyedEntity[K], K](dao: SquerylDAO[T, K]) extends Logging {
   type SearchExpression = (T => LogicalBoolean)
 
   implicit protected def queryToIterable[A](query: Query[A]): Iterable[A] =
@@ -40,15 +42,22 @@ class Repository[T <: KeyedEntity[K], K](dao: SquerylDAO[T, K]) {
 
   def save(entity: T): Maybe[Unit] = inTransaction {
     dao.save(entity)
-  }
+  }.recoverWith { case UnexpectedResult(_: SquerylSQLException) => SaveError(dao.entityName) }
 
-  def save(entities: Iterable[T], useBulk: Boolean = true): Maybe[Unit] = inTransaction {
-    dao.save(entities, useBulk)
-  }
+
+  def save(entities: Iterable[T], useBulk: Boolean = true): Maybe[Unit] =
+    if (useBulk) {
+      inTransaction(dao.save(entities))
+        .recoverWith { case UnexpectedResult(_: JdbcBatchUpdateException) => SaveError(dao.entityName) }
+    } else {
+      entities.foldLeft(Something(()): Maybe[Unit]) { case (maybe, entity) =>
+        maybe.flatMap(_ => save(entity))
+      }
+    }
 
   def update(entity: T): Maybe[Unit] = inTransaction {
     dao.update(entity)
-  }.recoverWith { case UnexpectedResult(ex: SquerylSQLException) => notFoundById(entity.id) }
+  }.recoverWith { case UnexpectedResult(_: SquerylSQLException) => notFoundById(entity.id) }
 
   def update(entities: Iterable[T]): Maybe[Unit] = inTransaction {
     dao.update(entities)
