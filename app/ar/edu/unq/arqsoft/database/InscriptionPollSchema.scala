@@ -128,13 +128,13 @@ object InscriptionPollSchema extends Schema {
 
   on(courses)(c =>
     declare(
-      c.offerId is (unique, indexed("idsCourseOffer"))
+      c.offerId is (unique, indexed("idxCourseOffer"))
     )
   )
 
   on(nonCourses)(nc =>
     declare(
-      nc.offerId is (unique, indexed("idsNonCourseOffer"))
+      nc.offerId is (unique, indexed("idxNonCourseOffer"))
     )
   )
 

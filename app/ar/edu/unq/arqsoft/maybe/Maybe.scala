@@ -84,7 +84,6 @@ object Maybe {
       * * [Nothing]  AllNothings(Traversable[Nothing]) in case every maybe in the original traversable was empty.
       */
     def flattenMaybes: Maybe[Iterable[T]] = {
-      // IDEA says this code does not compile but SBT compiles it just fine. IDEA bug?
       originalTraversable match {
         case seq if seq.forall(_.isDefined) =>
           Something(seq.map(_.get))

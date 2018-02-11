@@ -25,8 +25,8 @@ abstract class SquerylDAO[T <: KeyedEntity[K], K](table: Table[T], _entityName: 
   def save(entity: T): Unit =
     table.insert(entity)
 
-  def save(entities: Iterable[T], useBulk: Boolean = true): Unit =
-    if (useBulk) table.insert(entities) else entities.foreach(save)
+  def save(entities: Iterable[T]): Unit =
+    table.insert(entities)
 
   def update(entity: T): Unit =
     table.update(entity)

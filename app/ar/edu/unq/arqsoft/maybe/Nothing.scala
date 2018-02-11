@@ -20,13 +20,32 @@ object Nothing {
   }
 }
 
-case class EntityNotFound(message: String) extends Nothing
+trait Message {
+  def message: String
+}
+
+case class EntityNotFound(message: String) extends Nothing with Message
 
 object EntityNotFound {
   def apply[V](entityName: String, property: String, value: V): EntityNotFound =
     EntityNotFound(s"$entityName with $property valued $value not found")
 }
 
+case class SaveError(message: String) extends Nothing with Message
+
+object SaveError {
+  def apply(entityName: String): SaveError = new SaveError(s"Error saving $entityName")
+}
+
 case class UnexpectedResult(obj: Any) extends Nothing
 
-case class AllNothings[S[A] <: Traversable[A], T](nothings: S[Nothing]) extends Nothing
+trait MultiNothing[N <: Nothing] extends Nothing {
+  def nothings: Iterable[N]
+}
+
+case class AllNothings(nothings: Iterable[Nothing]) extends MultiNothing[Nothing]
+
+case class NotFounds(nothings: Iterable[EntityNotFound]) extends MultiNothing[EntityNotFound] with Message {
+  def message: String =
+    nothings.map(_.message).mkString("\n")
+}
