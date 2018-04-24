@@ -1,4 +1,4 @@
-import ar.edu.unq.arqsoft.database.{DBConnector, H2Connector}
+import ar.edu.unq.arqsoft.database.{DBConnector, PostgresConnector}
 import net.codingwell.scalaguice.ScalaModule
 
 class Module extends ScalaModule
@@ -7,6 +7,6 @@ class Module extends ScalaModule
 trait DatabaseBindings {
   this: ScalaModule =>
   def configure(): Unit = {
-    bind[DBConnector].to[H2Connector]
+    bind[DBConnector].to[PostgresConnector]
   }
 }

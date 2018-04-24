@@ -4,8 +4,8 @@ import sbt._
 object Dependencies {
 
   val appDependencies = Seq(
-    "com.h2database" % "h2" % "1.4.196",                    //TODO: Replace with real database driver
     PlayImport.guice,
+    "org.postgresql" % "postgresql" % "42.2.2",
     "com.github.nscala-time" %% "nscala-time" % "2.16.0",
     "com.typesafe.play" %% "play-json" % "2.6.2",
     "com.typesafe.play" %% "play-json-joda" % "2.6.2",

@@ -4,7 +4,6 @@ import ar.edu.unq.arqsoft.DAOs.SquerylDAO
 import ar.edu.unq.arqsoft.database.DSLFlavor
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.maybe._
-import org.h2.jdbc.JdbcBatchUpdateException
 import org.squeryl.dsl.ast.LogicalBoolean
 import org.squeryl.{KeyedEntity, Query, SquerylSQLException}
 
@@ -48,7 +47,7 @@ class Repository[T <: KeyedEntity[K], K](dao: SquerylDAO[T, K]) extends Logging 
   def save(entities: Iterable[T], useBulk: Boolean = true): Maybe[Unit] =
     if (useBulk) {
       inTransaction(dao.save(entities))
-        .recoverWith { case UnexpectedResult(_: JdbcBatchUpdateException) => SaveError(dao.entityName) }
+        .recoverWith { case UnexpectedResult(_) => SaveError(dao.entityName) }
     } else {
       entities.foldLeft(Something(()): Maybe[Unit]) { case (maybe, entity) =>
         maybe.flatMap(_ => save(entity))
