@@ -1,12 +1,12 @@
-FROM ysihaoy/scala-play:2.12.2-2.6.0-sbt-0.13.15
+FROM ysihaoy/scala-play:2.12.3-2.6.2-sbt-0.13.15
 
-# # caching dependencies
-# COPY ["build.sbt", "/tmp/build/"]
-# COPY ["project/plugins.sbt", "project/build.properties", "/tmp/build/project/"]
-# RUN cd /tmp/build && \
-#  sbt compile && \
-#  sbt test:compile && \
-#  rm -rf /tmp/build
+ # caching dependencies
+COPY ["build.sbt", "/tmp/build/"]
+COPY ["project/plugins.sbt", "project/build.properties", "project/Dependencies.scala", "/tmp/build/project/"]
+RUN cd /tmp/build && \
+  sbt compile && \
+  sbt test:compile && \
+  rm -rf /tmp/build
 
 # copy code
 COPY . /root/app/
