@@ -14,5 +14,5 @@ WORKDIR /root/app
 RUN sbt compile && sbt test:compile
 
 EXPOSE 9000
-CMD ["sbt"]
+CMD ["sbt", "run"]
 
