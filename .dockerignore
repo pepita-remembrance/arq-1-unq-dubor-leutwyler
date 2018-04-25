@@ -1,15 +1,16 @@
 # Ignore everything by default and include only required files
 **
-# Docker build instructions
-!.dockerignore
-!Dockerfile
 # App code
 !app
 !conf
 !project
 !test
 !build.sbt
-# Useful stuff
+# Docker
+!.dockerignore
+!Dockerfile
+!docker-compose.yml
+!docker-postgresql.sh
+# Documentation
 !README.md
 !Payload Samples
-!docker-postgres.sh
