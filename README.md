@@ -23,7 +23,7 @@ The app expects a JDBC PostgreSql connection url in the environment variable `JD
 ./docker-postgresql.sh
 ```
 
-Which optionally takes a volume path to save database files outside of the container (defaults to `/data/db/postgres/local`). 
+Which optionally takes a volume path to save database files outside of the container (defaults to `/var/lib/postgresql/data`). 
 
 ## Running with docker-compose
 
