@@ -12,16 +12,26 @@ Once you have sbt installed, the following at the command prompt will start up P
 sbt run
 ```
 
-Play will start up on the HTTP port at http://localhost:9000/   
+Play will start up on the HTTP port at `http://localhost:9000/`   
 You don't need to deploy or reload anything -- changing any source code while the server is running will automatically recompile and hot-reload the application on the next HTTP request.
 
-## Running with docker
+### Database
+
+The app expects a JDBC PostgreSql connection url in the environment variable `JDBC_DATABASE_URL` or it will fallback on configuration values. The simplest way to provide a suitable database is running:
 
 ```bash
-docker build -t inscription-poll:1.0 .
-
-docker run -d -t -i -p 9000:9000
+./docker-postgresql.sh
 ```
+
+Which optionally takes a volume path to save database files outside of the container (defaults to `/var/lib/postgresql/data`). 
+
+## Running with docker-compose
+
+```bash
+docker-compose up
+```
+
+Downloads and setups both app and database containers. Play will start up on the HTTP port at `http://localhost:9000/`
 
 ## Payload samples
 
