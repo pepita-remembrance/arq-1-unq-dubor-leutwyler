@@ -2,7 +2,7 @@ package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.api.{PollResultDTO, TallyDTO}
-import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.maybe.{Just, Maybe, SaveError}
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.repository._
 import com.google.inject.{Inject, Singleton}
@@ -31,6 +31,20 @@ class PollResultService @Inject()(courseRepository: CourseRepository,
       .mapValues(_.mapValues(_.map(_._3)))
       .mapAs[TallyDTO]
 
+  def newPollResult(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResultDTO] = {
+    val maybeTriple = for {
+      career <- careerRepository.byShortName(careerShortName)
+      poll <- pollRepository.byKeyOfCareer(pollKey, career)
+      student <- studentRepository.byFileNumber(studentFileNumber)
+    } yield (student, career, poll)
+    maybeTriple.flatMap { case (student, career, poll) =>
+      pollResultRepository.byStudentAndPoll(student, poll, career) match {
+        case Just(_) => SaveError(s"PollResult with (student, poll) valued ($studentFileNumber,($careerShortName,$pollKey)) already exists")
+        case _ => updatedPollResult(student, poll)
+      }
+    }.as[PollResultDTO]
+  }
+
   def pollResultFor(studentFileNumber: Int, careerShortName: String, pollKey: String): Maybe[PollResultDTO] =
     getPollResult(studentFileNumber, careerShortName, pollKey).as[PollResultDTO]
 
@@ -40,7 +54,6 @@ class PollResultService @Inject()(courseRepository: CourseRepository,
       poll <- pollRepository.byKeyOfCareer(pollKey, career)
       student <- studentRepository.byFileNumber(studentFileNumber)
       result <- pollResultRepository.byStudentAndPoll(student, poll, career)
-        .recover(updatedPollResult(student, poll))
     } yield result
 
   protected def newPollResult(student: Student, poll: Poll): Maybe[PollResult] =
