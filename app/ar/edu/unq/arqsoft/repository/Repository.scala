@@ -41,13 +41,13 @@ class Repository[T <: KeyedEntity[K], K](dao: SquerylDAO[T, K]) extends Logging 
 
   def save(entity: T): Maybe[Unit] = inTransaction {
     dao.save(entity)
-  }.recoverWith { case UnexpectedResult(_: SquerylSQLException) => SaveError(dao.entityName) }
+  }.recoverWith { case UnexpectedResult(_: SquerylSQLException) => SaveError.byName(dao.entityName) }
 
 
   def save(entities: Iterable[T], useBulk: Boolean = true): Maybe[Unit] =
     if (useBulk) {
       inTransaction(dao.save(entities))
-        .recoverWith { case UnexpectedResult(_) => SaveError(dao.entityName) }
+        .recoverWith { case UnexpectedResult(_) => SaveError.byName(dao.entityName) }
     } else {
       entities.foldLeft(Something(()): Maybe[Unit]) { case (maybe, entity) =>
         maybe.flatMap(_ => save(entity))
