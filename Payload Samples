@@ -1,27 +1,5 @@
 [
-  //PATCH        /students/:studentFileNumber/careers/:careerShortName/polls/:pollKey         PollDeltaDTO
-  {
-    "Baz1": {
-      "key": "Ya aprobe",
-      "isCourse": false
-    },
-    "Baz2": {
-      "key": "C1",
-      "isCourse": true
-    },
-    "Baz3": {
-      "key": "No tengo ganas de ir.",
-      "isCourse": false
-    }
-  },
-  //POST         /admins         CreateAdminDTO
-  {
-    "fileNumber": 666,
-    "email": "foo@bar.com",
-    "name": "Foo",
-    "surname": "Bar"
-  },
-  //POST         /admins/careers         CreateCareerDTO
+  //POST         /careers         CreateCareerDTO
   {
     "shortName": "BAZ",
     "longName": "Baz Bar Foo",
@@ -40,14 +18,7 @@
       }
     ]
   },
-  //POST         /admins/students         CreateStudentDTO
-  {
-    "fileNumber": 999,
-    "email": "bar@foo.com",
-    "name": "Bar",
-    "surname": "Foo"
-  },
-  //POST         /admins/careers/:careerShortName/polls         CreatePollDTO
+  //POST         /careers/:careerShortName/polls         CreatePollDTO
   {
     "key": "BAZZZ",
     "offer": {
@@ -112,14 +83,45 @@
       "Baz3": "Requiere que vengas."
     }
   },
-  //POST         /admins/careers/join/admins         CreateAdminCareerDTO
+  //POST         /careers/join/admins         CreateAdminCareerDTO
   {
     "adminFileNumber": 666,
     "careerShortName": "BAZ"
   },
-  //POST         /admins/careers/join/students         CreateStudentCareerDTO
+  //POST         /careers/join/students         CreateStudentCareerDTO
   {
     "studentFileNumber": 999,
     "careerShortName": "BAZ"
+  },
+  //POST         /students         CreateStudentDTO
+  {
+    "fileNumber": 999,
+    "email": "bar@foo.com",
+    "name": "Bar",
+    "surname": "Foo"
+  },
+  //POST         /students/:studentFileNumber/careers/:careerShortName/poll-result/:pollKey         No DTO required
+  {},
+  //PATCH        /students/:studentFileNumber/careers/:careerShortName/poll-result/:pollKey         PollDeltaDTO
+  {
+    "Baz1": {
+      "key": "Ya aprobe",
+      "isCourse": false
+    },
+    "Baz2": {
+      "key": "C1",
+      "isCourse": true
+    },
+    "Baz3": {
+      "key": "No tengo ganas de ir.",
+      "isCourse": false
+    }
+  },
+  //POST         /admins         CreateAdminDTO
+  {
+    "fileNumber": 666,
+    "email": "foo@bar.com",
+    "name": "Foo",
+    "surname": "Bar"
   }
 ]
