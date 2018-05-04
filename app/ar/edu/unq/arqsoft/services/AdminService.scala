@@ -2,8 +2,8 @@ package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.model.Admin
 import ar.edu.unq.arqsoft.repository.{AdminRepository, CareerRepository, PollRepository}
-import ar.edu.unq.arqsoft.utils.Hash
 import authentikat.jwt.JwtClaimsSet
 import com.google.inject.{Inject, Singleton}
 
@@ -11,20 +11,17 @@ import com.google.inject.{Inject, Singleton}
 class AdminService @Inject()(adminRepository: AdminRepository,
                              careerRepository: CareerRepository,
                              pollRepository: PollRepository
-                            ) extends Service {
+                            ) extends UserService[Admin](adminRepository) {
 
-  def login(loginDto: LoginDTO): Maybe[JwtClaimsSet] =
-    for {
-      admin <- adminRepository.byUsername(loginDto.username)
-      hashedPassword = Hash(loginDto.password)
-      //      if hashedPassword == admin.password
-      payload =
+
+  protected def makeClaimsSet(user: Admin): JwtClaimsSet =
+    JwtClaimsSet(
       s"""{
-         |"email": "${admin.email}",
-         |"fileNumber":  "${admin.fileNumber}",
+         |"username": "${user.username}",
+         |"email": "${user.email}",
          |"role": "admin"
          |}""".stripMargin
-    } yield JwtClaimsSet(payload)
+    )
 
   def create(dto: CreateAdminDTO): Maybe[AdminDTO] = {
     val newModel = dto.asModel

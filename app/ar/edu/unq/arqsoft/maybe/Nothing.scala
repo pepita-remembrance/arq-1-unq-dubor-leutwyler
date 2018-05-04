@@ -53,3 +53,5 @@ case class NotFounds(nothings: Iterable[EntityNotFound]) extends MultiNothing[En
 object BadLogin extends Nothing with Message {
   def message: String = s"Username or password is incorrect"
 }
+
+object CompareError extends Nothing

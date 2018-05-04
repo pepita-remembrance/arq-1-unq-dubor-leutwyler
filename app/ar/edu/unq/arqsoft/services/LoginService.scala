@@ -15,9 +15,8 @@ class LoginService @Inject()(adminService: AdminService,
   val JwtSecretKey = "secretKey"
   val JwtSecretAlgo = "HS256"
 
-  def createToken(payload: JwtClaimsSet): String = {
+  def createToken(claimsSet: JwtClaimsSet): String = {
     val header = JwtHeader(JwtSecretAlgo)
-    val claimsSet = payload
     JsonWebToken(header, claimsSet, JwtSecretKey)
   }
 
