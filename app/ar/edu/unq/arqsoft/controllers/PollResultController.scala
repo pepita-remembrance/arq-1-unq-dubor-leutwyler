@@ -16,6 +16,10 @@ class PollResultController @Inject()(cc: ControllerComponents, parse: PlayBodyPa
     pollResultService.pollResultFor(studentFileNumber, careerShortName, pollKey)
   }
 
+  def create(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonAction {
+    pollResultService.newPollResult(studentFileNumber, careerShortName, pollKey)
+  }
+
   def patch(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonAction withBody[PollDeltaDTO] {
     implicit request: Request[PollDeltaDTO] =>
       pollResultService.update(studentFileNumber, careerShortName, pollKey, request.body)

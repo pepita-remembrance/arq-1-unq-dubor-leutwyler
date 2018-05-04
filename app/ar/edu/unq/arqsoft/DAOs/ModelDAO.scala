@@ -76,7 +76,7 @@ class CourseDAO extends ModelDAO[Course](courses) {
         on(
         c.offerId === pso.offerId,
         pso.pollResultId === r.id,
-        pso.subjectId === s.id,
+        pso.subjectId === sub.id,
         r.studentId === s.id
       )
     )
@@ -106,7 +106,7 @@ class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
         on(
         nc.offerId === pso.offerId,
         pso.pollResultId === r.id,
-        pso.subjectId === s.id,
+        pso.subjectId === sub.id,
         r.studentId === s.id
       )
     )

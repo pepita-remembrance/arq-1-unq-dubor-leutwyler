@@ -34,7 +34,7 @@ object EntityNotFound {
 case class SaveError(message: String) extends Nothing with Message
 
 object SaveError {
-  def apply(entityName: String): SaveError = new SaveError(s"Error saving $entityName")
+  def byName(entityName: String): SaveError = SaveError(s"Error saving $entityName")
 }
 
 case class UnexpectedResult(obj: Any) extends Nothing

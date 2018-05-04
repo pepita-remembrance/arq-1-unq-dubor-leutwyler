@@ -368,6 +368,7 @@ trait SeedData extends Logging {
     pollService.create("TPI", CreatePollDTO("2017s2", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2017, 6, 1))
     pollService.create("TPI", CreatePollDTO("2018s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2018, 2, 1))
     info("Answers for TPI 2015s1")
+    pollResultService.newPollResult(123, "TPI", "2015s1")
     pollResultService.update(123, "TPI", "2015s1", Map(
       "InPr" -> SelectedCourse("C1"),
       "Orga" -> SelectedCourse("C1"),
@@ -375,6 +376,7 @@ trait SeedData extends Logging {
       "Ing1" -> SelectedNonCourse("Voy a rendir libre")
     ), updateDate = DateTime.now.withDate(2015, 2, 12))
     info("Answers for TPI 2015s2")
+    pollResultService.newPollResult(123, "TPI", "2015s2")
     pollResultService.update(123, "TPI", "2015s2", Map(
       "InPr" -> Passed,
       "Orga" -> Passed,
@@ -386,6 +388,7 @@ trait SeedData extends Logging {
       "Ing2" -> SelectedCourse("C1")
     ), updateDate = DateTime.now.withDate(2015, 6, 12))
     info("Answers for TPI 2016s1")
+    pollResultService.newPollResult(123, "TPI", "2016s1")
     pollResultService.update(123, "TPI", "2016s1", Map(
       "Obj1" -> Passed,
       "BD" -> Passed,
@@ -397,6 +400,7 @@ trait SeedData extends Logging {
       "Redes" -> SelectedCourse("C1")
     ), updateDate = DateTime.now.withDate(2016, 2, 12))
     info("Answers for TPI 2016s2")
+    pollResultService.newPollResult(123, "TPI", "2016s2")
     pollResultService.update(123, "TPI", "2016s2", Map(
       "Mate2" -> Passed,
       "Obj2" -> Passed,
@@ -408,6 +412,7 @@ trait SeedData extends Logging {
       "PConc" -> SelectedCourse("C1")
     ), updateDate = DateTime.now.withDate(2016, 6, 12))
     info("Answers for TPI 2017s1")
+    pollResultService.newPollResult(123, "TPI", "2017s1")
     pollResultService.update(123, "TPI", "2017s1", Map(
       "EPers" -> Passed,
       "UIs" -> Passed,
@@ -416,6 +421,7 @@ trait SeedData extends Logging {
       "LabSOR" -> SelectedCourse("C1")
     ), updateDate = DateTime.now.withDate(2017, 2, 12))
     info("Answers for TPI 2017s2")
+    pollResultService.newPollResult(123, "TPI", "2017s2")
     pollResultService.update(123, "TPI", "2017s2", Map(
       "IngSoft" -> Passed,
       "LabSOR" -> Passed,
@@ -424,6 +430,7 @@ trait SeedData extends Logging {
       "SemMod" -> SelectedCourse("C1")
     ), updateDate = DateTime.now.withDate(2017, 6, 12))
     info("Answers for TPI 2018s1")
+    pollResultService.newPollResult(123, "TPI", "2018s1")
     pollResultService.update(123, "TPI", "2018s1", Map(
       "PConc" -> Passed,
       "TTI-TTU" -> Passed,
