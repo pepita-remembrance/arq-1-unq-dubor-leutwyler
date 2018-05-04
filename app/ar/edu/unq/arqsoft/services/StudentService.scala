@@ -1,10 +1,9 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.mappings.dto.MappingUtils
 import ar.edu.unq.arqsoft.maybe.Maybe
-import ar.edu.unq.arqsoft.model.Student
 import ar.edu.unq.arqsoft.repository.StudentRepository
+import ar.edu.unq.arqsoft.utils.Hash
 import authentikat.jwt.JwtClaimsSet
 import com.google.inject.{Inject, Singleton}
 
@@ -12,11 +11,11 @@ import com.google.inject.{Inject, Singleton}
 class StudentService @Inject()(studentRepository: StudentRepository
                               ) extends Service {
 
-  def login(loginDto:LoginDTO): Maybe[JwtClaimsSet] =
+  def login(loginDto: LoginDTO): Maybe[JwtClaimsSet] =
     for {
-      student <- studentRepository.byEmail(loginDto.email)
-      hashedPassword = MappingUtils.md5(loginDto.password)
-      if hashedPassword == student.password
+      student <- studentRepository.byUsername(loginDto.username)
+      hashedPassword = Hash(loginDto.password)
+      //      if hashedPassword == student.password
       payload =
       s"""{
          |"email": "${student.email}",

@@ -1,14 +1,12 @@
 package ar.edu.unq.arqsoft.mappings.dto
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.database.DSLFlavor
 import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
+import ar.edu.unq.arqsoft.utils._
 import org.joda.time.DateTime
-import org.squeryl.{KeyedEntity, Query}
-import java.security.MessageDigest
-
+import org.squeryl.Query
 
 trait DTOMappings
   extends OutputDTOMappings
@@ -18,12 +16,12 @@ trait InputDTOMappings {
 
   implicit class StudentConverter(dto: CreateStudentDTO) extends ModelConverter0[CreateStudentDTO, Student](dto) {
     override def asModel: Student =
-      Student(dto.fileNumber, dto.email, dto.name, dto.surname, MappingUtils.md5(dto.password))
+      Student(dto.username, Hash(dto.password), dto.fileNumber, dto.email, dto.name, dto.surname)
   }
 
   implicit class AdminConverter(dto: CreateAdminDTO) extends ModelConverter0[CreateAdminDTO, Admin](dto) {
     override def asModel: Admin =
-      Admin(dto.fileNumber, dto.email, dto.name, dto.surname, MappingUtils.md5(dto.password))
+      Admin(dto.username, Hash(dto.password), dto.fileNumber, dto.email, dto.name, dto.surname)
   }
 
   implicit class CareerConverter(dto: CreateCareerDTO) extends ModelConverter0[CreateCareerDTO, Career](dto) {
@@ -83,11 +81,11 @@ trait OutputDTOMappings {
 
   implicit def queryOfferOptionBaseToDTO(query: Query[PollOfferOption]): OutputAlias.CareerOfferDTO = inTransaction {
     val subjectWithCourse = join(query, subjects, courses)((poo, s, c) =>
-        select(s.shortName, c)
+      select(s.shortName, c)
         on(poo.subjectId === s.id, poo.offerId === c.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     val subjectWithNonCourse = join(query, subjects, nonCourses)((poo, s, nc) =>
-        select(s.shortName, nc)
+      select(s.shortName, nc)
         on(poo.subjectId === s.id, poo.offerId === nc.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     (subjectWithCourse ++ subjectWithNonCourse)
@@ -97,22 +95,22 @@ trait OutputDTOMappings {
 
   implicit def querySelectedOptionsToDTO(query: Query[PollSelectedOption]): OutputAlias.ResultsDTO = inTransaction {
     val subjectWithCourse = join(query, subjects, courses)((poo, s, c) =>
-        select(s.shortName, c)
+      select(s.shortName, c)
         on(poo.subjectId === s.id, poo.offerId === c.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     val subjectWithNonCourse = join(query, subjects, nonCourses)((poo, s, nc) =>
-        select(s.shortName, nc)
+      select(s.shortName, nc)
         on(poo.subjectId === s.id, poo.offerId === nc.offerId)
     ).map({ case (subject, option) => subject -> (option: OfferOptionDTO) })
     (subjectWithCourse ++ subjectWithNonCourse).toMap
   }
 
   implicit def studentToPartialDTO(student: Student): PartialStudentDTO = inTransaction {
-    PartialStudentDTO(student.fileNumber, student.email, student.name, student.surname)
+    PartialStudentDTO(student.username, student.fileNumber, student.email, student.name, student.surname)
   }
 
   implicit def adminToPartialDTO(admin: Admin): PartialAdminDTO = inTransaction {
-    PartialAdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname)
+    PartialAdminDTO(admin.username, admin.fileNumber, admin.email, admin.name, admin.surname)
   }
 
   implicit def careerToPartialDTO(career: Career): PartialCareerDTO = inTransaction {
@@ -176,7 +174,7 @@ trait OutputDTOMappings {
         select p
         on (sc.careerId === p.careerId)
     )
-    StudentDTO(student.fileNumber, student.email, student.name, student.surname,
+    StudentDTO(student.username, student.fileNumber, student.email, student.name, student.surname,
       student.careers.mapAs[PartialCareerDTO],
       student.results.mapAs[PartialPollResultDTO],
       studentPolls.mapAs[PartialPollDTO]
@@ -184,7 +182,7 @@ trait OutputDTOMappings {
   }
 
   implicit def adminToDTO(admin: Admin): AdminDTO = inTransaction {
-    AdminDTO(admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])
+    AdminDTO(admin.username, admin.fileNumber, admin.email, admin.name, admin.surname, admin.careers.mapAs[PartialCareerDTO])
   }
 
   implicit def optionMapToOptionTallyDTO(data: (OfferOption, Iterable[Student])): OptionTallyDTO = inTransaction {
@@ -193,40 +191,5 @@ trait OutputDTOMappings {
 
   implicit def tallyMapToDTO(data: (Subject, Map[OfferOption, Iterable[Student]])): TallyDTO = inTransaction {
     TallyDTO(data._1, data._2.mapAs[OptionTallyDTO])
-  }
-}
-
-
-abstract class ModelConverter0[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  def asModel: Model
-}
-
-abstract class ModelConverter1[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1
-
-  def asModel(extra1: Extra1): Model
-}
-
-abstract class ModelConverter2[DTO <: InputDTO, Model <: KeyedEntity[_]](dto: DTO) {
-  type Extra1
-  type Extra2
-
-  def asModel(extra1: Extra1, extra2: Extra2): Model
-}
-
-object MappingUtils {
-
-  implicit class QueryConverter[A](query: Query[A]) {
-    def mapAs[B](implicit fun: A => B): Iterable[B] = query.map(fun)
-
-    def computeCount: Long = from(query)(q => compute(DSLFlavor.count)).single.measures
-  }
-
-  implicit class IterableConverter[A](iterable: Iterable[A]) {
-    def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
-  }
-
-  def md5(s: String) = {
-    new String(MessageDigest.getInstance("MD5").digest(s.getBytes))
   }
 }

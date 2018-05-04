@@ -1,51 +1,46 @@
 package ar.edu.unq.arqsoft.repository
 
-import javax.inject.Inject
-
 import ar.edu.unq.arqsoft.DAOs._
 import ar.edu.unq.arqsoft.maybe.{EntityNotFound, Maybe}
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.utils.MultiResultChecker
 import com.google.inject.Singleton
+import javax.inject.Inject
 import org.squeryl.Query
 
-abstract class ModelRepository[T <: TableRow](dao: ModelDAO[T])
+class ModelRepository[T <: TableRow](dao: ModelDAO[T])
   extends Repository[T, KeyType](dao) {
   protected def multiResult[A](query: Query[A], checker: Iterable[A] => Maybe[Iterable[A]]): Maybe[Iterable[A]] =
     inTransaction(query.toList).flatMap(checker)
 }
 
+class UserRepository[T <: User with TableRow](dao: UserDAO[T]) extends ModelRepository[T](dao) {
+  def notFoundByUsername(username: String): EntityNotFound =
+    notFoundBy("username", username)
+
+  def byUsername(username: String): Maybe[T] =
+    singleResult(dao.byUsername(username), notFoundByUsername(username))
+}
+
 @Singleton
 class StudentRepository @Inject()(dao: StudentDAO)
-  extends ModelRepository[Student](dao) {
+  extends UserRepository[Student](dao) {
   def notFoundByFileNumber(fileNumber: Int): EntityNotFound =
     notFoundBy("file number", fileNumber)
 
   def byFileNumber(fileNumber: Int): Maybe[Student] =
     singleResult(dao.byFileNumber(fileNumber), notFoundByFileNumber(fileNumber))
-
-  def notFoundByEmail(email: String): EntityNotFound =
-    notFoundBy("email", email)
-
-  def byEmail(email: String): Maybe[Student] =
-    singleResult(dao.byEmail(email), notFoundByEmail(email))
 }
 
 @Singleton
 class AdminRepository @Inject()(dao: AdminDAO)
-  extends ModelRepository[Admin](dao) {
+  extends UserRepository[Admin](dao) {
   def notFoundByFileNumber(fileNumber: Int): EntityNotFound =
     notFoundBy("file number", fileNumber)
 
-  def notFoundByEmail(email: String): EntityNotFound =
-    notFoundBy("email", email)
-
   def byFileNumber(fileNumber: Int): Maybe[Admin] =
     singleResult(dao.byFileNumber(fileNumber), notFoundByFileNumber(fileNumber))
-
-  def byEmail(email: String): Maybe[Admin] =
-    singleResult(dao.byEmail(email), notFoundByEmail(email))
 }
 
 @Singleton

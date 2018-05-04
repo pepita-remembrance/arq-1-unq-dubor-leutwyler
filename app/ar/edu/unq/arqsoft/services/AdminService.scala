@@ -1,10 +1,9 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
-import ar.edu.unq.arqsoft.mappings.dto.MappingUtils
 import ar.edu.unq.arqsoft.maybe.Maybe
-import ar.edu.unq.arqsoft.model.Admin
 import ar.edu.unq.arqsoft.repository.{AdminRepository, CareerRepository, PollRepository}
+import ar.edu.unq.arqsoft.utils.Hash
 import authentikat.jwt.JwtClaimsSet
 import com.google.inject.{Inject, Singleton}
 
@@ -14,11 +13,11 @@ class AdminService @Inject()(adminRepository: AdminRepository,
                              pollRepository: PollRepository
                             ) extends Service {
 
-  def login(loginDto:LoginDTO): Maybe[JwtClaimsSet] =
+  def login(loginDto: LoginDTO): Maybe[JwtClaimsSet] =
     for {
-      admin <- adminRepository.byEmail(loginDto.email)
-      hashedPassword = MappingUtils.md5(loginDto.password)
-      if hashedPassword == admin.password
+      admin <- adminRepository.byUsername(loginDto.username)
+      hashedPassword = Hash(loginDto.password)
+      //      if hashedPassword == admin.password
       payload =
       s"""{
          |"email": "${admin.email}",

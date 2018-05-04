@@ -1,4 +1,11 @@
 [
+  //POST         /seed         No DTO required
+  {},
+  //POST         /login         LoginDTO
+  {
+    "username":"foobar",
+    "password":"666"
+  },
   //POST         /careers         CreateCareerDTO
   {
     "shortName": "BAZ",
@@ -95,6 +102,8 @@
   },
   //POST         /students         CreateStudentDTO
   {
+    "username":"barfoo",
+    "password":"999",
     "fileNumber": 999,
     "email": "bar@foo.com",
     "name": "Bar",
@@ -119,6 +128,8 @@
   },
   //POST         /admins         CreateAdminDTO
   {
+    "username":"foobar",
+    "password":"666",
     "fileNumber": 666,
     "email": "foo@bar.com",
     "name": "Foo",

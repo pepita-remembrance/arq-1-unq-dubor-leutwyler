@@ -3,7 +3,6 @@ package ar.edu.unq.arqsoft.controllers
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.maybe._
-import authentikat.jwt.{JsonWebToken, JwtClaimsSet, JwtHeader}
 import play.api.libs.json.{JsError, Json, Reads, Writes}
 import play.api.mvc._
 
@@ -53,6 +52,7 @@ trait MaybeToJsonResult extends Results with Logging {
   def convert[A: Writes](maybe: Maybe[A]): Result = maybe match {
     case Just(()) => NoContent
     case Just(obj) => Ok(Json.toJson(obj))
+    case BadLogin => Unauthorized(BadLogin.message)
     case notFound: EntityNotFound =>
       NotFound(notFound.message)
     case manyNotFound: NotFounds =>

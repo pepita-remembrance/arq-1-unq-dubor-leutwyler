@@ -11,22 +11,23 @@ class ModelDAO[T <: TableRow](table: Table[T])
                              (implicit ked: KeyedEntityDef[T, KeyType], toCanLookup: KeyType => CanLookup)
   extends SquerylDAO[T, KeyType](table, None)
 
-@Singleton
-class StudentDAO extends ModelDAO[Student](students) {
-  def byEmail(email: String): Query[Student] =
-    search(_.email === email)
+class UserDAO[T <: User with TableRow](table: Table[T])
+                                      (implicit ked: KeyedEntityDef[T, KeyType], toCanLookup: KeyType => CanLookup)
+  extends ModelDAO[T](table) {
+  def byUsername(username: String): Query[T] =
+    search(_.username === username)
+}
 
+@Singleton
+class StudentDAO extends UserDAO[Student](students) {
   def byFileNumber(fileNumber: Int): Query[Student] =
     search(_.fileNumber === fileNumber)
 }
 
 @Singleton
-class AdminDAO extends ModelDAO[Admin](admins) {
+class AdminDAO extends UserDAO[Admin](admins) {
   def byFileNumber(fileNumber: Int): Query[Admin] =
     search(_.fileNumber === fileNumber)
-
-  def byEmail(email: String): Query[Admin] =
-    search(_.email === email)
 }
 
 @Singleton

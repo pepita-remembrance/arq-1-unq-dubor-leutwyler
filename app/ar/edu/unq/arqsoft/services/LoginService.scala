@@ -1,23 +1,21 @@
 package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api.LoginDTO
-import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.maybe.{BadLogin, Maybe}
 import authentikat.jwt.{JsonWebToken, JwtClaimsSet, JwtHeader}
 import com.google.inject.{Inject, Singleton}
 
 @Singleton
-class LoginService  @Inject()(adminService: AdminService,
-                              studentService: StudentService) {
+class LoginService @Inject()(adminService: AdminService,
+                             studentService: StudentService) {
 
-  type Token = String
-
-  def login(loginDTO: LoginDTO):Maybe[Token] =
-    adminService login loginDTO recover studentService.login(loginDTO) map createToken
+  def login(loginDTO: LoginDTO): Maybe[String] =
+    adminService.login(loginDTO) recover studentService.login(loginDTO) recover BadLogin map createToken
 
   val JwtSecretKey = "secretKey"
   val JwtSecretAlgo = "HS256"
 
-  def createToken(payload: JwtClaimsSet): Token = {
+  def createToken(payload: JwtClaimsSet): String = {
     val header = JwtHeader(JwtSecretAlgo)
     val claimsSet = payload
     JsonWebToken(header, claimsSet, JwtSecretKey)
@@ -29,8 +27,6 @@ class LoginService  @Inject()(adminService: AdminService,
   def decodePayload(jwtToken: String): Option[String] =
     jwtToken match {
       case JsonWebToken(header, claimsSet, signature) => Option(claimsSet.asJsonString)
-      case _                                          => None
+      case _ => None
     }
-
-
 }
