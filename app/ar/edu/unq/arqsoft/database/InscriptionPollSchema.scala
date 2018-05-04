@@ -98,7 +98,7 @@ object InscriptionPollSchema extends Schema {
   on(students)(s =>
     declare(
       s.username is(unique, indexed("idxStudentUsername")),
-      s.email is(unique, indexed("idxStudentEmail")),
+      s.email is unique,
       s.fileNumber is(unique, indexed("idxStudentFileNumber"))
     )
   )
@@ -106,7 +106,7 @@ object InscriptionPollSchema extends Schema {
   on(admins)(a =>
     declare(
       a.username is(unique, indexed("idxAdminUsername")),
-      a.email is(unique, indexed("idxAdminEmail")),
+      a.email is unique,
       a.fileNumber is(unique, indexed("idxAdminFileNumber"))
     )
   )

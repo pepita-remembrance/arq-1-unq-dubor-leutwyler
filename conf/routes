@@ -8,6 +8,7 @@ POST         /seed                                                              
 
 # Login
 POST         /login                                                                            ar.edu.unq.arqsoft.controllers.LoginController.login
+POST         /logout                                                                           ar.edu.unq.arqsoft.controllers.LoginController.logout
 
 # Career routes
 GET          /careers                                                                          ar.edu.unq.arqsoft.controllers.CareerController.all

@@ -4,24 +4,18 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model.Admin
 import ar.edu.unq.arqsoft.repository.{AdminRepository, CareerRepository, PollRepository}
-import authentikat.jwt.JwtClaimsSet
+import ar.edu.unq.arqsoft.security.Role
 import com.google.inject.{Inject, Singleton}
 
 @Singleton
 class AdminService @Inject()(adminRepository: AdminRepository,
                              careerRepository: CareerRepository,
                              pollRepository: PollRepository
-                            ) extends UserService[Admin](adminRepository) {
+                            ) extends UserService[Admin](adminRepository, Role.ADMIN) {
 
 
-  protected def makeClaimsSet(user: Admin): JwtClaimsSet =
-    JwtClaimsSet(
-      s"""{
-         |"username": "${user.username}",
-         |"email": "${user.email}",
-         |"role": "admin"
-         |}""".stripMargin
-    )
+  override protected def customClaims(user: Admin): Map[String, Any] =
+    super.customClaims(user) + ("fileNumber" -> user.fileNumber)
 
   def create(dto: CreateAdminDTO): Maybe[AdminDTO] = {
     val newModel = dto.asModel

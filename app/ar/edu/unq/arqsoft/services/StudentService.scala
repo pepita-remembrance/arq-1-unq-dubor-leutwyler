@@ -4,22 +4,16 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model.Student
 import ar.edu.unq.arqsoft.repository.StudentRepository
-import authentikat.jwt.JwtClaimsSet
+import ar.edu.unq.arqsoft.security.Role
 import com.google.inject.{Inject, Singleton}
 
 @Singleton
 class StudentService @Inject()(studentRepository: StudentRepository
-                              ) extends UserService[Student](studentRepository) {
+                              ) extends UserService[Student](studentRepository, Role.STUDENT) {
 
 
-  protected def makeClaimsSet(user: Student): JwtClaimsSet =
-    JwtClaimsSet(
-      s"""{
-         |"username": "${user.username}",
-         |"email": "${user.email}",
-         |"role": "student"
-         |}""".stripMargin
-    )
+  override protected def customClaims(user: Student): Map[String, Any] =
+    super.customClaims(user) + ("fileNumber" -> user.fileNumber)
 
   def create(dto: CreateStudentDTO): Maybe[StudentDTO] = {
     val newModel = dto.asModel
