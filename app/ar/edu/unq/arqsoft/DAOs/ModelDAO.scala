@@ -13,6 +13,9 @@ class ModelDAO[T <: TableRow](table: Table[T])
 
 @Singleton
 class StudentDAO extends ModelDAO[Student](students) {
+  def byEmail(email: String): Query[Student] =
+    search(_.email === email)
+
   def byFileNumber(fileNumber: Int): Query[Student] =
     search(_.fileNumber === fileNumber)
 }
@@ -21,6 +24,9 @@ class StudentDAO extends ModelDAO[Student](students) {
 class AdminDAO extends ModelDAO[Admin](admins) {
   def byFileNumber(fileNumber: Int): Query[Admin] =
     search(_.fileNumber === fileNumber)
+
+  def byEmail(email: String): Query[Admin] =
+    search(_.email === email)
 }
 
 @Singleton

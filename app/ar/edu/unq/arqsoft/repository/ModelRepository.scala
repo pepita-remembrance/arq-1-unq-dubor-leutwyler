@@ -24,6 +24,12 @@ class StudentRepository @Inject()(dao: StudentDAO)
 
   def byFileNumber(fileNumber: Int): Maybe[Student] =
     singleResult(dao.byFileNumber(fileNumber), notFoundByFileNumber(fileNumber))
+
+  def notFoundByEmail(email: String): EntityNotFound =
+    notFoundBy("email", email)
+
+  def byEmail(email: String): Maybe[Student] =
+    singleResult(dao.byEmail(email), notFoundByEmail(email))
 }
 
 @Singleton
@@ -32,8 +38,14 @@ class AdminRepository @Inject()(dao: AdminDAO)
   def notFoundByFileNumber(fileNumber: Int): EntityNotFound =
     notFoundBy("file number", fileNumber)
 
+  def notFoundByEmail(email: String): EntityNotFound =
+    notFoundBy("email", email)
+
   def byFileNumber(fileNumber: Int): Maybe[Admin] =
     singleResult(dao.byFileNumber(fileNumber), notFoundByFileNumber(fileNumber))
+
+  def byEmail(email: String): Maybe[Admin] =
+    singleResult(dao.byEmail(email), notFoundByEmail(email))
 }
 
 @Singleton

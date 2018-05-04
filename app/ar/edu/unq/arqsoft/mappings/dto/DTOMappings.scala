@@ -7,6 +7,8 @@ import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model._
 import org.joda.time.DateTime
 import org.squeryl.{KeyedEntity, Query}
+import java.security.MessageDigest
+
 
 trait DTOMappings
   extends OutputDTOMappings
@@ -16,12 +18,12 @@ trait InputDTOMappings {
 
   implicit class StudentConverter(dto: CreateStudentDTO) extends ModelConverter0[CreateStudentDTO, Student](dto) {
     override def asModel: Student =
-      Student(dto.fileNumber, dto.email, dto.name, dto.surname)
+      Student(dto.fileNumber, dto.email, dto.name, dto.surname, MappingUtils.md5(dto.password))
   }
 
   implicit class AdminConverter(dto: CreateAdminDTO) extends ModelConverter0[CreateAdminDTO, Admin](dto) {
     override def asModel: Admin =
-      Admin(dto.fileNumber, dto.email, dto.name, dto.surname)
+      Admin(dto.fileNumber, dto.email, dto.name, dto.surname, MappingUtils.md5(dto.password))
   }
 
   implicit class CareerConverter(dto: CreateCareerDTO) extends ModelConverter0[CreateCareerDTO, Career](dto) {
@@ -224,4 +226,7 @@ object MappingUtils {
     def mapAs[B](implicit fun: A => B): Iterable[B] = iterable.map(fun)
   }
 
+  def md5(s: String) = {
+    new String(MessageDigest.getInstance("MD5").digest(s.getBytes))
+  }
 }
