@@ -11,7 +11,7 @@ import com.google.inject.{Inject, Singleton}
 class AdminService @Inject()(adminRepository: AdminRepository,
                              careerRepository: CareerRepository,
                              pollRepository: PollRepository
-                            ) extends UserService[Admin](adminRepository, Role.ADMIN) {
+                            ) extends UserService[Admin](adminRepository, Role.Admin) {
 
 
   override protected def customClaims(user: Admin): Map[String, Any] =

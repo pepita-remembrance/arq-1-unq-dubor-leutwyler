@@ -10,7 +10,10 @@ class LoginService @Inject()(adminService: AdminService,
                              studentService: StudentService) {
 
   def login(loginDTO: LoginDTO): Maybe[String] =
-    adminService.login(loginDTO) recover studentService.login(loginDTO) recover BadLogin map createToken
+    adminService.login(loginDTO)
+      .recover(studentService.login(loginDTO))
+      .recover(BadLogin)
+      .map(createToken)
 
   val JwtSecretKey = "secretKey"
   val JwtSecretAlgo = "HS256"

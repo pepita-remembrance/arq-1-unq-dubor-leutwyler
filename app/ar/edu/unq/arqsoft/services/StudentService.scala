@@ -9,7 +9,7 @@ import com.google.inject.{Inject, Singleton}
 
 @Singleton
 class StudentService @Inject()(studentRepository: StudentRepository
-                              ) extends UserService[Student](studentRepository, Role.STUDENT) {
+                              ) extends UserService[Student](studentRepository, Role.Student) {
 
 
   override protected def customClaims(user: Student): Map[String, Any] =
