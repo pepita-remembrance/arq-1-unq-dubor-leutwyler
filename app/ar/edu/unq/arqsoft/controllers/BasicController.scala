@@ -33,10 +33,6 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
       convert(block)
     }
 
-    def apply(block: => Result): Action[AnyContent] = Action {
-      block
-    }
-
     def withBody[In]: JsonActionWithBodyBuilder[In] = new JsonActionWithBodyBuilder[In]
   }
 
