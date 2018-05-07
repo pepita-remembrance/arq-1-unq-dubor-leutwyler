@@ -1,6 +1,6 @@
 package ar.edu.unq.arqsoft.services
 
-import ar.edu.unq.arqsoft.api.LoginDTO
+import ar.edu.unq.arqsoft.api.{LoginDTO, UserDTO}
 import ar.edu.unq.arqsoft.maybe.{BadLogin, Maybe}
 import authentikat.jwt.{JsonWebToken, JwtClaimsSet, JwtHeader}
 import com.google.inject.{Inject, Singleton}
@@ -9,11 +9,11 @@ import com.google.inject.{Inject, Singleton}
 class LoginService @Inject()(adminService: AdminService,
                              studentService: StudentService) {
 
-  def login(loginDTO: LoginDTO): Maybe[String] =
+  def login(loginDTO: LoginDTO): Maybe[(UserDTO, String)] =
     adminService.login(loginDTO)
       .recover(studentService.login(loginDTO))
       .recover(BadLogin)
-      .map(createToken)
+      .map { case (user, claims) => (user, createToken(claims)) }
 
   val JwtSecretKey = "secretKey"
   val JwtSecretAlgo = "HS256"

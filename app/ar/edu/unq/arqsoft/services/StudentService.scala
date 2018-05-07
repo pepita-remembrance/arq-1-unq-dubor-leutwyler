@@ -10,10 +10,11 @@ import com.google.inject.{Inject, Singleton}
 @Singleton
 class StudentService @Inject()(studentRepository: StudentRepository
                               ) extends UserService[Student](studentRepository, Role.Student) {
-
-
   override protected def customClaims(user: Student): Map[String, Any] =
     super.customClaims(user) + ("fileNumber" -> user.fileNumber)
+
+
+  protected def toDTO(user: Student): UserDTO = user.as[StudentDTO]
 
   def create(dto: CreateStudentDTO): Maybe[StudentDTO] = {
     val newModel = dto.asModel

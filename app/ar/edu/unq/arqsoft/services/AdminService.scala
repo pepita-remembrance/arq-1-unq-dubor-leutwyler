@@ -13,9 +13,10 @@ class AdminService @Inject()(adminRepository: AdminRepository,
                              pollRepository: PollRepository
                             ) extends UserService[Admin](adminRepository, Role.Admin) {
 
-
   override protected def customClaims(user: Admin): Map[String, Any] =
     super.customClaims(user) + ("fileNumber" -> user.fileNumber)
+
+  protected def toDTO(user: Admin): UserDTO = user.as[AdminDTO]
 
   def create(dto: CreateAdminDTO): Maybe[AdminDTO] = {
     val newModel = dto.asModel

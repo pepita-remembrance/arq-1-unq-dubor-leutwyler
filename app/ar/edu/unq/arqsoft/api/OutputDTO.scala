@@ -13,9 +13,15 @@ object OutputAlias {
   type ExtraDataDTO = Map[SubjectShortName, String]
 }
 
-case class StudentDTO(username: String, fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO], pollResults: Iterable[PartialPollResultDTO], polls: Iterable[PartialPollDTO]) extends OutputDTO
+trait UserDTO extends OutputDTO{
+  def username: String
 
-case class AdminDTO(username: String, fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO]) extends OutputDTO
+  def email: String
+}
+
+case class StudentDTO(username: String, fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO], pollResults: Iterable[PartialPollResultDTO], polls: Iterable[PartialPollDTO]) extends UserDTO
+
+case class AdminDTO(username: String, fileNumber: Int, email: String, name: String, surname: String, careers: Iterable[PartialCareerDTO]) extends UserDTO
 
 case class PartialAdminDTO(username: String, fileNumber: Int, email: String, name: String, surname: String) extends OutputDTO
 
