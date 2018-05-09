@@ -3,7 +3,7 @@ package ar.edu.unq.arqsoft.controllers
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.maybe._
-import ar.edu.unq.arqsoft.security.{JWTService, Role}
+import ar.edu.unq.arqsoft.security.{ActionByRole, JWTService, Role}
 import play.api.libs.json.{JsError, Json, Reads, Writes}
 import play.api.mvc._
 
@@ -45,7 +45,8 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers, jwtServi
       request => ifAuthorizedDo(request)(block)
     }
 
-    def withBody[In]: JsonActionWithBodyBuilder[In] = new JsonActionWithBodyBuilder[In](requiredRoles)
+    def withBody[In]: JsonActionWithBodyBuilder[In] =
+      new JsonActionWithBodyBuilder[In](requiredRoles)
 
     def requires(role: Role, roles: Role*): JsonActionBuilder =
       new JsonActionBuilder(role +: roles)
@@ -53,26 +54,6 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers, jwtServi
     protected def jwtService: JWTService = controller.jwtService
   }
 
-}
-
-trait ActionByRole[Self <: ActionByRole[Self]] {
-  protected def requiredRoles: Seq[Role]
-
-  protected def jwtService: JWTService
-
-  def requires(role: Role, roles: Role*): Self
-
-  def ifAuthorizedDo[T](request: Request[T])(code: => Result): Result =
-    if (isAuthorized(request)) code
-    else Results.Unauthorized(unathorizedMessage(request))
-
-  protected def unathorizedMessage(request: Request[_]): String =
-    s"You are not authorized to use route: $request"
-
-  protected def isAuthorized(request: Request[_]): Boolean = {
-    // TODO: Do the thing!
-    true
-  }
 }
 
 trait MaybeToJsonResult extends Results with Logging {
