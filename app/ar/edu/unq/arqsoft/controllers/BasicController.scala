@@ -3,13 +3,13 @@ package ar.edu.unq.arqsoft.controllers
 import ar.edu.unq.arqsoft.logging.Logging
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.maybe._
-import ar.edu.unq.arqsoft.security.Role
+import ar.edu.unq.arqsoft.security.{JWTService, Role}
 import play.api.libs.json.{JsError, Json, Reads, Writes}
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global //This import provides the implicit execution context for Play json.validate
 
-class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
+class BasicController(cc: ControllerComponents, parse: PlayBodyParsers, jwtService: JWTService)
   extends AbstractController(cc) with Logging
     with PlayJsonDTOFormats
     with MaybeToJsonResult {
@@ -18,9 +18,9 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
     _.validate[A].asEither.left.map(e => BadRequest(JsError.toJson(e)))
   )
 
-  def JsonAction = new JsonActionBuilder(Seq.empty[Role])
+  def JsonAction = new JsonActionBuilder(jwtService, Seq.empty[Role])
 
-  class JsonActionWithBodyBuilder[In](protected val requiredRoles: Seq[Role]) extends ActionByRole[JsonActionWithBodyBuilder[In]] {
+  class JsonActionWithBodyBuilder[In](protected val jwtService: JWTService, protected val requiredRoles: Seq[Role]) extends ActionByRole[JsonActionWithBodyBuilder[In]] {
     def apply[Out: Writes](block: Request[In] => Maybe[Out])(implicit reads: Reads[In]): Action[In] = Action(validateJson[In]) {
       request => ifAuthorizedDo(request)(convert(block(request)))
     }
@@ -30,10 +30,10 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
     }
 
     def requires(role: Role, roles: Role*): JsonActionWithBodyBuilder[In] =
-      new JsonActionWithBodyBuilder[In](role +: roles)
+      new JsonActionWithBodyBuilder[In](jwtService, role +: roles)
   }
 
-  class JsonActionBuilder(protected val requiredRoles: Seq[Role]) extends ActionByRole[JsonActionBuilder] {
+  class JsonActionBuilder(protected val jwtService: JWTService, protected val requiredRoles: Seq[Role]) extends ActionByRole[JsonActionBuilder] {
     def apply[Out: Writes](block: => Maybe[Out]): Action[AnyContent] = Action {
       request => ifAuthorizedDo(request)(convert(block))
     }
@@ -42,30 +42,32 @@ class BasicController(cc: ControllerComponents, parse: PlayBodyParsers)
       request => ifAuthorizedDo(request)(block)
     }
 
-    def withBody[In]: JsonActionWithBodyBuilder[In] = new JsonActionWithBodyBuilder[In](requiredRoles)
+    def withBody[In]: JsonActionWithBodyBuilder[In] = new JsonActionWithBodyBuilder[In](jwtService, requiredRoles)
 
     def requires(role: Role, roles: Role*): JsonActionBuilder =
-      new JsonActionBuilder(role +: roles)
+      new JsonActionBuilder(jwtService, role +: roles)
   }
 
-  trait ActionByRole[Self <: ActionByRole[Self]] {
-    protected def requiredRoles: Seq[Role]
+}
 
-    def requires(role: Role, roles: Role*): Self
+trait ActionByRole[Self <: ActionByRole[Self]] {
+  protected def requiredRoles: Seq[Role]
 
-    def ifAuthorizedDo[T](request: Request[T])(code: => Result): Result =
-      if (isAuthorized(request)) code
-      else Unauthorized(unathorizedMessage(request))
+  protected def jwtService: JWTService
 
-    protected def unathorizedMessage(request: Request[_]): String =
-      s"You are not authorized to use route: $request"
+  def requires(role: Role, roles: Role*): Self
 
-    protected def isAuthorized(request: Request[_]): Boolean = {
-      // TODO: Do the thing!
-      true
-    }
+  def ifAuthorizedDo[T](request: Request[T])(code: => Result): Result =
+    if (isAuthorized(request)) code
+    else Results.Unauthorized(unathorizedMessage(request))
+
+  protected def unathorizedMessage(request: Request[_]): String =
+    s"You are not authorized to use route: $request"
+
+  protected def isAuthorized(request: Request[_]): Boolean = {
+    // TODO: Do the thing!
+    true
   }
-
 }
 
 trait MaybeToJsonResult extends Results with Logging {

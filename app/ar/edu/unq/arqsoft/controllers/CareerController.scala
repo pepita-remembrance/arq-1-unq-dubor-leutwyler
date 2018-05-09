@@ -2,16 +2,18 @@ package ar.edu.unq.arqsoft.controllers
 
 import ar.edu.unq.arqsoft.api.{CreateAdminCareerDTO, CreateCareerDTO, CreateStudentCareerDTO}
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
+import ar.edu.unq.arqsoft.security.JWTService
 import ar.edu.unq.arqsoft.services.{CareerService, StudentService}
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{ControllerComponents, PlayBodyParsers, Request}
 
 @Singleton
 class CareerController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
+                                 jwtService: JWTService,
                                  studentService: StudentService,
                                  careerService: CareerService
                                 )
-  extends BasicController(cc, parse) with PlayJsonDTOFormats {
+  extends BasicController(cc, parse, jwtService) with PlayJsonDTOFormats {
 
   def create = JsonAction withBody[CreateCareerDTO] {
     implicit request: Request[CreateCareerDTO] =>

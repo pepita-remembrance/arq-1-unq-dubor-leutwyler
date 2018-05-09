@@ -2,16 +2,19 @@ package ar.edu.unq.arqsoft.controllers
 
 import ar.edu.unq.arqsoft.api.CreateAdminDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
+import ar.edu.unq.arqsoft.security.JWTService
 import ar.edu.unq.arqsoft.services.AdminService
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{ControllerComponents, PlayBodyParsers, Request}
 
 
 @Singleton
-class AdminController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
+class AdminController @Inject()(cc: ControllerComponents,
+                                parse: PlayBodyParsers,
                                 adminService: AdminService,
+                                jwtService: JWTService
                                )
-  extends BasicController(cc, parse) with PlayJsonDTOFormats {
+  extends BasicController(cc, parse, jwtService) with PlayJsonDTOFormats {
 
   def create = JsonAction withBody[CreateAdminDTO] {
     implicit request: Request[CreateAdminDTO] =>

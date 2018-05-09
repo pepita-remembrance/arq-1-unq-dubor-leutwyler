@@ -2,13 +2,14 @@ package ar.edu.unq.arqsoft.controllers
 
 import ar.edu.unq.arqsoft.api.{AdminDTO, LoginDTO, StudentDTO, UserDTO}
 import ar.edu.unq.arqsoft.maybe.{BadLogin, Just}
+import ar.edu.unq.arqsoft.security.JWTService
 import ar.edu.unq.arqsoft.services.LoginService
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc._
 
-class LoginController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers, loginService: LoginService)
-  extends BasicController(cc, parse) {
+class LoginController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers, loginService: LoginService, jwtService: JWTService)
+  extends BasicController(cc, parse, jwtService) {
 
   implicit val userDTOWrites = new Writes[UserDTO] {
     def writes(o: UserDTO): JsValue = o match {
