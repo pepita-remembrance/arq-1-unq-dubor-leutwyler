@@ -22,7 +22,7 @@ class PollController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
     pollService.allOf(careerShortName)
   }
 
-  def get(careerShortName: String, pollKey: String) = JsonAction.requires(Role.AnyRole) {
+  def get(careerShortName: String, pollKey: String) = JsonAction.requires(Role.Student, Role.Admin) {
     pollService.byCareerShortNameAndPollKey(careerShortName, pollKey)
   }
 

@@ -24,7 +24,7 @@ class CareerController @Inject()(cc: ControllerComponents, parse: PlayBodyParser
     careerService.all
   }
 
-  def get(careerShortName: String) = JsonAction.requires(Role.AnyRole) {
+  def get(careerShortName: String) = JsonAction.requires(Role.Student, Role.Admin) {
     careerService.byShortName(careerShortName)
   }
 

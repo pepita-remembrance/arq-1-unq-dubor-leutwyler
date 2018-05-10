@@ -30,7 +30,7 @@ class LoginController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers
       }
   }
 
-  def logout = JsonAction.requires(Role.AnyRole) {
+  def logout = JsonAction.requires(Role.Student, Role.Admin) {
     NoContent.discardingCookies(DiscardingCookie("x-inscription-poll-token"))
   }
 

@@ -17,7 +17,4 @@ object Role {
   case object Student extends Role("student")
 
   case object Admin extends Role("admin")
-
-  case object AnyRole extends Role("anyRole")
-
 }
