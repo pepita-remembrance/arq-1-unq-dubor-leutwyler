@@ -18,10 +18,15 @@ trait ActionByRole[Self <: ActionByRole[Self]] extends Logging {
     s"You are not authorized to use route: $request"
 
   protected def isAuthorized(request: Request[_]): Boolean = {
-    // TODO: Do the thing!
     (request.cookies.get("x-inscription-poll-token").map(_.value), requiredRoles) match {
       case (_, Nil) => true
-      case (Some(encodedJWT), roles) => info(s"Got jwt: $encodedJWT and roles: $roles"); true
+      case (Some(encodedJWT), roles) if jwtService.isValidToken(encodedJWT) => {
+        for {
+          decodedJWT <- jwtService.decodePayload(encodedJWT)
+          userRoleString <- decodedJWT.get("role")
+          userRole <- Role.fromString(userRoleString)
+        } yield roles.contains(userRole)
+      }.getOrElse(false)
       case _ => false
     }
   }

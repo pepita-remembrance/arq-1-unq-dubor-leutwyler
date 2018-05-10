@@ -17,9 +17,9 @@ class JWTService {
   def isValidToken(jwtToken: String): Boolean =
     JsonWebToken.validate(jwtToken, JwtSecretKey)
 
-  def decodePayload(jwtToken: String): Option[String] =
+  def decodePayload(jwtToken: String): Option[Map[String, String]] =
     jwtToken match {
-      case JsonWebToken(header, claimsSet, signature) => Option(claimsSet.asJsonString)
+      case JsonWebToken(_, claimsSet, _) => claimsSet.asSimpleMap.toOption
       case _ => None
     }
 
