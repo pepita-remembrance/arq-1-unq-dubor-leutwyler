@@ -11,7 +11,9 @@ object Dependencies {
     "com.typesafe.play" %% "play-json-joda" % "2.6.2",
     "org.squeryl" %% "squeryl" % "0.9.7",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "net.codingwell" %% "scala-guice" % "4.1.1"
+    "net.codingwell" %% "scala-guice" % "4.1.1",
+    "com.jason-goodwin" %% "authentikat-jwt" % "0.4.5"
+
   )
 
   lazy val testDependecies = Seq(

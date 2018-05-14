@@ -2,14 +2,21 @@ package ar.edu.unq.arqsoft.services
 
 import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.maybe.Maybe
+import ar.edu.unq.arqsoft.model.Admin
 import ar.edu.unq.arqsoft.repository.{AdminRepository, CareerRepository, PollRepository}
+import ar.edu.unq.arqsoft.security.Role
 import com.google.inject.{Inject, Singleton}
 
 @Singleton
 class AdminService @Inject()(adminRepository: AdminRepository,
                              careerRepository: CareerRepository,
                              pollRepository: PollRepository
-                            ) extends Service {
+                            ) extends UserService[Admin](adminRepository, Role.Admin) {
+
+  override protected def customClaims(user: Admin): Map[String, Any] =
+    super.customClaims(user) + ("fileNumber" -> user.fileNumber)
+
+  protected def toDTO(user: Admin): UserDTO = user.as[AdminDTO]
 
   def create(dto: CreateAdminDTO): Maybe[AdminDTO] = {
     val newModel = dto.asModel

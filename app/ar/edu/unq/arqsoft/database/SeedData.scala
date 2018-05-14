@@ -298,9 +298,9 @@ trait SeedData extends Logging {
     pollService.createDefaultOptions()
     info("Creating admins...")
     List(
-      CreateAdminDTO(147, "fidel.ml@gmail.com", "Pablo", "Suarez"),
-      CreateAdminDTO(258, "pablo.suarez@gmail.com", "Pablo", "Suarez"),
-      CreateAdminDTO(369, "gabriela.arevalo@gmail.com", "Gabriela", "Arevalo")
+      CreateAdminDTO("fidelml","147",147, "fidel.ml@gmail.com", "Pablo", "Martinez Lopez"),
+      CreateAdminDTO("pablosuarez","258",258, "pablo.suarez@gmail.com", "Pablo", "Suarez"),
+      CreateAdminDTO("gabrielarevalo","369",369, "gabriela.arevalo@gmail.com", "Gabriela", "Arevalo")
     ).map(adminService.create)
     info("Creating careers...")
     List(
@@ -350,8 +350,8 @@ trait SeedData extends Logging {
     ).foreach(careerService.create)
     info("Creating students...")
     List(
-      CreateStudentDTO(123, "marcogomez@gmail.com", "Marco", "Gomez"),
-      CreateStudentDTO(456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
+      CreateStudentDTO("marcogomez","123",123, "marcogomez@gmail.com", "Marco", "Gomez"),
+      CreateStudentDTO("joaquinsanchez","456",456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
     ).map(studentService.create)
     info("Admins join their careers")
     careerService.joinAdmin(CreateAdminCareerDTO(147, "TPI"))

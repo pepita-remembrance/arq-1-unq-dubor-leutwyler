@@ -97,8 +97,17 @@ object InscriptionPollSchema extends Schema {
 
   on(students)(s =>
     declare(
-      s.fileNumber is(unique, indexed("idxStudentFileNumber")),
-      s.email is(unique, indexed("idxStudentEmail"))
+      s.username is(unique, indexed("idxStudentUsername")),
+      s.email is unique,
+      s.fileNumber is(unique, indexed("idxStudentFileNumber"))
+    )
+  )
+
+  on(admins)(a =>
+    declare(
+      a.username is(unique, indexed("idxAdminUsername")),
+      a.email is unique,
+      a.fileNumber is(unique, indexed("idxAdminFileNumber"))
     )
   )
 
@@ -128,13 +137,13 @@ object InscriptionPollSchema extends Schema {
 
   on(courses)(c =>
     declare(
-      c.offerId is (unique, indexed("idxCourseOffer"))
+      c.offerId is(unique, indexed("idxCourseOffer"))
     )
   )
 
   on(nonCourses)(nc =>
     declare(
-      nc.offerId is (unique, indexed("idxNonCourseOffer"))
+      nc.offerId is(unique, indexed("idxNonCourseOffer"))
     )
   )
 

@@ -9,9 +9,11 @@ object InputAlias {
   type PollDeltaDTO = Map[SubjectShortName, PollSelectedOptionDTO]
 }
 
-case class CreateStudentDTO(fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
+case class LoginDTO(username: String, password: String) extends InputDTO
 
-case class CreateAdminDTO(fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
+case class CreateStudentDTO(username: String, password: String, fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
+
+case class CreateAdminDTO(username: String, password: String, fileNumber: Int, email: String, name: String, surname: String) extends InputDTO
 
 case class CreateCareerDTO(shortName: String, longName: String, subjects: Option[List[CreateSubjectDTO]]) extends InputDTO
 

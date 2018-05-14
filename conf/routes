@@ -6,6 +6,10 @@
 # Init routes
 POST         /seed                                                                             ar.edu.unq.arqsoft.controllers.InitController.seedDatabase
 
+# Login
+POST         /login                                                                            ar.edu.unq.arqsoft.controllers.LoginController.login
+POST         /logout                                                                           ar.edu.unq.arqsoft.controllers.LoginController.logout
+
 # Career routes
 GET          /careers                                                                          ar.edu.unq.arqsoft.controllers.CareerController.all
 POST         /careers                                                                          ar.edu.unq.arqsoft.controllers.CareerController.create

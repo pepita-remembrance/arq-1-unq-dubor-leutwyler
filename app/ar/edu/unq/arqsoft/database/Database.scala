@@ -1,7 +1,6 @@
 package ar.edu.unq.arqsoft.database
 
 import com.google.inject.{Inject, Singleton}
-
 import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory
 
@@ -10,7 +9,6 @@ class Database @Inject()(connector: DBConnector) extends DemoDatabase with SeedD
 
   DateTimeZone.setDefault(DateTimeZone.forOffsetHours(-3)) // Buenos Aires
   SessionFactory.concreteFactory = connector.sessionCreator
-  init()
 
   override def seed(): Unit = {
     init()
