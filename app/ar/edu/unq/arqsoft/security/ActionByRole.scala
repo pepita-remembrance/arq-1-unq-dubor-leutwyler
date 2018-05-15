@@ -12,7 +12,7 @@ trait ActionByRole[Self <: ActionByRole[Self]] extends Logging {
 
   def ifAuthorizedDo[T](request: Request[T])(code: => Result): Result =
     if (isAuthorized(request)) code
-    else Results.Unauthorized(unathorizedMessage(request))
+    else Results.Forbidden(unathorizedMessage(request))
 
   protected def unathorizedMessage(request: Request[_]): String =
     s"You are not authorized to use route: $request"
@@ -23,9 +23,10 @@ trait ActionByRole[Self <: ActionByRole[Self]] extends Logging {
       case (Some(encodedJWT), roles) if jwtService.isValidToken(encodedJWT) => {
         for {
           decodedJWT <- jwtService.decodePayload(encodedJWT)
-          userRoleString <- decodedJWT.get("role")
-          userRole <- Role.fromString(userRoleString)
-        } yield roles.contains(userRole)
+          userRoleKey <- decodedJWT.get("role")
+          roleFactory <- Role.fromJWTKey(userRoleKey)
+          userRole = roleFactory(decodedJWT.get("fileNumber").map(_.toInt))
+        } yield roles.exists(_ matches userRole)
       }.getOrElse(false)
       case _ => false
     }

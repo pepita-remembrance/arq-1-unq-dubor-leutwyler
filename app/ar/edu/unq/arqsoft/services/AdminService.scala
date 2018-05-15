@@ -4,14 +4,14 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model.Admin
 import ar.edu.unq.arqsoft.repository.{AdminRepository, CareerRepository, PollRepository}
-import ar.edu.unq.arqsoft.security.Role
+import ar.edu.unq.arqsoft.security.RoleAdmin
 import com.google.inject.{Inject, Singleton}
 
 @Singleton
 class AdminService @Inject()(adminRepository: AdminRepository,
                              careerRepository: CareerRepository,
                              pollRepository: PollRepository
-                            ) extends UserService[Admin](adminRepository, Role.Admin) {
+                            ) extends UserService[Admin](adminRepository, RoleAdmin) {
 
   override protected def customClaims(user: Admin): Map[String, Any] =
     super.customClaims(user) + ("fileNumber" -> user.fileNumber)
