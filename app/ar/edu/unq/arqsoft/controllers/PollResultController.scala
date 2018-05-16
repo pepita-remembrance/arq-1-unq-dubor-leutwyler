@@ -2,7 +2,7 @@ package ar.edu.unq.arqsoft.controllers
 
 import ar.edu.unq.arqsoft.api.InputAlias.PollDeltaDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
-import ar.edu.unq.arqsoft.security.{JWTService, Role}
+import ar.edu.unq.arqsoft.security.{JWTService, RoleAdmin, RoleStudent}
 import ar.edu.unq.arqsoft.services.PollResultService
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{ControllerComponents, PlayBodyParsers, Request}
@@ -13,20 +13,23 @@ class PollResultController @Inject()(cc: ControllerComponents, parse: PlayBodyPa
                                     )
   extends BasicController(cc, parse, jwtService) with PlayJsonDTOFormats {
 
-  def get(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonAction.requires(Role.Student) {
-    pollResultService.pollResultFor(studentFileNumber, careerShortName, pollKey)
-  }
+  def get(studentFileNumber: Int, careerShortName: String, pollKey: String) =
+    JsonAction.requires(RoleStudent(studentFileNumber)) {
+      pollResultService.pollResultFor(studentFileNumber, careerShortName, pollKey)
+    }
 
-  def create(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonAction.requires(Role.Student) {
-    pollResultService.newPollResult(studentFileNumber, careerShortName, pollKey)
-  }
+  def create(studentFileNumber: Int, careerShortName: String, pollKey: String) =
+    JsonAction.requires(RoleStudent(studentFileNumber)) {
+      pollResultService.newPollResult(studentFileNumber, careerShortName, pollKey)
+    }
 
-  def patch(studentFileNumber: Int, careerShortName: String, pollKey: String) = JsonAction.withBody[PollDeltaDTO].requires(Role.Student) {
-    implicit request: Request[PollDeltaDTO] =>
-      pollResultService.update(studentFileNumber, careerShortName, pollKey, request.body)
-  }
+  def patch(studentFileNumber: Int, careerShortName: String, pollKey: String) =
+    JsonAction.withBody[PollDeltaDTO].requires(RoleStudent(studentFileNumber)) {
+      implicit request: Request[PollDeltaDTO] =>
+        pollResultService.update(studentFileNumber, careerShortName, pollKey, request.body)
+    }
 
-  def tally(careerShortName: String, pollKey: String) = JsonAction.requires(Role.Admin) {
+  def tally(careerShortName: String, pollKey: String) = JsonAction.requires(RoleAdmin) {
     pollResultService.tally(careerShortName: String, pollKey: String)
   }
 

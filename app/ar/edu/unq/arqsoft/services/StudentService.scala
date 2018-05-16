@@ -4,12 +4,12 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model.Student
 import ar.edu.unq.arqsoft.repository.StudentRepository
-import ar.edu.unq.arqsoft.security.Role
+import ar.edu.unq.arqsoft.security.RoleStudent
 import com.google.inject.{Inject, Singleton}
 
 @Singleton
 class StudentService @Inject()(studentRepository: StudentRepository
-                              ) extends UserService[Student](studentRepository, Role.Student) {
+                              ) extends UserService[Student](studentRepository, RoleStudent) {
   override protected def customClaims(user: Student): Map[String, Any] =
     super.customClaims(user) + ("fileNumber" -> user.fileNumber)
 

@@ -2,7 +2,7 @@ package ar.edu.unq.arqsoft.controllers
 
 import ar.edu.unq.arqsoft.api.{AdminDTO, LoginDTO, StudentDTO, UserDTO}
 import ar.edu.unq.arqsoft.maybe.{BadLogin, Just}
-import ar.edu.unq.arqsoft.security.{JWTService, Role}
+import ar.edu.unq.arqsoft.security.{JWTService, RoleAdmin, RoleStudent}
 import ar.edu.unq.arqsoft.services.LoginService
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json, Writes}
@@ -30,7 +30,7 @@ class LoginController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers
       }
   }
 
-  def logout = JsonAction.requires(Role.Student, Role.Admin) {
+  def logout = JsonAction.requires(RoleStudent, RoleAdmin) {
     NoContent.discardingCookies(DiscardingCookie("x-inscription-poll-token"))
   }
 
