@@ -18,7 +18,7 @@ trait ActionByRole[Self <: ActionByRole[Self]] extends Logging {
     s"You are not authorized to use route: $request"
 
   protected def isAuthorized(request: Request[_]): Boolean = {
-    (request.cookies.get("x-inscription-poll-token").map(_.value), requiredRoles) match {
+    (extractToken(request), requiredRoles) match {
       case (_, Nil) => true
       case (Some(encodedJWT), roles) if jwtService.isValidToken(encodedJWT) => {
         for {
@@ -31,4 +31,11 @@ trait ActionByRole[Self <: ActionByRole[Self]] extends Logging {
       case _ => false
     }
   }
+
+  protected def extractToken(request: Request[_]): Option[String] =
+    request.cookies.get("x-inscription-poll-token").map(_.value)
+      .orElse(request.headers.get("Authorization").map(_.split("\\s+", 2).toList) match {
+        case Some("Bearer" :: jwt :: Nil) => Some(jwt)
+        case _ => None
+      })
 }
