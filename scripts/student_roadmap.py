@@ -28,7 +28,7 @@ class Student:
             }
         response = self.s.post(f"{self.url}/login", json=data, headers=headers)
         self.elapsed += response.elapsed.total_seconds()
-        if response.status_code is not 204:
+        if response.status_code is not 200:
             raise Exception("There was an error in the login")
 
 
@@ -94,4 +94,4 @@ if __name__ == "__main__":
     print(
         average_time_colour(student.elapsed / 4),
         '\033[1m' + '\033[4m' +
-        f"{student.username} requests took average {student.elapsed / 4} seconds each")
+        f"{student.username} requests took average {int(student.elapsed / 4 * 1000)}ms each")
