@@ -5,15 +5,16 @@ services:
     environment:
       POSTGRES_PASSWORD: 'saveallthethings'
       POSTGRES_USER: 'arq-soft'
+    mem_limit: 2G
+    mem_reservation: 2G
+    cpus: 2
 
   app:
     build: .
     stdin_open: true
-    mem_limit: 4G
-    cpu_count: 2
-    cpu_percent: 80
+    mem_limit: 8G
+    mem_reservation: 8G
     cpus: 2
-    mem_reservation: 512m
     ports:
       - "9000:9000"
     environment:
