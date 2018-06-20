@@ -12,9 +12,7 @@ object Dependencies {
     "org.squeryl" %% "squeryl" % "0.9.7",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "net.codingwell" %% "scala-guice" % "4.1.1",
-    "com.jason-goodwin" %% "authentikat-jwt" % "0.4.5",
-    "com.kenshoo" %% "metrics-play" % "2.6.2_0.6.1"
-
+    "com.jason-goodwin" %% "authentikat-jwt" % "0.4.5"
   )
 
   lazy val testDependecies = Seq(

@@ -1,4 +1,4 @@
-version: '2'
+version: '2.2'
 services:
   postgresql:
     image: postgres:10
@@ -9,9 +9,15 @@ services:
   app:
     build: .
     stdin_open: true
+    mem_limit: 4G
+    cpu_count: 2
+    cpu_percent: 80
+    cpus: 2
+    mem_reservation: 512m
     ports:
       - "9000:9000"
     environment:
       JDBC_DATABASE_URL: 'jdbc:postgresql://postgresql:5432/arq-soft?user=arq-soft&password=saveallthethings'
     depends_on:
       - postgresql
+    command: 'sbt start'

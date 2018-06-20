@@ -37,6 +37,3 @@ POST         /admins                                                            
 GET          /admins/:adminFileNumber                                                          ar.edu.unq.arqsoft.controllers.AdminController.get(adminFileNumber :Int)
 GET          /admins/:adminFileNumber/polls                                                    ar.edu.unq.arqsoft.controllers.AdminController.polls(adminFileNumber :Int)
 GET          /admins/:adminFileNumber/careers                                                  ar.edu.unq.arqsoft.controllers.AdminController.careers(adminFileNumber :Int)
-
-
-GET          /admin/metrics                                                                    com.kenshoo.play.metrics.MetricsController.metrics
