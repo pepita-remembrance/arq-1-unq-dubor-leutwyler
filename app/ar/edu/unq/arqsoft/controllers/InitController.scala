@@ -12,9 +12,9 @@ class InitController @Inject()(cc: ControllerComponents, database: Database) ext
     Ok("Database seeded")
   }
 
-  def seedForStress = Action {
-    database.seedForStress()
-    Ok("Database seeded fro stress testing")
+  def seedForStress(amount: Option[Int]) = Action {
+    database.seedForStress(amount)
+    Ok("Database seeded for stress testing")
   }
 
 }

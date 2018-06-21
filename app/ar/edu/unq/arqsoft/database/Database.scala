@@ -17,9 +17,9 @@ class Database @Inject()(connector: DBConnector)
     super.seed()
   }
 
-  override def seedForStress(): Unit = {
+  override def seedForStress(amount: Option[Int]): Unit = {
     init()
-    super.seedForStress()
+    super.seedForStress(amount)
   }
 }
 
