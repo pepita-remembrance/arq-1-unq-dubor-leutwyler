@@ -5,7 +5,9 @@ import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory
 
 @Singleton
-class Database @Inject()(connector: DBConnector) extends DemoDatabase with SeedData {
+class Database @Inject()(connector: DBConnector)
+  extends DemoDatabase
+    with SeedData {
 
   DateTimeZone.setDefault(DateTimeZone.forOffsetHours(-3)) // Buenos Aires
   SessionFactory.concreteFactory = connector.sessionCreator
@@ -13,6 +15,11 @@ class Database @Inject()(connector: DBConnector) extends DemoDatabase with SeedD
   override def seed(): Unit = {
     init()
     super.seed()
+  }
+
+  override def seedForStress(): Unit = {
+    init()
+    super.seedForStress()
   }
 }
 

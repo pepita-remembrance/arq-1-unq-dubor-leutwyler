@@ -5,6 +5,7 @@
 
 # Init routes
 POST         /seed                                                                             ar.edu.unq.arqsoft.controllers.InitController.seedDatabase
+POST         /seed-for-stress                                                                  ar.edu.unq.arqsoft.controllers.InitController.seedForStress
 
 # Login
 POST         /login                                                                            ar.edu.unq.arqsoft.controllers.LoginController.login
