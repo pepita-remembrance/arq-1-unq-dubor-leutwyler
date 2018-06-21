@@ -1,8 +1,7 @@
 package ar.edu.unq.arqsoft.controllers
 
-import com.google.inject.{Inject, Singleton}
-
 import ar.edu.unq.arqsoft.database.Database
+import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 @Singleton
@@ -11,6 +10,11 @@ class InitController @Inject()(cc: ControllerComponents, database: Database) ext
   def seedDatabase = Action {
     database.seed()
     Ok("Database seeded")
+  }
+
+  def seedForStress(amount: Option[Int]) = Action {
+    database.seedForStress(amount)
+    Ok("Database seeded for stress testing")
   }
 
 }

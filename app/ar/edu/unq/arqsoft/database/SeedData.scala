@@ -20,7 +20,7 @@ trait SeedData extends Logging {
   @Inject
   var pollResultService: PollResultService = _
 
-  def defaultOffer: Map[String, List[CreateOfferOptionDTO]] = {
+  private def defaultOffer: Map[String, List[CreateOfferOptionDTO]] = {
     import ar.edu.unq.arqsoft.model.Day.{Friday => Viernes, Monday => Lunes, Saturday => Sabado, Thursday => Jueves, Tuesday => Martes, Wednesday => Miercoles}
     Map(
       // Basicas
@@ -248,7 +248,7 @@ trait SeedData extends Logging {
     )
   }
 
-  def defaultExtraData: Map[String, String] = Map(
+  private def defaultExtraData: Map[String, String] = Map(
     // Basicas
     "InPr" -> "",
     "Orga" -> "",
@@ -292,15 +292,14 @@ trait SeedData extends Logging {
     "TIP" -> "Requiere el 85% de la carrera"
   )
 
-  def seed(): Unit = {
-    info("Seeding database...")
+  private def baseSeed(): Unit = {
     info("Creating default poll offer options...")
     pollService.createDefaultOptions()
     info("Creating admins...")
     List(
-      CreateAdminDTO("fidelml","147",147, "fidel.ml@gmail.com", "Pablo", "Martinez Lopez"),
-      CreateAdminDTO("pablosuarez","258",258, "pablo.suarez@gmail.com", "Pablo", "Suarez"),
-      CreateAdminDTO("gabrielarevalo","369",369, "gabriela.arevalo@gmail.com", "Gabriela", "Arevalo")
+      CreateAdminDTO("fidelml", "147", 147, "fidel.ml@gmail.com", "Pablo", "Martinez Lopez"),
+      CreateAdminDTO("pablosuarez", "258", 258, "pablo.suarez@gmail.com", "Pablo", "Suarez"),
+      CreateAdminDTO("gabrielarevalo", "369", 369, "gabriela.arevalo@gmail.com", "Gabriela", "Arevalo")
     ).map(adminService.create)
     info("Creating careers...")
     List(
@@ -348,17 +347,9 @@ trait SeedData extends Logging {
         CreateSubjectDTO("TIP", "Taller de Trabajo de Insercion Profesional")
       )))
     ).foreach(careerService.create)
-    info("Creating students...")
-    List(
-      CreateStudentDTO("marcogomez","123",123, "marcogomez@gmail.com", "Marco", "Gomez"),
-      CreateStudentDTO("joaquinsanchez","456",456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
-    ).map(studentService.create)
     info("Admins join their careers")
     careerService.joinAdmin(CreateAdminCareerDTO(147, "TPI"))
     careerService.joinAdmin(CreateAdminCareerDTO(258, "TPI"))
-    info("Students join their careers")
-    careerService.joinStudent(CreateStudentCareerDTO(123, "TPI"), joinDate = DateTime.now.withDate(2014, 12, 15))
-    careerService.joinStudent(CreateStudentCareerDTO(456, "TPI"), joinDate = DateTime.now.withDate(2017, 5, 15))
     info("Creating poll for TPI")
     pollService.create("TPI", CreatePollDTO("2015s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2015, 2, 1))
     pollService.create("TPI", CreatePollDTO("2015s2", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2015, 6, 1))
@@ -367,6 +358,19 @@ trait SeedData extends Logging {
     pollService.create("TPI", CreatePollDTO("2017s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2017, 2, 1))
     pollService.create("TPI", CreatePollDTO("2017s2", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2017, 6, 1))
     pollService.create("TPI", CreatePollDTO("2018s1", Some(defaultOffer), Some(defaultExtraData)), createDate = DateTime.now.withDate(2018, 2, 1))
+  }
+
+  def seed(): Unit = {
+    info("Seeding database...")
+    baseSeed()
+    info("Creating students...")
+    List(
+      CreateStudentDTO("marcogomez", "123", 123, "marcogomez@gmail.com", "Marco", "Gomez"),
+      CreateStudentDTO("joaquinsanchez", "456", 456, "joaquinsanchez@gmail.com", "Joaquin", "Sanchez")
+    ).map(studentService.create)
+    info("Students join their careers")
+    careerService.joinStudent(CreateStudentCareerDTO(123, "TPI"), joinDate = DateTime.now.withDate(2014, 12, 15))
+    careerService.joinStudent(CreateStudentCareerDTO(456, "TPI"), joinDate = DateTime.now.withDate(2017, 5, 15))
     info("Answers for TPI 2015s1")
     pollResultService.newPollResult(123, "TPI", "2015s1")
     pollResultService.update(123, "TPI", "2015s1", Map(
@@ -441,11 +445,23 @@ trait SeedData extends Logging {
     info("Done seeding!")
   }
 
-  def SelectedCourse(key: String) = PollSelectedOptionDTO(key, isCourse = true)
+  def seedForStress(amount: Option[Int]): Unit = {
+    info("Seeding database for stress testing...")
+    baseSeed()
+    val studentAmount = amount.getOrElse(1000)
+    info(s"Creating $studentAmount students...")
+    (1 to studentAmount).foreach { n =>
+      studentService.create(CreateStudentDTO(s"student$n", s"password$n", n, s"student$n@testmail.com", s"name$n", s"surname$n"))
+      careerService.joinStudent(CreateStudentCareerDTO(n, "TPI"), joinDate = DateTime.now.withDate(2014, 12, 15))
+    }
+    info("Done seeding!")
+  }
 
-  def SelectedNonCourse(key: String) = PollSelectedOptionDTO(key, isCourse = false)
+  private def SelectedCourse(key: String) = PollSelectedOptionDTO(key, isCourse = true)
 
-  def Passed = SelectedNonCourse(NonCourseOption.alreadyPassed)
+  private def SelectedNonCourse(key: String) = PollSelectedOptionDTO(key, isCourse = false)
+
+  private def Passed = SelectedNonCourse(NonCourseOption.alreadyPassed)
 
   implicit class ScheduleFromBuilder(day: Day) {
     def from(fromHour: Int, fromMinutes: Int = 0): ScheduleToBuilder =
