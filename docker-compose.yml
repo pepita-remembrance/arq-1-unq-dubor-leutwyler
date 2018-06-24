@@ -7,18 +7,20 @@ services:
       POSTGRES_USER: 'arq-soft'
     mem_limit: 2G
     mem_reservation: 2G
-    cpus: 2
+    cpus: 1
 
   app:
     build: .
     stdin_open: true
-    mem_limit: 8G
-    mem_reservation: 8G
-    cpus: 2
+    mem_limit: 2G
+    mem_reservation: 2G
+    cpus: 3
     ports:
       - "9000:9000"
     environment:
       JDBC_DATABASE_URL: 'jdbc:postgresql://postgresql:5432/arq-soft?user=arq-soft&password=saveallthethings'
+      SEED_FOR_STRESS: 'true'
+      SEED_AMOUNT: 1000
     depends_on:
       - postgresql
     command: 'sbt start'
