@@ -41,3 +41,7 @@ See [Payload samples file](Payload%20Samples) for json payload examples for some
 
 * [URL](https://ins-poll-back-arqsoft-2017s2.herokuapp.com/)
 * [GIT](https://git.heroku.com/ins-poll-back-arqsoft-2017s2.git)
+
+# Performance and Stress
+
+[Performance and Stress tests results](performane_and_stress.md)
