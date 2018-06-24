@@ -20,7 +20,7 @@ services:
     environment:
       JDBC_DATABASE_URL: 'jdbc:postgresql://postgresql:5432/arq-soft?user=arq-soft&password=saveallthethings'
       SEED_FOR_STRESS: 'true'
-      SEED_AMOUNT: 1000
+      SEED_AMOUNT: 10000
     depends_on:
       - postgresql
     command: 'sbt start'
