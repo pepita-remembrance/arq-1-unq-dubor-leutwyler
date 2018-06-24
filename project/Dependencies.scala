@@ -5,6 +5,7 @@ object Dependencies {
 
   val appDependencies = Seq(
     PlayImport.guice,
+    PlayImport.jdbc,
     "org.postgresql" % "postgresql" % "42.2.2",
     "com.github.nscala-time" %% "nscala-time" % "2.16.0",
     "com.typesafe.play" %% "play-json" % "2.6.2",
