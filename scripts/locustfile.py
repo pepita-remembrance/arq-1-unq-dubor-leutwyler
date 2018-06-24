@@ -1,31 +1,27 @@
 from locust import HttpLocust, TaskSet, task
-import random, math
+import random, math, queue
+import requests
 
-students = [
-    {
-      "username": "marcogomez",
-      "password": "123",
-      "filenumber": "123"
-    },
-    {
-      "username": "joaquinsanchez",
-      "password": "456",
-      "filenumber": "456"
-    }
-  ]
+students_number = 100
+headers = {
+    "Content-Type": "application/json"
+}
+print("starting db")
+requests.session().post("http://localhost:9000/seed-for-stress", headers=headers, params={'amount': students_number})
+print("")
+
+students = [i for i in range(1, students_number + 1)]
+
+students_q = queue.Queue(students_number + 1)
+for student in students:
+  students_q.put(student)
 
 def login(l):
-  headers = {
-      "Content-Type": "application/json"
-  }
   l.client.post("/login", json={"username": l.username, "password": l.password},
                 headers=headers, verify=False)
 
 
 def logout(l):
-  headers = {
-      "Content-Type": "application/json"
-    }
   l.client.post("/logout", json={"username": l.username, "password": l.password},
                 headers=headers, verify=False)
 
@@ -51,10 +47,10 @@ class UserBehavior(TaskSet):
 
 
   def on_start(self):
-    student = random.choice(students)
-    self.username = student["username"]
-    self.password = student["password"]
-    self.filenumber = student["filenumber"]
+    i = students_q.get()
+    self.username = f"student{i}"
+    self.password = f"password{i}"
+    self.filenumber = f"{i}"
     self.tasks.sort(key=lambda t: t.locust_task_weight)
     login(self)
 
@@ -81,9 +77,6 @@ class UserBehavior(TaskSet):
 
   @task(1)
   def get_poll_result(self):
-    headers = {
-        "Content-Type": "application/json"
-    }
     self.selected_career = self.get_random_career()
     self.selected_poll = self.get_random_poll()
     response = self.client.get(f"/careers/{self.selected_career['shortName']}/polls/{self.selected_poll['key']}", verify=False)
@@ -99,9 +92,6 @@ class UserBehavior(TaskSet):
       self.send_choice()
 
   def send_choice(self):
-    headers = {
-        "Content-Type": "application/json"
-    }
     self.make_your_choice()
     response = self.client.patch(
         f"/students/{self.filenumber}/careers/{self.selected_career['shortName']}/poll-result/{self.selected_poll['key']}",
