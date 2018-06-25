@@ -44,4 +44,4 @@ See [Payload samples file](Payload%20Samples) for json payload examples for some
 
 # Performance and Stress
 
-[Performance and Stress tests results](performane_and_stress.md)
+[Performance and Stress tests results](performance_and_stress.md)
