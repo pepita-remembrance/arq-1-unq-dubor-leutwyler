@@ -40,7 +40,7 @@ La siguiente imagen representa los resultados de 500 usuarios siguiendo el roadm
 
 ![performance](https://user-images.githubusercontent.com/12850723/41824904-6fb6eeae-77ee-11e8-9146-3d90ed6b5745.png)
 
-Como se puede observar, los tiempos de respuesta estan al rededor de los 300ms. Y el gap entre el response time y el tiempo de la jvm + el tiempo de postgres nos muestra que hay una pequeña competencia entre los threads para despachar las respuestas ya procesadas. Esto nos indica que esta carga es la mayor que el container puede soportar sin empezar a degradar la performance.
+Como se puede observar, los tiempos de respuesta estan alrededor de los 300ms. Y el gap entre el response time y el tiempo de la jvm + el tiempo de postgres nos muestra que hay una pequeña competencia entre los threads para despachar las respuestas ya procesadas. Esto nos indica que esta carga es la mayor que el container puede soportar sin empezar a degradar la performance.
 
 # Stress tests
 
