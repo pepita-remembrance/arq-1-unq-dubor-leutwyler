@@ -1,7 +1,7 @@
 package ar.edu.unq.arqsoft.database
 
 import akka.actor.ActorSystem
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 import org.joda.time.DateTimeZone
 import org.squeryl.SessionFactory
 import play.api.Configuration
@@ -9,7 +9,6 @@ import play.api.Configuration
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-@Singleton
 class Database @Inject()(connector: DBConnector, configuration: Configuration, actorSystem: ActorSystem)
   extends DemoDatabase
     with SeedData {

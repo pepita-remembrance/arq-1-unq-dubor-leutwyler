@@ -13,4 +13,4 @@ libraryDependencies ++= Dependencies.testDependecies
 
 newrelicVersion := "4.1.0"
 
-newrelicLicenseKey := Some("1c58ac08ed5c97e3160f2c32d83071b2181a7f04")
+newrelicLicenseKey := Some("933148e3552cd65eff4f4cfc53c823fa89763e65")

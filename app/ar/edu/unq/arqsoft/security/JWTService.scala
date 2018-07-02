@@ -1,9 +1,7 @@
 package ar.edu.unq.arqsoft.security
 
 import authentikat.jwt.{JsonWebToken, JwtClaimsSet, JwtHeader}
-import com.google.inject.Singleton
 
-@Singleton
 class JWTService {
 
   val JwtSecretKey = "secretKey"

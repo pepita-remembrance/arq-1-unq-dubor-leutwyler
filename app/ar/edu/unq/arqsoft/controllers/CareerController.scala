@@ -4,10 +4,9 @@ import ar.edu.unq.arqsoft.api.{CreateAdminCareerDTO, CreateCareerDTO, CreateStud
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.security.{JWTService, RoleAdmin, RoleStudent}
 import ar.edu.unq.arqsoft.services.{CareerService, StudentService}
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 import play.api.mvc.{ControllerComponents, PlayBodyParsers, Request}
 
-@Singleton
 class CareerController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers,
                                  jwtService: JWTService,
                                  studentService: StudentService,

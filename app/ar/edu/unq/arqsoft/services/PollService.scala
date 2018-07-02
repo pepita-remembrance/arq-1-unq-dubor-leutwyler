@@ -4,10 +4,9 @@ import ar.edu.unq.arqsoft.api._
 import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.repository._
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 import org.joda.time.DateTime
 
-@Singleton
 class PollService @Inject()(pollRepository: PollRepository,
                             courseRepository: CourseRepository,
                             nonCourseRepository: NonCourseRepository,
