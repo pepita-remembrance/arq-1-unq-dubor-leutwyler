@@ -4,7 +4,6 @@ import ar.edu.unq.arqsoft.database.DSLFlavor._
 import ar.edu.unq.arqsoft.database.InscriptionPollSchema._
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import ar.edu.unq.arqsoft.model._
-import com.google.inject.Singleton
 import org.squeryl.{CanLookup, KeyedEntityDef, Query, Table}
 
 class ModelDAO[T <: TableRow](table: Table[T])
@@ -18,19 +17,16 @@ class UserDAO[T <: User with TableRow](table: Table[T])
     search(_.username === username)
 }
 
-@Singleton
 class StudentDAO extends UserDAO[Student](students) {
   def byFileNumber(fileNumber: Int): Query[Student] =
     search(_.fileNumber === fileNumber)
 }
 
-@Singleton
 class AdminDAO extends UserDAO[Admin](admins) {
   def byFileNumber(fileNumber: Int): Query[Admin] =
     search(_.fileNumber === fileNumber)
 }
 
-@Singleton
 class CareerDAO extends ModelDAO[Career](careers) {
   def byShortName(shortName: String): Query[Career] =
     search(_.shortName === shortName)
@@ -43,7 +39,6 @@ class CareerDAO extends ModelDAO[Career](careers) {
     )
 }
 
-@Singleton
 class SubjectDAO extends ModelDAO[Subject](subjects) {
   def byShortNameOfCareer(shortNames: Iterable[String], careerId: KeyType): Query[Subject] =
     search(_.careerId === careerId, _.shortName in shortNames)
@@ -56,10 +51,8 @@ class SubjectDAO extends ModelDAO[Subject](subjects) {
     ).distinct
 }
 
-@Singleton
 class OfferDAO extends ModelDAO[OfferOptionBase](offers)
 
-@Singleton
 class CourseDAO extends ModelDAO[Course](courses) {
   def getOfPollBySubjectName(pollId: KeyType, subjectShortNames: Iterable[String]): Query[(Subject, Course)] =
     join(courses, pollOfferOptions, subjects)((c, poo, s) =>
@@ -83,7 +76,6 @@ class CourseDAO extends ModelDAO[Course](courses) {
     )
 }
 
-@Singleton
 class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
   def byKey(textValues: Iterable[String]): Query[NonCourseOption] =
     search(_.key in textValues)
@@ -113,10 +105,8 @@ class NonCourseDAO extends ModelDAO[NonCourseOption](nonCourses) {
     )
 }
 
-@Singleton
 class ScheduleDAO extends ModelDAO[Schedule](schedules)
 
-@Singleton
 class PollDAO extends ModelDAO[Poll](polls) {
   def byKeyOfCareer(pollKey: String, careerId: KeyType): Query[Poll] =
     search(_.key === pollKey, _.careerId === careerId)
@@ -139,19 +129,15 @@ class PollDAO extends ModelDAO[Poll](polls) {
     )
 }
 
-@Singleton
 class PollResultDAO extends ModelDAO[PollResult](results) {
   def byStudentAndPoll(studentId: KeyType, pollId: KeyType): Query[PollResult] =
     search(_.studentId === studentId, _.pollId === pollId)
 }
 
-@Singleton
 class PollSubjectOptionDAO extends ModelDAO[PollSubjectOption](pollSubjectOption)
 
-@Singleton
 class PollOfferOptionDAO extends ModelDAO[PollOfferOption](pollOfferOptions)
 
-@Singleton
 class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOptions) {
   def getByPollAndOfPassedSubjectsOfStudent(pollResultId: KeyType, studentId: KeyType): Query[PollSelectedOption] = {
     val passedSubjects =
@@ -183,8 +169,6 @@ class PollSelectedOptionDAO extends ModelDAO[PollSelectedOption](pollSelectedOpt
     )
 }
 
-@Singleton
 class StudentCareerDAO extends ModelDAO[StudentCareer](studentsCareers)
 
-@Singleton
 class AdminCareerDAO extends ModelDAO[AdminCareer](adminsCareers)

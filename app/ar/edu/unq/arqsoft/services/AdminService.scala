@@ -5,9 +5,8 @@ import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model.Admin
 import ar.edu.unq.arqsoft.repository.{AdminRepository, CareerRepository, PollRepository}
 import ar.edu.unq.arqsoft.security.RoleAdmin
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 
-@Singleton
 class AdminService @Inject()(adminRepository: AdminRepository,
                              careerRepository: CareerRepository,
                              pollRepository: PollRepository

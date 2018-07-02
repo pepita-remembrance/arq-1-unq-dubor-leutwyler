@@ -5,9 +5,8 @@ import ar.edu.unq.arqsoft.maybe.Maybe
 import ar.edu.unq.arqsoft.model.Student
 import ar.edu.unq.arqsoft.repository.StudentRepository
 import ar.edu.unq.arqsoft.security.RoleStudent
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 
-@Singleton
 class StudentService @Inject()(studentRepository: StudentRepository
                               ) extends UserService[Student](studentRepository, RoleStudent) {
   override protected def customClaims(user: Student): Map[String, Any] =

@@ -4,10 +4,9 @@ import ar.edu.unq.arqsoft.api.CreatePollDTO
 import ar.edu.unq.arqsoft.mappings.json.PlayJsonDTOFormats
 import ar.edu.unq.arqsoft.security.{JWTService, RoleAdmin, RoleStudent}
 import ar.edu.unq.arqsoft.services.PollService
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 import play.api.mvc.{ControllerComponents, PlayBodyParsers, Request}
 
-@Singleton
 class PollController @Inject()(cc: ControllerComponents, parse: PlayBodyParsers, jwtService: JWTService,
                                pollService: PollService
                               )

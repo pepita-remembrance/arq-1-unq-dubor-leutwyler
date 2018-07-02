@@ -7,6 +7,8 @@ services:
       POSTGRES_USER: 'arq-soft'
     mem_limit: 2G
     mem_reservation: 2G
+    memswap_limit: 2G
+    cpuset: '0'
     cpus: 1
 
   app:
@@ -14,7 +16,9 @@ services:
     stdin_open: true
     mem_limit: 2G
     mem_reservation: 2G
-    cpus: 3
+    memswap_limit: 2G
+    cpuset: '1,2'
+    cpus: 2
     ports:
       - "9000:9000"
     environment:

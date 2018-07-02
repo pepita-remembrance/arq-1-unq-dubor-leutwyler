@@ -5,7 +5,6 @@ import ar.edu.unq.arqsoft.maybe.{EntityNotFound, Maybe}
 import ar.edu.unq.arqsoft.model.TableRow.KeyType
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.utils.MultiResultChecker
-import com.google.inject.Singleton
 import javax.inject.Inject
 import org.squeryl.Query
 
@@ -23,7 +22,6 @@ class UserRepository[T <: User with TableRow](dao: UserDAO[T]) extends ModelRepo
     singleResult(dao.byUsername(username), notFoundByUsername(username))
 }
 
-@Singleton
 class StudentRepository @Inject()(dao: StudentDAO)
   extends UserRepository[Student](dao) {
   def notFoundByFileNumber(fileNumber: Int): EntityNotFound =
@@ -33,7 +31,6 @@ class StudentRepository @Inject()(dao: StudentDAO)
     singleResult(dao.byFileNumber(fileNumber), notFoundByFileNumber(fileNumber))
 }
 
-@Singleton
 class AdminRepository @Inject()(dao: AdminDAO)
   extends UserRepository[Admin](dao) {
   def notFoundByFileNumber(fileNumber: Int): EntityNotFound =
@@ -43,7 +40,6 @@ class AdminRepository @Inject()(dao: AdminDAO)
     singleResult(dao.byFileNumber(fileNumber), notFoundByFileNumber(fileNumber))
 }
 
-@Singleton
 class CareerRepository @Inject()(dao: CareerDAO)
   extends ModelRepository[Career](dao) {
   def notFoundByShortName(shortName: String): EntityNotFound =
@@ -57,7 +53,6 @@ class CareerRepository @Inject()(dao: CareerDAO)
   }
 }
 
-@Singleton
 class SubjectRepository @Inject()(dao: SubjectDAO)
   extends ModelRepository[Subject](dao) {
   def notFoundByShortNameOfCareer(shortName: String, career: Career): EntityNotFound =
@@ -78,11 +73,9 @@ class SubjectRepository @Inject()(dao: SubjectDAO)
   }
 }
 
-@Singleton
 class OfferRepository @Inject()(dao: OfferDAO)
   extends ModelRepository[OfferOptionBase](dao)
 
-@Singleton
 class CourseRepository @Inject()(dao: CourseDAO)
   extends ModelRepository[Course](dao) {
   def getOfPollResultBySubjectName(pollResult: PollResult, subjectShortNames: Iterable[String]): Maybe[Iterable[(Subject, Course)]] = inTransaction {
@@ -94,7 +87,6 @@ class CourseRepository @Inject()(dao: CourseDAO)
   }
 }
 
-@Singleton
 class NonCourseRepository @Inject()(dao: NonCourseDAO)
   extends ModelRepository[NonCourseOption](dao) {
   def notFoundByKey(key: String): EntityNotFound =
@@ -116,11 +108,9 @@ class NonCourseRepository @Inject()(dao: NonCourseDAO)
   }
 }
 
-@Singleton
 class ScheduleRepository @Inject()(dao: ScheduleDAO)
   extends ModelRepository[Schedule](dao)
 
-@Singleton
 class PollRepository @Inject()(dao: PollDAO)
   extends ModelRepository[Poll](dao) {
   def notFoundByKeyOfCareer(career: Career, pollKey: String): EntityNotFound =
@@ -142,7 +132,6 @@ class PollRepository @Inject()(dao: PollDAO)
   }
 }
 
-@Singleton
 class PollResultRepository @Inject()(dao: PollResultDAO)
   extends ModelRepository[PollResult](dao) {
   def notFoundByStudentAndPoll(student: Student, career: Career, pollKey: String): EntityNotFound =
@@ -152,15 +141,12 @@ class PollResultRepository @Inject()(dao: PollResultDAO)
     singleResult(dao.byStudentAndPoll(student.id, poll.id), notFoundByStudentAndPoll(student, career, poll.key))
 }
 
-@Singleton
 class PollSubjectOptionRepository @Inject()(dao: PollSubjectOptionDAO)
   extends ModelRepository[PollSubjectOption](dao)
 
-@Singleton
 class PollOfferOptionRepository @Inject()(dao: PollOfferOptionDAO)
   extends ModelRepository[PollOfferOption](dao)
 
-@Singleton
 class PollSelectedOptionRepository @Inject()(dao: PollSelectedOptionDAO)
   extends ModelRepository[PollSelectedOption](dao) {
   def getOfAlreadyPassedSubjects(pollResult: PollResult): Maybe[Iterable[PollSelectedOption]] = inTransaction {
@@ -172,11 +158,9 @@ class PollSelectedOptionRepository @Inject()(dao: PollSelectedOptionDAO)
   }
 }
 
-@Singleton
 class StudentCareerRepository @Inject()(dao: StudentCareerDAO)
   extends ModelRepository[StudentCareer](dao)
 
-@Singleton
 class AdminCareerRepository @Inject()(dao: AdminCareerDAO)
   extends ModelRepository[AdminCareer](dao)
 

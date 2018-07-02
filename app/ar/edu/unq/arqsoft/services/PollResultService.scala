@@ -5,10 +5,9 @@ import ar.edu.unq.arqsoft.api.{PollResultDTO, TallyDTO}
 import ar.edu.unq.arqsoft.maybe.{Just, Maybe, SaveError}
 import ar.edu.unq.arqsoft.model._
 import ar.edu.unq.arqsoft.repository._
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 import org.joda.time.DateTime
 
-@Singleton
 class PollResultService @Inject()(courseRepository: CourseRepository,
                                   nonCourseRepository: NonCourseRepository,
                                   pollRepository: PollRepository,
