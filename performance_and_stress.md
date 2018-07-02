@@ -86,3 +86,9 @@ En la siguiente serie de imagenes se puede observar como el espacio eden del hea
 
 Finalmente podemos observar como la memoria llega tambien muy cerca del limite del container
 ![stress_summary](https://user-images.githubusercontent.com/12850723/42144085-9220f326-7d8f-11e8-9439-79bb8a0ada7e.png)
+
+# Conclusiones
+
+Las conclusiones que se pueden sacar tras haber hecho estas pruebas son, en primer lugar, el hecho de que con un container relativamente chico se puede soportar una carga muy grande. Por otro lado vimos que esto nos permite escalar la aplicación horizontalmente de forma tal que con solo 2 containers en paralelo y un balanceador de carga podríamos soportar al rededor de ~800 usuarios o ~6000 rpm mientras la base de datos lo permita (gracias a que el servicio en si es stateless). Finalmente tambien podemos notar la diferencia de performance que notamos entre usar las configuraciones por defecto de play vs tunear el pool de play y de la base de datos, tunear la memoria, etc. Desde que empezamos a tunear las configuraciones hasta lo que quedo al final podemos decir que la aplicación pasó a bancarse al rededor de 5 veces más carga.
+
+En cuanto a las pruebas de sterss estaría bueno destacar que sabemos que luego de pasar los 500 usuarios estaría bueno poner un "referí" que empiece a rechazar las conexiones para evitar sobrecargar la aplicación por cada container.
