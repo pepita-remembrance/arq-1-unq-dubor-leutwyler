@@ -21,12 +21,12 @@ Los pasos normales a seguir serían:
 # Container de docker
 
 * App
-  * 3 cores
-  * 2gb de memoria
+  * 2 cores
+  * 2gb de memoria (0 de swap)
 
 * Base de datos
   * 1 core
-  * 2gb de memoria
+  * 2gb de memoria (0 de swap)
 
 # Performance tests
 
@@ -36,17 +36,44 @@ En cuanto a cuántas materias responderá el alumno, elegimos una distribución 
 
 ## Resultados
 
-La siguiente imagen representa los resultados de 500 usuarios siguiendo el roadmap previamente explicado, durante aproximadamente 15 minutos.
+La siguiente imagen representa los resultados de 450 usuarios siguiendo el roadmap previamente explicado, durante aproximadamente 1 hora spawneando de a 50 cada 5 minutos. Como observaciones pudimos notar es que con 400 usuarios el response time es menor a 200ms, por lo que decidimos que 400 usuarios (~2.8k rpm) concurrentes es lo normal o performante para cada container. En el gráfico tambien se puede observar que con 450 usuarios el apdex se empieza a degradar notablemente (aunque se mantiene por encima del 0.9).
 
-![performance](https://user-images.githubusercontent.com/12850723/41824904-6fb6eeae-77ee-11e8-9146-3d90ed6b5745.png)
+![performance_overview](https://user-images.githubusercontent.com/12850723/42144298-b6446b4c-7d90-11e8-8389-7e062ab447ff.png)
 
-Como se puede observar, los tiempos de respuesta estan alrededor de los 300ms. Y el gap entre el response time y el tiempo de la jvm + el tiempo de postgres nos muestra que hay una pequeña competencia entre los threads para despachar las respuestas ya procesadas. Esto nos indica que esta carga es la mayor que el container puede soportar sin empezar a degradar la performance.
+------------------------
+Aca podemos ver como se comporta la heap mas algunos datos mas de la memoria y el cpu:
+
+![performance_heap](https://user-images.githubusercontent.com/12850723/42144594-363ee2ae-7d92-11e8-9d29-f73af4ce104d.png)
+![performance_heap2](https://user-images.githubusercontent.com/12850723/42144672-c1bd8510-7d92-11e8-84cd-70799e3e48f3.png)
+![performance_heap3](https://user-images.githubusercontent.com/12850723/42144673-c4b2df7c-7d92-11e8-8872-9c14eea4a82a.png)
 
 # Stress tests
 
-En este caso basandonos en los tests de performance, simplemente aumentamos la cantidad de usuarios over time hasta que la aplicación no pudo más.
+La prueba consistió en aumentar la cantidad de usuarios de la siguiente forma en intervalos de aproximadamente 5 minutos:
+ * 1 usuario
+ * 50 usuarios
+ * 100 usuarios
+ * 250 usuarios
+ * 500 usuarios
+ * 1000 usuarios
+ * 500 usuarios
+ * 250 usuarios
+ * 100 usuarios
+ * 50 usuarios
+ * 1 usuario
 
 ## Resultados
 
-Una de las conclusiones que se pueden sacar de la imagen es que el limite del container es ~4.5k rpm.
-![stress](https://user-images.githubusercontent.com/12850723/41825023-594d8914-77f0-11e8-84ab-8790cfd7b2d4.png)
+Una de las conclusiones que se pueden sacar de la primer imagen, es que el limite del container es ~4k rpm (1000 usuarios). Por otro lado se puede ver que la aplicación se comporta muy bien hasta los 500 usuarios (4:45 del eje x) que es en donde empiezan a subir los tiempos de respuesta un poco mas bruscamente.
+![stress](https://user-images.githubusercontent.com/12850723/42143651-a3e3dd06-7d8c-11e8-84d4-71e8f79ee561.png)
+
+
+![stress_heap](https://user-images.githubusercontent.com/12850723/42143830-b1535be6-7d8d-11e8-99f4-b2a9cce77228.png)
+![stress_heap2](https://user-images.githubusercontent.com/12850723/42143957-a2c937fc-7d8e-11e8-8c6a-0789840593c4.png)
+
+Se puede observar tambien como el espacio eden de la heap llega al máximo.
+![stress_heap3](https://user-images.githubusercontent.com/12850723/42143973-ccd61c9a-7d8e-11e8-9f33-8693cae0f5da.png)
+
+
+Finalmente podemos observar como la memoria llega tambien muy cerca del limite del container
+![stress_summary](https://user-images.githubusercontent.com/12850723/42144085-9220f326-7d8f-11e8-9439-79bb8a0ada7e.png)
