@@ -2,13 +2,13 @@ from locust import HttpLocust, TaskSet, task
 import random, math, queue
 import requests
 
-students_number = 100
+students_number = 10000
 headers = {
     "Content-Type": "application/json"
 }
-print("starting db")
-requests.session().post("http://localhost:9000/seed-for-stress", headers=headers, params={'amount': students_number})
-print("")
+# print("starting db")
+# requests.session().post("http://192.168.0.15:9000/seed-for-stress", headers=headers, params={'amount': students_number})
+# print("")
 
 students = [i for i in range(1, students_number + 1)]
 
@@ -17,8 +17,14 @@ for student in students:
   students_q.put(student)
 
 def login(l):
-  l.client.post("/login", json={"username": l.username, "password": l.password},
-                headers=headers, verify=False)
+  with l.client.post("/login", json={"username": l.username, "password": l.password}, headers=headers, verify=False, catch_response=True) as response:
+    if response.status_code == 401:
+      response.success()
+      i = students_q.get()
+      l.username = f"student{i}"
+      l.password = f"password{i}"
+      l.filenumber = f"{i}"
+      login(l)
 
 
 def logout(l):
@@ -53,19 +59,6 @@ class UserBehavior(TaskSet):
     self.filenumber = f"{i}"
     self.tasks.sort(key=lambda t: t.locust_task_weight)
     login(self)
-
-  # @task(1)
-  # def do_pre_inscription(self):
-  #   login(self)
-  #   self.wait()
-  #   self.get_info()
-  #   self.wait()
-  #   self.get_poll_result()
-    # for _ in range(math.ceil(max(1, random.gauss(3, 1)))):
-    #   self.wait()
-    #   self.send_choice()
-  #   self.wait()
-  #   logout(self)
 
   @task(1)
   def get_info(self):
@@ -120,5 +113,5 @@ class UserBehavior(TaskSet):
 
 class WebsiteUser(HttpLocust):
     task_set = UserBehavior
-    min_wait = 1000
-    max_wait = 10000
+    min_wait = 5000
+    max_wait = 30000
