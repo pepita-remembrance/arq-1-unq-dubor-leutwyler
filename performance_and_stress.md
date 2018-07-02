@@ -18,7 +18,9 @@ Los pasos normales a seguir serían:
 * POST /logout
   * Cerrar sesión
 
-# Container de docker
+# Ambiente de pruebas
+
+## Container de docker
 
 * App
   * 2 cores
@@ -27,6 +29,16 @@ Los pasos normales a seguir serían:
 * Base de datos
   * 1 core
   * 2gb de memoria (0 de swap)
+  
+Ambos containers corrian en la misma computadora.
+
+## Locust
+
+El servidor de Locust que emulaba los alumnos (utilizando el roadmap mencionado) se ejecutaba en una computadora diferente a la que mantenia los containers.
+  
+## Red
+
+Se destaca el hecho de que todas las pruebas se realizaron en una red domestica a traves de una conexion wifi. Consideramos que esto es relevante dado que en las graficas se puede observar diferencias entre el tiempo que la aplicacion tarda en generar la respuesta y el tiempo en que el usuario que realizo el pedido la recibe.  
 
 # Performance tests
 
@@ -41,9 +53,9 @@ La siguiente imagen representa los resultados de 450 usuarios siguiendo el roadm
 ![performance_overview](https://user-images.githubusercontent.com/12850723/42144298-b6446b4c-7d90-11e8-8389-7e062ab447ff.png)
 
 ------------------------
-Aca podemos ver como se comporta la heap mas algunos datos mas de la memoria y el cpu:
+Aca podemos ver como se comporta el heap asi como algunos datos mas de la memoria y el cpu:
 
-![performance_heap](https://user-images.githubusercontent.com/12850723/42144594-363ee2ae-7d92-11e8-9d29-f73af4ce104d.png)
+![performance_heap1](https://user-images.githubusercontent.com/12850723/42144594-363ee2ae-7d92-11e8-9d29-f73af4ce104d.png)
 ![performance_heap2](https://user-images.githubusercontent.com/12850723/42144672-c1bd8510-7d92-11e8-84cd-70799e3e48f3.png)
 ![performance_heap3](https://user-images.githubusercontent.com/12850723/42144673-c4b2df7c-7d92-11e8-8872-9c14eea4a82a.png)
 
@@ -65,15 +77,12 @@ La prueba consistió en aumentar la cantidad de usuarios de la siguiente forma e
 ## Resultados
 
 Una de las conclusiones que se pueden sacar de la primer imagen, es que el limite del container es ~4k rpm (1000 usuarios). Por otro lado se puede ver que la aplicación se comporta muy bien hasta los 500 usuarios (4:45 del eje x) que es en donde empiezan a subir los tiempos de respuesta un poco mas bruscamente.
-![stress](https://user-images.githubusercontent.com/12850723/42143651-a3e3dd06-7d8c-11e8-84d4-71e8f79ee561.png)
+![stress_overview](https://user-images.githubusercontent.com/12850723/42143651-a3e3dd06-7d8c-11e8-84d4-71e8f79ee561.png)
 
-
-![stress_heap](https://user-images.githubusercontent.com/12850723/42143830-b1535be6-7d8d-11e8-99f4-b2a9cce77228.png)
+En la siguiente serie de imagenes se puede observar como el espacio eden del heap llega al máximo mientras que los demas espacios de memoria se mantienen en tamaños comparativamente pequeños.
+![stress_heap1](https://user-images.githubusercontent.com/12850723/42143973-ccd61c9a-7d8e-11e8-9f33-8693cae0f5da.png)
 ![stress_heap2](https://user-images.githubusercontent.com/12850723/42143957-a2c937fc-7d8e-11e8-8c6a-0789840593c4.png)
-
-Se puede observar tambien como el espacio eden de la heap llega al máximo.
-![stress_heap3](https://user-images.githubusercontent.com/12850723/42143973-ccd61c9a-7d8e-11e8-9f33-8693cae0f5da.png)
-
+![stress_heap3](https://user-images.githubusercontent.com/12850723/42143830-b1535be6-7d8d-11e8-99f4-b2a9cce77228.png)
 
 Finalmente podemos observar como la memoria llega tambien muy cerca del limite del container
 ![stress_summary](https://user-images.githubusercontent.com/12850723/42144085-9220f326-7d8f-11e8-9439-79bb8a0ada7e.png)
