@@ -11,7 +11,7 @@ services:
     cpuset: '0'
     cpus: 1
 
-  app:
+  app1:
     build: .
     stdin_open: true
     mem_limit: 2G
@@ -19,8 +19,6 @@ services:
     memswap_limit: 2G
     cpuset: '1,2'
     cpus: 2
-    ports:
-      - "9000:9000"
     environment:
       JDBC_DATABASE_URL: 'jdbc:postgresql://postgresql:5432/arq-soft?user=arq-soft&password=saveallthethings'
       SEED_FOR_STRESS: 'true'
@@ -28,3 +26,32 @@ services:
     depends_on:
       - postgresql
     command: 'sbt start'
+
+  app2:
+      build: .
+      stdin_open: true
+      mem_limit: 2G
+      mem_reservation: 2G
+      memswap_limit: 2G
+      cpuset: '2,3'
+      cpus: 2
+      environment:
+        JDBC_DATABASE_URL: 'jdbc:postgresql://postgresql:5432/arq-soft?user=arq-soft&password=saveallthethings'
+      depends_on:
+        - postgresql
+      command: 'sbt start'
+
+  proxy:
+    image: haproxy:1.8
+    mem_limit: 1G
+    mem_reservation: 1G
+    memswap_limit: 1G
+    cpuset: '0'
+    cpus: 1
+    ports:
+      - 9000:9000
+    volumes:
+      - /home/emanueldubor/Projects/arq-1-unq-scala-api-dubor-leutwyler/haproxy:/usr/local/etc/haproxy:ro
+    depends_on:
+      - app1
+      - app2
